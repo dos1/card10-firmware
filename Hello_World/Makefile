@@ -143,6 +143,7 @@ ifneq "$(APP)" ""
 LINKERFILE=$(CMSIS_ROOT)/Device/Maxim/$(TARGET_UC)/Source/GCC/$(TARGET_LC)_app.ld
 endif
 
+LINKERFILE=$(CMSIS_ROOT)/Device/Maxim/$(TARGET_UC)/Source/GCC/$(TARGET_LC)_core0.ld
 ################################################################################
 # Include external library makefiles here
 
