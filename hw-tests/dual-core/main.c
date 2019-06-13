@@ -39,6 +39,7 @@ int main(void)
     }
 
     int h = 0;
+    MXC_GCR->evten |= 0x04;
 
     // Release core1
     Core1_Start();
@@ -54,7 +55,7 @@ int main(void)
         }
 
         leds_update();
-        TMR_Delay(MXC_TMR0, MSEC(10), 0);
+        TMR_Delay(MXC_TMR1, MSEC(10), 0);
         h++;
 
         // Send a txev using `sev` every once in a while to wake up core1
@@ -62,6 +63,9 @@ int main(void)
         if (h % 100 == 0) {
             printf("core0: Triggering core1 using SEV ...\n");
             __asm volatile("sev");
+            __asm volatile("wfe");
+            __asm volatile("wfe");
+            printf("core0 woke up\n");
         }
     }
 }

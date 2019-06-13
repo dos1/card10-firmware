@@ -11,6 +11,10 @@ int main(void)
 	for (int i = 0; 1; i++) {
 		__asm volatile("wfe");
 		printf("core1: Hello! %d\n", i);
+		mxc_delay(3000000);
+		printf("core1: Waking up core0\n");
+		__asm volatile("sev");
+		__asm volatile("wfe");
 
 #if 0
 		GPIO_OutSet(&motor_pin);
