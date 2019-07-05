@@ -8,4 +8,5 @@ module_sources = files(
   'stream.c',
   'vibra.c',
   'light_sensor.c',
+  'ble.c'
 )
