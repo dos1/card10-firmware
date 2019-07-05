@@ -69,7 +69,7 @@ sources = files(
     'wsf/baremetal/sources/wsf_cs.c',
     'wsf/baremetal/sources/wsf_buf.c',
     'wsf/baremetal/sources/wsf_os.c',
-    'wsf/baremetal/sources/wsf_trace.c',
+    #'wsf/baremetal/sources/wsf_trace.c',
     'wsf/baremetal/sources/wsf_assert.c',
     'wsf/common/sources/util/crc32.c',
     'wsf/common/sources/util/bstream.c',
