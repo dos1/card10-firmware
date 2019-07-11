@@ -29,6 +29,7 @@ void pre_idle_sleep(TickType_t xExpectedIdleTime)
 		__asm volatile("dsb" ::: "memory");
 		__asm volatile("wfe");
 		__asm volatile("isb");
+		GPIO_OutClr(&debug_pin_0);
 	}
 }
 

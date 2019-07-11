@@ -55,6 +55,8 @@ api_id_t api_dispatcher_exec()
 		return 0;
 	}
 
+	GPIO_OutClr(&debug_pin_1);
+
 	api_id_t id = API_CALL_MEM->id;
 	__api_dispatch_call(id, API_CALL_MEM->buffer);
 	API_CALL_MEM->call_flag = _API_FLAG_RETURNED;

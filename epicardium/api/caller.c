@@ -7,6 +7,7 @@
 
 void *_api_call_start(api_id_t id, uintptr_t size)
 {
+	GPIO_OutSet(&debug_pin_1);
 	while (SEMA_GetSema(_API_SEMAPHORE) == E_BUSY) {
 	}
 
@@ -32,6 +33,7 @@ void *_api_call_transact(void *buffer)
 	API_CALL_MEM->call_flag = _API_FLAG_CALLING;
 	SEMA_FreeSema(_API_SEMAPHORE);
 
+	GPIO_OutSet(&debug_pin_0);
 	/* Notify the dispather of the new call */
 	__SEV();
 	__WFE();

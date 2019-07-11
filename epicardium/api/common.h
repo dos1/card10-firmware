@@ -1,11 +1,16 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include "gpio.h"
 
 /*
  * Semaphore used for API synchronization.
  * TODO: Replace this with a LDREX/STREX based implementation
  */
 #define _API_SEMAPHORE    0
+
+static const gpio_cfg_t debug_pin_0 = {PORT_0, PIN_22, GPIO_FUNC_OUT, GPIO_PAD_NONE};
+static const gpio_cfg_t debug_pin_1 = {PORT_0, PIN_21, GPIO_FUNC_OUT, GPIO_PAD_NONE};
+
 
 /* Type of API IDs */
 typedef uint32_t api_id_t;
