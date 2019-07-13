@@ -21,7 +21,6 @@
 #include "task.h"
 
 TaskHandle_t dispatcher_task_id;
-TaskHandle_t ble_task_id;
 
 void vBleTask(void*pvParameters);
 
@@ -99,13 +98,14 @@ int main(void)
 		abort();
 	}
 
+    /* BLE */
 	if (xTaskCreate(
 		vBleTask,
 		(const char*)"BLE",
 		configMINIMAL_STACK_SIZE,
 		NULL,
-		tskIDLE_PRIORITY  + 3,
-		&ble_task_id
+		tskIDLE_PRIORITY  + 1,
+        NULL
 	) != pdPASS) {
 		printf("Failed to create BLE task!\n");
 		abort();
