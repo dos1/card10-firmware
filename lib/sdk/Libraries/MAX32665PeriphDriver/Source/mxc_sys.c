@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-12-03 22:28:28 +0000 (Mon, 03 Dec 2018) $
- * $Revision: 39575 $
+ * $Date: 2019-04-16 15:31:06 -0500 (Tue, 16 Apr 2019) $
+ * $Revision: 42614 $
  *
  *************************************************************************** */
 
@@ -745,7 +745,7 @@ int SYS_SPI17Y_Shutdown(mxc_spi17y_regs_t *spi)
 void SYS_RTC_SqwavInit(const sys_cfg_rtc_t* sys_cfg)
 {
     GPIO_Config(&gpio_cfg_rtcsqw);
-
+    //mxc_delay(1000);
     MXC_MCR->outen |= MXC_F_MCR_OUTEN_SQWOUT0EN;
 }
 

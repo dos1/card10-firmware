@@ -34,8 +34,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-11-27 17:11:13 +0000 (Tue, 27 Nov 2018) $
- * $Revision: 39441 $
+ * $Date: 2019-07-01 10:18:20 -0500 (Mon, 01 Jul 2019) $
+ * $Revision: 44374 $
  *
  *************************************************************************** */
 
@@ -229,5 +229,21 @@ void I2C_DrainTX(mxc_i2c_regs_t *i2c);
  */
 int I2C_AbortAsync(i2c_req_t *req);
 
+/**
+ * @brief      Enable and Set Timeout 
+ *
+ * @param      i2c   pointer to I2C regs
+ * @param[in]  us    micro seconds to delay
+ *
+ * @return     E_NO_ERROR or E_BAD_PARAM if delay is to long.
+ */
+int I2C_SetTimeout(mxc_i2c_regs_t *i2c, int us);
+
+/**
+ * @brief      clear and disable timeout
+ *
+ * @param      i2c   pointer to I2C regs
+ */
+void I2C_ClearTimeout(mxc_i2c_regs_t *i2c);
 /**@} end of group i2c */
 #endif /* _I2C_H_ */

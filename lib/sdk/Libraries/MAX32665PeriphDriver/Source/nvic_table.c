@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-08-28 22:03:02 +0000 (Tue, 28 Aug 2018) $
- * $Revision: 37424 $
+ * $Date: 2019-04-15 09:47:37 -0500 (Mon, 15 Apr 2019) $
+ * $Revision: 42500 $
  *
  **************************************************************************** */
 
@@ -57,10 +57,10 @@ void NVIC_SetRAM(void)
     extern void (* const __isr_vector[])(void);
 #else
     /* should be defined in starup_<device>.S */
-    extern uint32_t __isr_vector;
+    extern uint32_t *__isr_vector;
 #endif
     
-    memcpy(&ramVectorTable, &__isr_vector, sizeof(ramVectorTable));
+    memcpy((void*)&ramVectorTable, (void*)&__isr_vector, sizeof(ramVectorTable));
     SCB->VTOR = (uint32_t)&ramVectorTable;
 }
 

@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-01-31 19:49:54 +0000 (Thu, 31 Jan 2019) $
- * $Revision: 40668 $
+ * $Date: 2019-07-01 09:37:33 -0500 (Mon, 01 Jul 2019) $
+ * $Revision: 44366 $
  *
  ********************************************************************************************************** */
 
@@ -118,7 +118,6 @@ int ADC_Init(unsigned divisor, const sys_cfg_adc_t* sys_cfg)
     // Power up the ADC
     MXC_ADC->ctrl |= MXC_F_ADC_CTRL_PWR;
     MXC_ADC->ctrl |= MXC_F_ADC_CTRL_REFBUF_PWR;
-    MXC_ADC->ctrl |= MXC_F_ADC_CTRL_CHGPUMP_PWR;
     
     while ((MXC_ADC->intr & MXC_F_ADC_INTR_REF_READY_IF)>>MXC_F_ADC_INTR_REF_READY_IF_POS);
     ADC_ClearFlags(MXC_F_ADC_INTR_REF_READY_IF);

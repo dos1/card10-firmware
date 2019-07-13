@@ -29,8 +29,8 @@
  # property whatsoever. Maxim Integrated Products, Inc. retains all
  # ownership rights.
  #
- # $Date: 2018-08-10 14:36:39 +0000 (Fri, 10 Aug 2018) $ 
- # $Revision: 36825 $
+ # $Date: 2019-04-24 16:56:03 -0500 (Wed, 24 Apr 2019) $ 
+ # $Revision: 42914 $
  #
  ###############################################################################
 
@@ -55,6 +55,11 @@ ifeq "$(ENTRY)" ""
 ENTRY=Reset_Handler
 endif
 
+# Default is 560kB, use 448kB if ECC is enabled
+ifeq "$(SRAM_SIZE)" ""
+SRAM_SIZE=0x8C000
+endif
+
 # Default TARGET_REVISION
 # "A1" in ASCII
 ifeq "$(TARGET_REV)" ""
@@ -64,6 +69,7 @@ endif
 # Add target specific CMSIS source files
 ifneq (${MAKECMDGOALS},lib)
 SRCS += ${STARTUPFILE}
+SRCS += backup_max32665.S
 SRCS += heap.c
 SRCS += system_max32665.c
 endif

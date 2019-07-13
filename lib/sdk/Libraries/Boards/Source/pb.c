@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-08-13 23:38:48 +0000 (Mon, 13 Aug 2018) $
- * $Revision: 36945 $
+ * $Date: 2019-04-09 10:18:33 -0500 (Tue, 09 Apr 2019) $
+ * $Revision: 42264 $
  *
  ******************************************************************************/
 
@@ -68,6 +68,28 @@ int PB_RegisterCallback(unsigned int pb, pb_callback callback)
 
         // Configure and enable interrupt
         GPIO_IntConfig(&pb_pin[pb], GPIO_INT_EDGE, GPIO_INT_FALLING);
+        GPIO_IntEnable(&pb_pin[pb]);
+        NVIC_EnableIRQ((IRQn_Type)MXC_GPIO_GET_IRQ(pb_pin[pb].port));
+    } else {
+        // Disable interrupt and clear callback
+        GPIO_IntDisable(&pb_pin[pb]);
+        GPIO_RegisterCallback(&pb_pin[pb], NULL, NULL);
+    }
+
+    return E_NO_ERROR;
+}
+
+/******************************************************************************/
+int PB_RegisterRiseFallCallback(unsigned int pb, pb_callback callback)
+{
+    MXC_ASSERT(pb < num_pbs);
+
+    if (callback) {
+        // Register callback
+        GPIO_RegisterCallback(&pb_pin[pb], callback, (void*)pb);
+
+        // Configure and enable interrupt
+        GPIO_IntConfig(&pb_pin[pb], GPIO_INT_EDGE, GPIO_INT_BOTH);
         GPIO_IntEnable(&pb_pin[pb]);
         NVIC_EnableIRQ((IRQn_Type)MXC_GPIO_GET_IRQ(pb_pin[pb].port));
     } else {
