@@ -7,4 +7,4 @@ subdir('./Libraries/FreeRTOS/')
 
 subdir('./Libraries/MAXUSB/')
 
-subdir('./NDALibraries/BTLE/')
+subdir('./Libraries/BTLE/')
