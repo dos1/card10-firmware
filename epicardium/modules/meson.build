@@ -1,4 +1,5 @@
 module_sources = files(
+  'bhi.c',
   'buttons.c',
   'dispatcher.c',
   'display.c',
