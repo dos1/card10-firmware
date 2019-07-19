@@ -1,4 +1,5 @@
 module_sources = files(
+  'bhi.c',
   'display.c',
   'fatfs.c',
   'fatfs_fileops.c',

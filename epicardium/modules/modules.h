@@ -12,7 +12,7 @@
 void fatfs_init(void);
 
 /* ---------- Serial ------------------------------------------------------- */
-#define SERIAL_READ_BUFFER_SIZE 128
+#define SERIAL_READ_BUFFER_SIZE   128
 void vSerialTask(void *pvParameters);
 
 /* ---------- PMIC --------------------------------------------------------- */
@@ -21,7 +21,11 @@ void vSerialTask(void *pvParameters);
 #define PMIC_PRESS_POWEROFF        40
 void vPmicTask(void *pvParameters);
 
+/* ---------- BHI160 ------------------------------------------------------- */
+#define BHI160_FIFO_SIZE             128
+#define BHI160_MUTEX_WAIT_MS          50
+void vBhi160Task(void *pvParameters);
+
 // Forces an unlock of the display. Only to be used in epicardium
 void disp_forcelock();
-
 #endif /* MODULES_H */
