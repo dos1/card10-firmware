@@ -26,6 +26,11 @@ void vPmicTask(void *pvParameters);
 #define BHI160_MUTEX_WAIT_MS          50
 void vBhi160Task(void *pvParameters);
 
+/* ---------- I2C ---------------------------------------------------------- */
+int i2c_init(void);
+int i2c_lock(void);
+void i2c_unlock(void);
+
 // Forces an unlock of the display. Only to be used in epicardium
 void disp_forcelock();
 #endif /* MODULES_H */

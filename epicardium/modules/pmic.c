@@ -27,9 +27,9 @@ void pmic_interrupt_callback(void *_)
 
 void vPmicTask(void *pvParameters)
 {
-	int count = 0;
+	int count          = 0;
 	portTickType delay = portMAX_DELAY;
-	pmic_task_id = xTaskGetCurrentTaskHandle();
+	pmic_task_id       = xTaskGetCurrentTaskHandle();
 
 	while (1) {
 		ulTaskNotifyTake(pdTRUE, delay);
@@ -43,7 +43,13 @@ void vPmicTask(void *pvParameters)
 			MAX77650_setSFT_RST(0x2);
 		}
 
+		while (i2c_lock() < 0) {
+			LOG_WARN("pmic", "Failed to acquire i2c. Retrying.");
+			vTaskDelay(pdMS_TO_TICKS(500));
+		}
+
 		uint8_t int_flag = MAX77650_getINT_GLBL();
+		i2c_unlock();
 
 		if (int_flag & MAX77650_INT_nEN_F) {
 			/* Button was pressed */
@@ -62,8 +68,11 @@ void vPmicTask(void *pvParameters)
 
 		/* TODO: Remove when all interrupts are handled */
 		if (int_flag & ~(MAX77650_INT_nEN_F | MAX77650_INT_nEN_R)) {
-			LOG_WARN("pmic", "Unhandled PMIC Interrupt: %x",
-			         int_flag);
+			LOG_WARN(
+				"pmic",
+				"Unhandled PMIC Interrupt: %x",
+				int_flag
+			);
 		}
 
 		if (delay != portMAX_DELAY) {

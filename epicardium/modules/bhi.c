@@ -115,7 +115,8 @@ int epic_bhi160_enable_sensor(
 		return -ENODEV;
 	}
 
-	if (xSemaphoreTake(bhi160_mutex, LOCK_WAIT) == pdTRUE) {
+	if (i2c_lock() == 0 &&
+	    xSemaphoreTake(bhi160_mutex, LOCK_WAIT) == pdTRUE) {
 		struct stream_info *stream = &bhi160_streams[sensor_type];
 		stream->item_size = bhi160_lookup_data_size(sensor_type);
 		/* TODO: Sanity check length */
@@ -138,6 +139,7 @@ int epic_bhi160_enable_sensor(
 			0,
 			config->dynamic_range /* dynamic range is sensor dependent */
 		);
+		i2c_unlock();
 		xSemaphoreGive(bhi160_mutex);
 	} else {
 		return -EBUSY;
@@ -153,13 +155,15 @@ int epic_bhi160_disable_sensor(enum bhi160_sensor_type sensor_type)
 		return -ENODEV;
 	}
 
-	if (xSemaphoreTake(bhi160_mutex, LOCK_WAIT) == pdTRUE) {
+	if (i2c_lock() == 0 &&
+	    xSemaphoreTake(bhi160_mutex, LOCK_WAIT) == pdTRUE) {
 		struct stream_info *stream = &bhi160_streams[sensor_type];
 		stream_deregister(bhi160_lookup_sd(sensor_type), stream);
 		vQueueDelete(stream->queue);
 		stream->queue = NULL;
 
 		bhy_disable_virtual_sensor(vs_id, VS_WAKEUP);
+		i2c_unlock();
 		xSemaphoreGive(bhi160_mutex);
 	} else {
 		return -EBUSY;
@@ -233,7 +237,8 @@ static int bhi160_fetch_fifo(void)
 	/* Number of bytes left in BHI160's FIFO buffer */
 	uint16_t bytes_left_in_fifo = 1;
 
-	if (xSemaphoreTake(bhi160_mutex, LOCK_WAIT) != pdTRUE) {
+	if (i2c_lock() < 0 ||
+	    xSemaphoreTake(bhi160_mutex, LOCK_WAIT) != pdTRUE) {
 		return -EBUSY;
 	}
 
@@ -282,6 +287,7 @@ static int bhi160_fetch_fifo(void)
 	}
 
 	xSemaphoreGive(bhi160_mutex);
+	i2c_unlock();
 	return 0;
 }
 
@@ -310,8 +316,8 @@ void vBhi160Task(void *pvParameters)
 	bhi160_mutex   = xSemaphoreCreateMutexStatic(&bhi160_mutex_data);
 
 	/* Take Mutex during initialization, just in case */
-	if (xSemaphoreTake(bhi160_mutex, 0) != pdTRUE) {
-		LOG_CRIT("bhi160", "Failed to acquire BHI160 mutex!");
+	if (i2c_lock() < 0 || xSemaphoreTake(bhi160_mutex, 0) != pdTRUE) {
+		LOG_CRIT("bhi160", "Failed to acquire BHI160/i2c mutex!");
 		vTaskDelay(portMAX_DELAY);
 	}
 
@@ -336,8 +342,7 @@ void vBhi160Task(void *pvParameters)
 		vTaskDelay(portMAX_DELAY);
 	}
 
-	/* Wait for first two interrupts */
-	ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
+	/* Wait for first interrupt */
 	ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
 
 	/* Remap axes to match card10 layout */
@@ -355,6 +360,8 @@ void vBhi160Task(void *pvParameters)
 	bhy_set_sic_matrix(bhi160_sic_array);
 
 	xSemaphoreGive(bhi160_mutex);
+
+	i2c_unlock();
 
 	/* ----------------------------------------- */
 

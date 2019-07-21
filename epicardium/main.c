@@ -60,6 +60,7 @@ int main(void)
 	fatfs_init();
 	api_interrupt_init();
 	stream_init();
+	i2c_init();
 
 	LOG_INFO("startup", "Initializing tasks ...");
 
