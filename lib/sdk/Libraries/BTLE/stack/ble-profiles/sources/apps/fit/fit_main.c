@@ -168,11 +168,9 @@ static const uint8_t fitAdvDataDisc[] =
 static const uint8_t fitScanDataDisc[] =
 {
   /*! device name */
-  4,                                      /*! length */
+  7,                                      /*! length */
   DM_ADV_TYPE_LOCAL_NAME,                 /*! AD type */
-  'F',
-  'i',
-  't'
+  'c','a','r','d','1','0'
 };
 
 /**************************************************************************************************

@@ -34,40 +34,40 @@
 #endif
 
 /*! Default manufacturer name */
-#define DIS_DEFAULT_MFR_NAME        "ARM Ltd."
+#define DIS_DEFAULT_MFR_NAME        "CCC"
 
 /*! Length of default manufacturer name */
-#define DIS_DEFAULT_MFR_NAME_LEN    8
+#define DIS_DEFAULT_MFR_NAME_LEN    3
 
 /*! Default model number */
-#define DIS_DEFAULT_MODEL_NUM       "Cordio model num"
+#define DIS_DEFAULT_MODEL_NUM       "1"
 
 /*! Length of default model number */
-#define DIS_DEFAULT_MODEL_NUM_LEN   16
+#define DIS_DEFAULT_MODEL_NUM_LEN   1
 
 /*! Default serial number */
-#define DIS_DEFAULT_SERIAL_NUM      "Cordio serial num"
+#define DIS_DEFAULT_SERIAL_NUM      "1"
 
 /*! Length of default serial number */
-#define DIS_DEFAULT_SERIAL_NUM_LEN  17
+#define DIS_DEFAULT_SERIAL_NUM_LEN  1
 
 /*! Default firmware revision */
-#define DIS_DEFAULT_FW_REV          "Cordio fw rev"
+#define DIS_DEFAULT_FW_REV          "<git hash>"
 
 /*! Length of default firmware revision */
-#define DIS_DEFAULT_FW_REV_LEN      13
+#define DIS_DEFAULT_FW_REV_LEN      10
 
 /*! Default hardware revision */
-#define DIS_DEFAULT_HW_REV          "Cordio hw rev"
+#define DIS_DEFAULT_HW_REV          "1"
 
 /*! Length of default hardware revision */
-#define DIS_DEFAULT_HW_REV_LEN      13
+#define DIS_DEFAULT_HW_REV_LEN      1
 
 /*! Default software revision */
-#define DIS_DEFAULT_SW_REV          "Cordio sw rev"
+#define DIS_DEFAULT_SW_REV          "1"
 
 /*! Length of default software revision */
-#define DIS_DEFAULT_SW_REV_LEN      13
+#define DIS_DEFAULT_SW_REV_LEN      1
 
 /**************************************************************************************************
  Service variables
