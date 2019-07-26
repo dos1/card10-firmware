@@ -39,6 +39,7 @@
 
 /* Modules */
 #define MODULE_UTIME_ENABLED                (1)
+#define MODULE_BHI160_ENABLED               (1)
 #define MODULE_LEDS_ENABLED                 (1)
 #define MODULE_VIBRA_ENABLED                (1)
 #define MODULE_INTERRUPT_ENABLED            (1)
