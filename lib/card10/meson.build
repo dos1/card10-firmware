@@ -9,7 +9,9 @@ sources = files(
   'pmic.c',
   'portexpander.c',
   'pb.c',
-  'display.c'
+  'display.c',
+  'faultscreen.c',
+  'bomb.c'
 )
 
 deps = [

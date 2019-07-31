@@ -20,6 +20,8 @@
 #include "spi.h"
 #include "gpio.h"
 
+#include "faultscreen.h"
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -33,6 +35,8 @@ const gpio_cfg_t bhi_interrupt_pin = {
 void card10_init(void)
 {
 	printf("card10 init...\n");
+
+	card10_set_fault_handlers();
 
 	//Setup the I2CM
 	I2C_Shutdown(MXC_I2C0_BUS0);
