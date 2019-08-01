@@ -28,7 +28,7 @@
  * Current suspicion is that the SDK is buggy.
  *
  * At 12 MHz things seem stable*/
-#define SPI_SPEED (12 * 1000 * 1000) // Bit Rate. Display has 15 MHz limit
+#define SPI_SPEED (6 * 1000 * 1000) // Bit Rate. Display has 15 MHz limit
 
 const gpio_cfg_t bhi_interrupt_pin = {
 	PORT_0, PIN_13, GPIO_FUNC_IN, GPIO_PAD_PULL_UP

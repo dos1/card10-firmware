@@ -4,6 +4,7 @@ subdir('bmatest/')
 subdir('bmetest/')
 subdir('dual-core/')
 subdir('ecgtest/')
+subdir('harmonictest/')
 # Disabled due to meson bug in older version
 # subdir('hello-freertos/')
 subdir('hello-world/')
