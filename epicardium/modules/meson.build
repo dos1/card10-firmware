@@ -1,5 +1,6 @@
 module_sources = files(
   'bhi.c',
+  'bsec.c',
   'bme680.c',
   'buttons.c',
   'config.c',
