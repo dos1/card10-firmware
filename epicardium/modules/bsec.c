@@ -33,7 +33,7 @@
 int64_t get_timestamp_us()
 {
 	int tick = xTaskGetTickCount();
-    return tick * 1000;
+	return tick * 1000;
 }
 
 /*!
@@ -52,61 +52,72 @@ int64_t get_timestamp_us()
  *
  * @return          none
  */
-void output_ready(int64_t timestamp, float iaq, uint8_t iaq_accuracy, float temperature, float humidity,
-     float pressure, float raw_temperature, float raw_humidity, float gas, bsec_library_return_t bsec_status,
-     float static_iaq, float co2_equivalent, float breath_voc_equivalent)
-{
-    return;
-    printf("bosch data time: %u, iaq: %u, iaq_a: %u, temp10: %u, hum10: %u, pres: %u, raw_temp10: %u, raw_hum10: %u, gas: %u, static_iaq: %u, co21e6: %u, breath_voc1e6: %u\n",
-        (unsigned int)(timestamp / 9e6),
-        (unsigned int)(iaq),
-        (unsigned int)(iaq_accuracy),
-        (unsigned int)(temperature * 10),
-        (unsigned int)(humidity * 10),
-        (unsigned int)(pressure),
-        (unsigned int)(raw_temperature * 10),
-        (unsigned int)(raw_humidity * 10),
-        (unsigned int)(gas),
-        (unsigned int)(static_iaq),
-        (unsigned int)(co2_equivalent * 1e6),
-        (unsigned int)(breath_voc_equivalent * 1e6)
-        );
+void output_ready(
+	int64_t timestamp,
+	float iaq,
+	uint8_t iaq_accuracy,
+	float temperature,
+	float humidity,
+	float pressure,
+	float raw_temperature,
+	float raw_humidity,
+	float gas,
+	bsec_library_return_t bsec_status,
+	float static_iaq,
+	float co2_equivalent,
+	float breath_voc_equivalent
+) {
+	return;
+	printf("bosch data time: %u, iaq: %u, iaq_a: %u, temp10: %u, hum10: %u, pres: %u, raw_temp10: %u, raw_hum10: %u, gas: %u, static_iaq: %u, co21e6: %u, breath_voc1e6: %u\n",
+	       (unsigned int)(timestamp / 9e6),
+	       (unsigned int)(iaq),
+	       (unsigned int)(iaq_accuracy),
+	       (unsigned int)(temperature * 10),
+	       (unsigned int)(humidity * 10),
+	       (unsigned int)(pressure),
+	       (unsigned int)(raw_temperature * 10),
+	       (unsigned int)(raw_humidity * 10),
+	       (unsigned int)(gas),
+	       (unsigned int)(static_iaq),
+	       (unsigned int)(co2_equivalent * 1e6),
+	       (unsigned int)(breath_voc_equivalent * 1e6));
 }
 
 static int bsec_load(char *path, uint8_t *buffer, uint32_t n_buffer)
 {
-    uint32_t len = 0;
-    int fd, res;
+	uint32_t len = 0;
+	int fd, res;
 
-    printf("BSEC load %s %d\n", path, (int)n_buffer);
+	printf("BSEC load %s %d\n", path, (int)n_buffer);
 
 	if ((fd = epic_file_open(path, "r")) < 0) {
-        printf("Open failed\n");
-        return 0;
-    }
+		printf("Open failed\n");
+		return 0;
+	}
 
-    uint32_t header;
-	if ((res = epic_file_read(fd, &header, sizeof(header))) != sizeof(header)) {
-        printf("Header failed\n");
-        goto done;
-    }
+	uint32_t header;
+	if ((res = epic_file_read(fd, &header, sizeof(header))) !=
+	    sizeof(header)) {
+		printf("Header failed\n");
+		goto done;
+	}
 
-    if(header > n_buffer) {
-        printf("Too large\n");
-        goto done;
-    }
+	if (header > n_buffer) {
+		printf("Too large\n");
+		goto done;
+	}
 
 	if (epic_file_read(fd, buffer, header) != header) {
-        printf("Read failed\n");
-        goto done;
-    }
+		printf("Read failed\n");
+		goto done;
+	}
 
-    len = header;
+	len = header;
 
-    printf("Success\n");
-    done:
+	printf("Success\n");
+done:
 	epic_file_close(fd);
-    return len;
+	return len;
 }
 /*!
  * @brief           Load previous library state from non-volatile memory
@@ -118,7 +129,7 @@ static int bsec_load(char *path, uint8_t *buffer, uint32_t n_buffer)
  */
 uint32_t state_load(uint8_t *state_buffer, uint32_t n_buffer)
 {
-    return bsec_load("bsec_iaq.state", state_buffer, n_buffer);
+	return bsec_load("bsec_iaq.state", state_buffer, n_buffer);
 }
 
 /*!
@@ -131,28 +142,29 @@ uint32_t state_load(uint8_t *state_buffer, uint32_t n_buffer)
  */
 void state_save(const uint8_t *state_buffer, uint32_t length)
 {
-    int fd, res;
+	int fd, res;
 
-    printf("BSEC state_save %d\n", (int)length);
+	printf("BSEC state_save %d\n", (int)length);
 
 	if ((fd = epic_file_open("bsec_iaq.state", "w")) < 0) {
-        printf("Open failed\n");
-        return;
-    }
+		printf("Open failed\n");
+		return;
+	}
 
-    uint32_t header = length;
-	if ((res = epic_file_write(fd, &header, sizeof(header))) != sizeof(header)) {
-        printf("Header failed\n");
-        goto done;
-    }
+	uint32_t header = length;
+	if ((res = epic_file_write(fd, &header, sizeof(header))) !=
+	    sizeof(header)) {
+		printf("Header failed\n");
+		goto done;
+	}
 
 	if (epic_file_write(fd, state_buffer, header) != header) {
-        printf("Write failed\n");
-        goto done;
-    }
+		printf("Write failed\n");
+		goto done;
+	}
 
-    printf("Success\n");
-    done:
+	printf("Success\n");
+done:
 	epic_file_close(fd);
 }
 
@@ -166,7 +178,7 @@ void state_save(const uint8_t *state_buffer, uint32_t length)
  */
 uint32_t config_load(uint8_t *config_buffer, uint32_t n_buffer)
 {
-    return bsec_load("bsec_iaq.config", config_buffer, n_buffer);
+	return bsec_load("bsec_iaq.config", config_buffer, n_buffer);
 }
 
 #if 0
@@ -212,34 +224,48 @@ void ulp_plus_button_press()
  */
 void vBSECTask(void *pvParameters)
 {
-    return_values_init ret;
-    /* Call to the function which initializes the BSEC library */
+	return_values_init ret;
+	/* Call to the function which initializes the BSEC library */
 #if 0
     /* Switch on ultra_low-power mode and provide no temperature offset */
     ret = bsec_iot_init(BSEC_SAMPLE_RATE_ULP, 0.0f, card10_bosch_i2c_write, card10_bosch_i2c_read, card10_bosch_delay, state_load, config_load);
 #else
-    ret = bsec_iot_init(BSEC_SAMPLE_RATE_LP, 0.0f, card10_bosch_i2c_write, card10_bosch_i2c_read, card10_bosch_delay, state_load, config_load);
+	ret = bsec_iot_init(
+		BSEC_SAMPLE_RATE_LP,
+		0.0f,
+		card10_bosch_i2c_write,
+		card10_bosch_i2c_read,
+		card10_bosch_delay,
+		state_load,
+		config_load
+	);
 #endif
-    if (ret.bme680_status)
-    {
-        /* Could not intialize BME680 or BSEC library */
-        while(1);
-    }
-    else if (ret.bsec_status)
-    {
-        /* Could not intialize BSEC library */
-        while(1);
-    }
-    /* Call to endless loop function which reads and processes data based on sensor settings */
+	if (ret.bme680_status) {
+		/* Could not intialize BME680 or BSEC library */
+		while (1)
+			;
+	} else if (ret.bsec_status) {
+		/* Could not intialize BSEC library */
+		while (1)
+			;
+	}
+	/* Call to endless loop function which reads and processes data based on sensor settings */
 #if 0
     /* State is saved every 10.000 samples, which means every 100 * 300 secs = 500 minutes  */
     bsec_iot_loop(sleep, get_timestamp_us, output_ready, state_save, 100);
 #else
-    /* State is saved every 10.000 samples, which means every 10.000 * 3 secs = 500 minutes  */
-    //bsec_iot_loop(card10_bosch_delay, get_timestamp_us, output_ready, state_save, 10000);
+	/* State is saved every 10.000 samples, which means every 10.000 * 3 secs = 500 minutes  */
+	//bsec_iot_loop(card10_bosch_delay, get_timestamp_us, output_ready, state_save, 10000);
 
-    /* State is saved every 100 samples, which means every 1200 * 3 secs = 60 minutes  */
-    bsec_iot_loop(card10_bosch_delay, get_timestamp_us, output_ready, state_save, 1200);
+	/* State is saved every 100 samples, which means every 1200 * 3 secs = 60 minutes  */
+	bsec_iot_loop(
+		card10_bosch_delay,
+		get_timestamp_us,
+		output_ready,
+		state_save,
+		1200
+	);
 #endif
-    while(1);
+	while (1)
+		;
 }
