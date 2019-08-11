@@ -54,8 +54,14 @@ int main(void)
 	card10_diag();
 
 	gfx_copy_region(
-		&display_screen, 0, 0, 160, 80, GFX_RAW, sizeof(Heart),
-				      		  (const void *)(Heart)
+		&display_screen,
+		0,
+		0,
+		160,
+		80,
+		GFX_RAW,
+		sizeof(Heart),
+		(const void *)(Heart)
 	);
 	gfx_update(&display_screen);
 

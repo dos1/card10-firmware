@@ -8,8 +8,16 @@
 
 static void bootloader_display_splash(void)
 {
-	gfx_copy_region(&display_screen, 0, 0, 160, 80, GFX_RLE_MONO,
-			     sizeof(splash), (const void *)(splash));
+	gfx_copy_region(
+		&display_screen,
+		0,
+		0,
+		160,
+		80,
+		GFX_RLE_MONO,
+		sizeof(splash),
+		(const void *)(splash)
+	);
 	gfx_update(&display_screen);
 }
 

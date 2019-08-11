@@ -3,19 +3,19 @@
  ******************************************************************************/
 
 /***** Includes *****/
-#include "pmic.h"
-#include "leds.h"
 #include "card10.h"
+#include "leds.h"
+#include "pmic.h"
 
-#include "gfx.h"
 #include "display.h"
+#include "gfx.h"
 
 #include "tmr_utils.h"
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
 #include <Heart.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 int main(void)
 {
@@ -23,8 +23,14 @@ int main(void)
 	card10_diag();
 
 	gfx_copy_region(
-		&display_screen, 0, 0, 160, 80, GFX_RAW, sizeof(Heart),
-				      		  (const void *)(Heart)
+		&display_screen,
+		0,
+		0,
+		160,
+		80,
+		GFX_RAW,
+		sizeof(Heart),
+		(const void *)(Heart)
 	);
 	gfx_update(&display_screen);
 

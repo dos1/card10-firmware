@@ -303,9 +303,9 @@ static void gfx_copy_region_mono(
 	const void *p
 ) {
 	const char *bp = p;
-	int bit = 0;
-	Color white = gfx_color(reg, WHITE);
-	Color black = gfx_color(reg, BLACK);
+	int bit        = 0;
+	Color white    = gfx_color(reg, WHITE);
+	Color black    = gfx_color(reg, BLACK);
 
 	for (int y_ = 0; y_ < h; y_++) {
 		for (int x_ = 0; x_ < w; x_++) {
@@ -341,9 +341,9 @@ static void gfx_copy_region_rle_mono(
 	const void *p
 ) {
 	const char *data = p;
-	int idx = 0;
-	Color white = gfx_color(reg, WHITE);
-	Color black = gfx_color(reg, BLACK);
+	int idx          = 0;
+	Color white      = gfx_color(reg, WHITE);
+	Color black      = gfx_color(reg, BLACK);
 
 	for (int i = 0; i < size; i++) {
 		Color color    = (data[i] & 0x80) ? white : black;
