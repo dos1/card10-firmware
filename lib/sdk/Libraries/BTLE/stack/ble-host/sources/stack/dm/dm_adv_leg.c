@@ -169,15 +169,18 @@ void dmAdvActStart(dmAdvMsg_t *pMsg)
 
    if (dmAdvCb.advState[DM_ADV_HANDLE_DEFAULT] == DM_ADV_STATE_IDLE)
   {
+  printf("AAA\n");
     /* if doing directed advertising ignore the request */
     if ((dmAdvCb.advType[DM_ADV_HANDLE_DEFAULT] == DM_ADV_CONN_DIRECT) ||
         (dmAdvCb.advType[DM_ADV_HANDLE_DEFAULT] == DM_ADV_CONN_DIRECT_LO_DUTY))
     {
+  printf("BBB\n");
       DM_TRACE_WARN0("dmAdvActStart during directed advertising!");
       return;
     }
 
     /* start advertising */
+    printf("AA\n");
     dmAdvCb.advState[DM_ADV_HANDLE_DEFAULT] = DM_ADV_STATE_STARTING;
     dmAdvCb.advDuration[DM_ADV_HANDLE_DEFAULT] = pMsg->apiStart.duration[DM_ADV_HANDLE_DEFAULT];
     HciLeSetAdvEnableCmd(TRUE);
@@ -327,21 +330,27 @@ void dmAdvHciHandler(hciEvt_t *pEvent)
     switch (dmAdvCb.advState[DM_ADV_HANDLE_DEFAULT])
     {
     case DM_ADV_STATE_STARTING:
+    printf("DM_ADV_STATE_STARTING and NOT ");
     case DM_ADV_STATE_STARTING_DIRECTED:
+    printf("DM_ADV_STATE_STARTING_DIRECTED\n");
       if (pEvent->hdr.status == HCI_SUCCESS)
       {
+      printf("A\n");
         if (dmAdvCb.advState[DM_ADV_HANDLE_DEFAULT] == DM_ADV_STATE_STARTING)
         {
+      printf("B\n");
           /* start advertising timer if applicable */
           if (dmAdvCb.advDuration[DM_ADV_HANDLE_DEFAULT] > 0)
           {
             dmAdvCb.advTimer.msg.event = DM_ADV_MSG_TIMEOUT;
+            printf("start advertising timer %u\n", dmAdvCb.advDuration[DM_ADV_HANDLE_DEFAULT]);
             WsfTimerStartMs(&dmAdvCb.advTimer, dmAdvCb.advDuration[DM_ADV_HANDLE_DEFAULT]);
           }
 
           /* Application callbacks only sent in undirected state */
           if (dmLegAdvCb.advType != DM_ADV_CONN_DIRECT_LO_DUTY)
           {
+      printf("C\n");
             cbackEvent = DM_ADV_START_IND;
           }
         }
@@ -355,6 +364,7 @@ void dmAdvHciHandler(hciEvt_t *pEvent)
       }
       else
       {
+      printf("D\n");
         dmAdvCb.advState[DM_ADV_HANDLE_DEFAULT] = DM_ADV_STATE_IDLE;
       }
       break;
@@ -422,6 +432,7 @@ void dmAdvHciHandler(hciEvt_t *pEvent)
 /*************************************************************************************************/
 void dmAdvMsgHandler(wsfMsgHdr_t *pMsg)
 {
+  printf("dmAdvMsgHandler %d\n", DM_MSG_MASK(pMsg->event));
   /* execute action function */
   (*dmAdvAct[DM_MSG_MASK(pMsg->event)])((dmAdvMsg_t *)pMsg);
 }
@@ -449,6 +460,7 @@ void dmAdvStartDirected(uint8_t advType, uint16_t duration, uint8_t addrType, ui
     HciLeSetAdvEnableCmd(TRUE);
 
     /* store advertising info */
+    printf("BB\n");
     dmAdvCb.advState[DM_ADV_HANDLE_DEFAULT] = (advType == DM_ADV_CONN_DIRECT) ? \
                                               DM_ADV_STATE_STARTING_DIRECTED : DM_ADV_STATE_STARTING;
 

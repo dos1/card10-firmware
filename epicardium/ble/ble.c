@@ -158,6 +158,10 @@ static void scheduleTimer(void)
 	vTimerCallback(NULL);
 	time_to_next_expire = WsfTimerNextExpiration(&timerRunning);
 
+    if(time_to_next_expire == 0 ) {
+        time_to_next_expire = 1;
+    }
+
 	if (timerRunning) {
 		//printf("time_to_next_expire = %d\n", time_to_next_expire);
 		//printf("change period\n");

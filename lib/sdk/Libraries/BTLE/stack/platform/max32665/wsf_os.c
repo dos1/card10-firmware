@@ -255,6 +255,7 @@ void wsfOsDispatcher(void)
     /* handle msg queue */
     while ((pMsg = WsfMsgDeq(&pTask->msgQueue, &handlerId)) != NULL)
     {
+      //printf("q\n");
       WSF_ASSERT(handlerId < WSF_MAX_HANDLERS);
       WSF_OS_SET_ACTIVE_HANDLER_ID(handlerId);
       (*pTask->handler[handlerId])(0, pMsg);
@@ -267,6 +268,7 @@ void wsfOsDispatcher(void)
     /* service timers */
     while ((pTimer = WsfTimerServiceExpired(0)) != NULL)
     {
+      //printf("t\n");
       WSF_ASSERT(pTimer->handlerId < WSF_MAX_HANDLERS);
       WSF_OS_SET_ACTIVE_HANDLER_ID(pTimer->handlerId);
       (*pTask->handler[pTimer->handlerId])(0, &pTimer->msg);
@@ -280,6 +282,7 @@ void wsfOsDispatcher(void)
     {
       if ((pTask->handlerEventMask[i] != 0) && (pTask->handler[i] != NULL))
       {
+        //printf("h\n");
         WSF_CS_ENTER(cs);
         eventMask = pTask->handlerEventMask[i];
         pTask->handlerEventMask[i] = 0;

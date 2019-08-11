@@ -69,7 +69,7 @@ typedef union
 /*! configurable parameters for advertising */
 static const appAdvCfg_t bleAdvCfg =
 {
-  {60000,     0,     0},                  /*! Advertising durations in ms */
+  {00000,     0,     0},                  /*! Advertising durations in ms */
   {500/0.625,     4000/0.625,     0}                   /*! Advertising intervals in 0.625 ms units */
 };
 
@@ -113,11 +113,11 @@ static const basCfg_t bleBasCfg =
 static const smpCfg_t bleSmpCfg =
 {
   3000,                                   /*! 'Repeated attempts' timeout in msec */
-  SMP_IO_NO_IN_NO_OUT,                    /*! I/O Capability */
+  SMP_IO_DISP_YES_NO,                     /*! I/O Capability */
   7,                                      /*! Minimum encryption key length */
   16,                                     /*! Maximum encryption key length */
   3,                                      /*! Attempts to trigger 'repeated attempts' timeout */
-  0,                                      /*! Device authentication requirements */
+  DM_AUTH_MITM_FLAG,                      /*! Device authentication requirements */
 };
 
 /**************************************************************************************************
@@ -151,7 +151,7 @@ static const uint8_t bleScanDataDisc[] =
   /*! device name */
   7,                                      /*! length */
   DM_ADV_TYPE_LOCAL_NAME,                 /*! AD type */
-  'c','a','r','d','1','0'
+  'c','a','R','d','1','0'
 };
 
 /**************************************************************************************************
@@ -399,6 +399,7 @@ static void bleProcMsg(bleMsg_t *pMsg)
       break;
 
     case DM_SEC_ECC_KEY_IND:
+      printf("DM_SEC_ECC_KEY_IND\n");
       DmSecSetEccKey(&pMsg->dm.eccMsg.data.key);
       break;
 

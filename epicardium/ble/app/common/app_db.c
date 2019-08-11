@@ -24,7 +24,6 @@
  */
 /* clang-format off */
 /* clang-formet turned off for easier diffing against orginal file */
-#include <string.h>
 #include "wsf_types.h"
 #include "wsf_assert.h"
 #include "util/bda.h"
@@ -32,6 +31,10 @@
 #include "app_main.h"
 #include "app_db.h"
 #include "app_cfg.h"
+
+#include "epicardium.h"
+#include <string.h>
+#include <stdio.h>
 
 /**************************************************************************************************
   Data Types
@@ -96,7 +99,31 @@ static appDbRec_t *pAppDbNewRec = appDb.rec;
 /*************************************************************************************************/
 void AppDbInit(void)
 {
-  return;
+  //return;
+  int fd = epic_file_open("pairings.bin", "r");
+
+  if(fd >= 0) {
+    printf("open ok\n");
+    if(epic_file_read(fd, &appDb, sizeof(appDb)) != sizeof(appDb)) {
+        printf("read fail\n");
+        memset(&appDb, 0, sizeof(appDb));
+    }
+    epic_file_close(fd);
+  }
+}
+
+static void store(void)
+{
+  //return;
+  printf("store\n");
+  int fd = epic_file_open("pairings.bin", "w");
+  if(fd >= 0) {
+    printf("open ok\n");
+    if(epic_file_write(fd, &appDb, sizeof(appDb)) != sizeof(appDb)) {
+        printf("write fail\n");
+    }
+    epic_file_close(fd);
+  }
 }
 
 /*************************************************************************************************/
@@ -111,6 +138,7 @@ void AppDbInit(void)
 /*************************************************************************************************/
 appDbHdl_t AppDbNewRecord(uint8_t addrType, uint8_t *pAddr)
 {
+  printf("AppDbNewRecord(%d, )\n");
   appDbRec_t  *pRec = appDb.rec;
   uint8_t     i;
 
@@ -145,6 +173,7 @@ appDbHdl_t AppDbNewRecord(uint8_t addrType, uint8_t *pAddr)
   pRec->peerAddedToRl = FALSE;
   pRec->peerRpao = FALSE;
 
+  store();
   return (appDbHdl_t) pRec;
 }
 
@@ -160,6 +189,7 @@ appDbHdl_t AppDbNewRecord(uint8_t addrType, uint8_t *pAddr)
 /*************************************************************************************************/
 appDbHdl_t AppDbGetNextRecord(appDbHdl_t hdl)
 {
+  printf("================================AppDbGetNextRecord\n");
   appDbRec_t  *pRec;
 
   /* if first record is requested */
@@ -209,6 +239,7 @@ appDbHdl_t AppDbGetNextRecord(appDbHdl_t hdl)
 void AppDbDeleteRecord(appDbHdl_t hdl)
 {
   ((appDbRec_t *) hdl)->inUse = FALSE;
+  store();
 }
 
 /*************************************************************************************************/
@@ -226,6 +257,7 @@ void AppDbValidateRecord(appDbHdl_t hdl, uint8_t keyMask)
 {
   ((appDbRec_t *) hdl)->valid = TRUE;
   ((appDbRec_t *) hdl)->keyValidMask = keyMask;
+  store();
 }
 
 /*************************************************************************************************/
@@ -315,6 +347,7 @@ void AppDbDeleteAllRecords(void)
   {
     pRec->inUse = FALSE;
   }
+  store();
 }
 
 /*************************************************************************************************/
@@ -461,6 +494,7 @@ void AppDbSetKey(appDbHdl_t hdl, dmSecKeyIndEvt_t *pKey)
     default:
       break;
   }
+  store();
 }
 
 /*************************************************************************************************/
@@ -493,6 +527,7 @@ void AppDbSetCccTblValue(appDbHdl_t hdl, uint16_t idx, uint16_t value)
   WSF_ASSERT(idx < APP_DB_NUM_CCCD);
 
   ((appDbRec_t *) hdl)->cccTbl[idx] = value;
+  store();
 }
 
 /*************************************************************************************************/
@@ -522,6 +557,7 @@ uint8_t AppDbGetDiscStatus(appDbHdl_t hdl)
 void AppDbSetDiscStatus(appDbHdl_t hdl, uint8_t status)
 {
   ((appDbRec_t *) hdl)->discStatus = status;
+  store();
 }
 
 /*************************************************************************************************/
@@ -550,7 +586,9 @@ uint16_t *AppDbGetHdlList(appDbHdl_t hdl)
 /*************************************************************************************************/
 void AppDbSetHdlList(appDbHdl_t hdl, uint16_t *pHdlList)
 {
+  printf("================================AppDbSetHdlList\n");
   memcpy(((appDbRec_t *) hdl)->hdlList, pHdlList, sizeof(((appDbRec_t *) hdl)->hdlList));
+  store();
 }
 
 /*************************************************************************************************/
@@ -593,6 +631,7 @@ void AppDbSetDevName(uint8_t len, char *pStr)
   len = (len <= sizeof(appDb.devName)) ? len : sizeof(appDb.devName);
 
   memcpy(appDb.devName, pStr, len);
+  store();
 }
 
 /*************************************************************************************************/
@@ -622,6 +661,7 @@ bool_t AppDbGetPeerAddrRes(appDbHdl_t hdl)
 void AppDbSetPeerAddrRes(appDbHdl_t hdl, uint8_t addrRes)
 {
   ((appDbRec_t *)hdl)->peerAddrRes = addrRes;
+  store();
 }
 
 /*************************************************************************************************/
@@ -651,6 +691,7 @@ uint32_t AppDbGetPeerSignCounter(appDbHdl_t hdl)
 void AppDbSetPeerSignCounter(appDbHdl_t hdl, uint32_t signCounter)
 {
   ((appDbRec_t *)hdl)->peerSignCounter = signCounter;
+  store();
 }
 
 /*************************************************************************************************/
@@ -680,6 +721,7 @@ bool_t AppDbGetPeerAddedToRl(appDbHdl_t hdl)
 void AppDbSetPeerAddedToRl(appDbHdl_t hdl, bool_t peerAddedToRl)
 {
   ((appDbRec_t *)hdl)->peerAddedToRl = peerAddedToRl;
+  store();
 }
 
 /*************************************************************************************************/
@@ -709,5 +751,6 @@ bool_t AppDbGetPeerRpao(appDbHdl_t hdl)
 void AppDbSetPeerRpao(appDbHdl_t hdl, bool_t peerRpao)
 {
   ((appDbRec_t *)hdl)->peerRpao = peerRpao;
+  store();
 }
 /* clang-format on */

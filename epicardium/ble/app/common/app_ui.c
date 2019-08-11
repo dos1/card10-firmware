@@ -21,6 +21,7 @@
 #include "wsf_os.h"
 #include "wsf_trace.h"
 #include "app_ui.h"
+#include "stdio.h"
 
 /* card10:
  * copied from: lib/sdk/Libraries/BTLE/stack/ble-profiles/sources/apps/app/common/app_ui.c
@@ -176,6 +177,7 @@ void AppUiAction(uint8_t event)
 void AppUiDisplayPasskey(uint32_t passkey)
 {
   APP_TRACE_INFO1(">>> Passkey: %d <<<", passkey);
+  printf("foo bar=======================\n");
 }
 
 /*************************************************************************************************/
@@ -190,6 +192,7 @@ void AppUiDisplayPasskey(uint32_t passkey)
 void AppUiDisplayConfirmValue(uint32_t confirm)
 {
   APP_TRACE_INFO1(">>> Confirm Value: %d <<<", confirm);
+  printf("foo=======================\n");
 }
 
 /*************************************************************************************************/
