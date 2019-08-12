@@ -12,6 +12,7 @@ void txt_init(struct txt_buffer *txtb, struct gfx_region *reg, sFONT *f)
 	txtb->bg_color      = gfx_color_rgb_f(reg, .0f, .0f, .0f);
 	txtb->draw_cursor   = 1;
 	txtb->auto_update   = 1;
+	txtb->needs_redraw  = 0;
 
 	txt_clear(txtb);
 }
@@ -49,6 +50,8 @@ static void scrollup(struct txt_buffer *tm)
 		g->fg_color         = tm->fg_color;
 		g->bg_color         = tm->bg_color;
 	}
+
+	tm->needs_redraw = 1;
 }
 
 static void newline(struct txt_buffer *tm)
@@ -71,6 +74,8 @@ static inline void advance_cursor(struct txt_buffer *tm)
 		if (tm->cursor_row > last_row)
 			newline(tm);
 	}
+
+	tm->needs_redraw = 1;
 }
 
 static void tab(struct txt_buffer *tm)
@@ -107,6 +112,7 @@ void txt_clear(struct txt_buffer *tm)
 	tm->cursor_column = 0;
 	tm->cursor_row    = 0;
 
+	tm->needs_redraw = 1;
 	if (tm->auto_update)
 		txt_update(tm);
 }
@@ -131,6 +137,7 @@ void txt_putchar(struct txt_buffer *tm, char ch)
 		advance_cursor(tm);
 	}
 
+	tm->needs_redraw = 1;
 	if (tm->auto_update)
 		txt_update(tm);
 }
@@ -193,6 +200,8 @@ void txt_draw(struct txt_buffer *tm)
 
 	if (tm->draw_cursor)
 		draw_cursor_(tm);
+
+	tm->needs_redraw = 0;
 }
 
 void txt_set_color_f(
@@ -247,5 +256,7 @@ void txt_set_transparent(struct txt_buffer *tm)
 
 void txt_update(struct txt_buffer *tm)
 {
+	if (tm->needs_redraw)
+		txt_draw(tm);
 	gfx_update(tm->reg);
 }

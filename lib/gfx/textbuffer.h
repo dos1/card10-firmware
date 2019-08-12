@@ -22,6 +22,7 @@ struct txt_buffer {
 	Color bg_color;
 	int draw_cursor;
 	int auto_update;
+	int needs_redraw;
 
 	struct txt_glyph text[TEXTBUFFER_MAX_HEIGHT][TEXTBUFFER_MAX_WIDTH];
 };
