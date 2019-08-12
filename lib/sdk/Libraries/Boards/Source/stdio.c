@@ -170,6 +170,7 @@ int __read(int file, unsigned char *ptr, size_t len)
     return num;
 }
 
+__attribute__((weak)) void cdcacm_write(uint8_t *data, int len);
 /* newlib/libc printf() will eventually call write() to get the data to the stdout */
 #if defined ( __GNUC__ )
 // GNUC _write function prototype
@@ -190,7 +191,10 @@ int __write(int file, const unsigned char *ptr, size_t len)
             for (n = 0; n < len; n++) {
                 if (*ptr == '\n') {
                     UART_WriteByte(MXC_UARTn,'\r');
+                    uint8_t tmp = '\r';
+                    cdcacm_write(&tmp, 1);
                 }
+                cdcacm_write(ptr, 1);
                 UART_WriteByte(MXC_UARTn,*ptr++);
             }
             break;
