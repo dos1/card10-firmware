@@ -2,9 +2,9 @@
 
 #include <stdio.h>
 #include "Fonts/fonts.h"
+#include "faultsplash.h"
 #include "display.h"
 #include "gfx.h"
-#include "bomb.h"
 
 #include "max32665.h"
 #include "nvic_table.h"
@@ -27,20 +27,6 @@ struct regs_t {
             "=r" (regs.sp) \
     )
 
-static void draw_bomb() {
-	gfx_clear(&display_screen);
-
-	Color black = gfx_color(&display_screen, BLACK);
-	Color white = gfx_color(&display_screen, WHITE);
-    for (int y = 0; y < display_screen.height; y++) {
-        for (int x = 0; x < display_screen.width; x++) {
-		Color color = bomb_pic_data[y * display_screen.width + x]
-							 ? white : black;
-		gfx_setpixel(&display_screen, x, y, color);
-        }
-    }
-}
-
 static void generic_handler(const char *reason) {
     char lines[3][64];
 
@@ -51,7 +37,8 @@ static void generic_handler(const char *reason) {
     snprintf(lines[1], sizeof(lines[1]), "sp: 0x%08x", regs.sp);
     snprintf(lines[2], sizeof(lines[2]), "lr: 0x%08x", regs.lr);
 
-    draw_bomb();
+	gfx_copy_region(&display_screen, 0, 0, 160, 80, GFX_RLE_MONO,
+				faultsplash_rle_len, faultsplash_rle);
 
 	Color black = gfx_color(&display_screen, BLACK);
 	Color white = gfx_color(&display_screen, WHITE);

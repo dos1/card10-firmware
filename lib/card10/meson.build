@@ -11,7 +11,7 @@ sources = files(
   'pb.c',
   'display.c',
   'faultscreen.c',
-  'bomb.c'
+  'faultsplash.c'
 )
 
 deps = [
