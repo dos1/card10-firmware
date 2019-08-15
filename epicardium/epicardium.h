@@ -51,6 +51,12 @@ typedef _Bool bool;
 #define API_DISP_CIRC              0x27
 #define API_DISP_PIXEL             0x28
 #define API_DISP_FRAMEBUFFER       0x29
+#define API_DISP_TXT_UPDATE	   0x2A
+#define API_DISP_TXT_CLEAR	   0x2B
+#define API_DISP_TXT_PRINT	   0x2C
+#define API_DISP_TXT_SET_COLOR	   0x2D
+#define API_DISP_TXT_SET_CURSOR	   0x2E
+#define API_DISP_TXT_SET_AUTOUPDATE	0x2F
 
 #define API_FILE_OPEN              0x40
 #define API_FILE_CLOSE             0x41
@@ -695,6 +701,57 @@ API(API_DISP_CIRC,
  */
 API(API_DISP_FRAMEBUFFER, int epic_disp_framebuffer(union disp_framebuffer *fb));
 
+/**
+ * Redraw the framebuffer
+ *
+ * :return: ``0`` on success, can't fail
+ */
+API(API_DISP_TXT_UPDATE, int epic_disp_txt_update());
+
+/**
+ * Fills the framebuffer with ' ' characters. Does not update the framebuffer.
+ *
+ * :return: ``0`` on success, can't fail
+ */
+API(API_DISP_TXT_CLEAR, int epic_disp_txt_clear());
+
+/**
+ * Puts the string on the buffer. Updates the cursor. Does not update the
+ * framebuffer.
+ *
+ * :param string: A null-terminated ASCII string.
+ * :return: ``0`` on success, can't fail
+ */
+API(API_DISP_TXT_PRINT, int epic_disp_txt_print(const char *string));
+
+/**
+ * Updates the active background and foreground colors.  
+ *
+ * :param fg: The display-encoded foreground color
+ * :param bg: The display-encoded background color
+ * :return: ``0`` on success, can't fail
+ */
+API(API_DISP_TXT_SET_COLOR, int epic_disp_txt_set_color(uint16_t fg, uint16_t bg));
+
+/**
+ * Sets cursor location within the textbuffer space.
+ *
+ * :param x: new cursor column
+ * :param x: new cursor row
+ * :param draw_cursor: specifies whether the cursor should be drawn
+ * :return: ``0`` on success, can't fail
+ */
+API(API_DISP_TXT_SET_CURSOR, int epic_disp_txt_set_cursor(uint16_t x, uint16_t y, uint16_t draw_cursor));
+
+/**
+ * Enables/disables automatic framebuffer updates. Automatic updates occur
+ * with every character written to the buffer - epic_disp_txt_update() is
+ * implicitly called.
+ *
+ * :param enabled: if not zero, textbuffer will be updated automatically
+ * :return: ``0`` on success, can't fail
+ */
+API(API_DISP_TXT_SET_AUTOUPDATE, int epic_disp_txt_set_autoupdate(uint16_t enabled));
 
 /**
  * Start continuous readout of the light sensor. Will read light level

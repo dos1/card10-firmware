@@ -41,10 +41,11 @@ void txt_puts(struct txt_buffer *tm, const char *str);
 void txt_draw(struct txt_buffer *tm);
 void txt_set_color_f(struct txt_buffer *tm, enum txt_color sw, float r, float g,
 								     float b);
-void txt_set_color(struct txt_buffer *tm, enum txt_color sw, int r, int g,
-								 int b);
+void txt_set_color_rgb(struct txt_buffer *tm, enum txt_color sw, int r, int g,
+								       int b);
+void txt_set_color(struct txt_buffer *tm, enum txt_color sw, Color c);
 void txt_set_transparent(struct txt_buffer *tm);
 void txt_set_cursor(struct txt_buffer *tm, int x, int y, int draw_cursor);
-void txt_update(struct txt_buffer *tm);
+void txt_update(struct txt_buffer *tm, int force_redraw);
 
 #endif

@@ -194,6 +194,73 @@ int epic_disp_close()
 	}
 }
 
+int epic_disp_txt_update()
+{
+	int cl = check_lock();
+	if (cl < 0) {
+		return cl;
+	}
+
+	txt_update(&display_textb, 1);
+	return 0;
+}
+
+int epic_disp_txt_clear()
+{
+	int cl = check_lock();
+	if (cl < 0) {
+		return cl;
+	}
+
+	txt_clear(&display_textb);
+	return 0;
+}
+
+int epic_disp_txt_print(const char *string)
+{
+	int cl = check_lock();
+	if (cl < 0) {
+		return cl;
+	}
+
+	txt_puts(&display_textb, string);
+	return 0;
+}
+
+int epic_disp_txt_set_color(uint16_t fg, uint16_t bg)
+{
+	int cl = check_lock();
+	if (cl < 0) {
+		return cl;
+	}
+
+	txt_set_color(&display_textb, TEXT_FOREGROUND, (Color)(fg));
+	txt_set_color(&display_textb, TEXT_BACKGROUND, (Color)(bg));
+	return 0;
+}
+
+int epic_disp_txt_set_cursor(uint16_t x, uint16_t y, uint16_t draw_cursor)
+{
+	int cl = check_lock();
+	if (cl < 0) {
+		return cl;
+	}
+
+	txt_set_cursor(&display_textb, x, y, draw_cursor);
+	return 0;
+}
+
+int epic_disp_txt_set_autoupdate(uint16_t enabled)
+{
+	int cl = check_lock();
+	if (cl < 0) {
+		return cl;
+	}
+
+	display_textb.auto_update = enabled;
+	return 0;
+}
+
 void disp_forcelock()
 {
 	TaskHandle_t task = xTaskGetCurrentTaskHandle();

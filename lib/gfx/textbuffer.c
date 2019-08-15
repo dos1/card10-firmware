@@ -114,7 +114,7 @@ void txt_clear(struct txt_buffer *tm)
 
 	tm->needs_redraw = 1;
 	if (tm->auto_update)
-		txt_update(tm);
+		txt_update(tm, 0);
 }
 
 void txt_putchar(struct txt_buffer *tm, char ch)
@@ -139,7 +139,7 @@ void txt_putchar(struct txt_buffer *tm, char ch)
 
 	tm->needs_redraw = 1;
 	if (tm->auto_update)
-		txt_update(tm);
+		txt_update(tm, 0);
 }
 
 void txt_puts(struct txt_buffer *tm, const char *str)
@@ -219,10 +219,23 @@ void txt_set_color_f(
 	}
 }
 
-void txt_set_color(struct txt_buffer *tm, enum txt_color sw, int r, int g, int b)
-{
+void txt_set_color_rgb(
+	struct txt_buffer *tm, enum txt_color sw, int r, int g, int b
+) {
 	Color c = gfx_color_rgb(tm->reg, r, g, b);
 
+	switch (c) {
+	case TEXT_FOREGROUND:
+		tm->fg_color = c;
+		break;
+	case TEXT_BACKGROUND:
+		tm->bg_color = c;
+		break;
+	}
+}
+
+void txt_set_color(struct txt_buffer *tm, enum txt_color sw, Color c)
+{
 	switch (c) {
 	case TEXT_FOREGROUND:
 		tm->fg_color = c;
@@ -246,7 +259,7 @@ void txt_set_cursor(struct txt_buffer *tm, int x, int y, int draw_cursor)
 	tm->cursor_row    = y;
 
 	if (tm->auto_update)
-		txt_update(tm);
+		txt_update(tm, 0);
 }
 
 void txt_set_transparent(struct txt_buffer *tm)
@@ -254,9 +267,9 @@ void txt_set_transparent(struct txt_buffer *tm)
 	tm->bg_color = tm->fg_color;
 }
 
-void txt_update(struct txt_buffer *tm)
+void txt_update(struct txt_buffer *tm, int force_redraw)
 {
-	if (tm->needs_redraw)
+	if (tm->needs_redraw || force_redraw)
 		txt_draw(tm);
 	gfx_update(tm->reg);
 }
