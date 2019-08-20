@@ -5,9 +5,7 @@ You can customize this script however you want :)  If you want to go back to
 the default version, just delete this file; the firmware will recreate it on
 next run.
 """
-import buttons
-import color
-import display, os, ujson, sys
+import buttons, color, display, os, ujson, sys
 
 def read_metadata(app_folder):
 	try:
