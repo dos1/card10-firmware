@@ -7,19 +7,25 @@ next run.
 """
 import buttons
 import color
-import display
-import os
+import display, os, ujson, sys
 
+def read_metadata(app_folder):
+	try:
+		info_file = "/apps/%s/metadata.json" % (app_folder)
+		with open(info_file) as f:
+			information = f.read()
+		return ujson.loads(information)
+	except BaseException as e:
+		sys.print_exception(e)
+		return {'author':'', 'name':app_folder, 'description':'', 'category':'', 'revision': 0}
 
 def list_apps():
-    """Create a list of available apps."""
-    apps = sorted(os.listdir("."))
-
-    # Filter for apps
-    apps = [app for app in apps if app.endswith(".elf") or app.endswith(".py")]
-
-    if "menu.py" in apps:
-        apps.remove("menu.py")
+    """Create a list of available apps."""    
+    appFolders = sorted(os.listdir("/apps"))
+    
+    apps = []
+    for appFolder in appFolders:
+		apps.append([appFolder, read_metadata(appFolder)])
 
     return apps
 
@@ -56,7 +62,7 @@ def draw_menu(disp, applist, idx, offset):
     # Wrap around the app-list and draw entries from idx - 3 to idx + 4
     for y, i in enumerate(range(len(applist) + idx - 3, len(applist) + idx + 4)):
         disp.print(
-            " " + applist[i % len(applist)] + "      ",
+            " " + applist[i % len(applist)][1]['name'] + "      ",
             posy=offset + y * 20 - 40,
             bg=COLOR1 if i % 2 == 0 else COLOR2,
         )
@@ -103,7 +109,7 @@ def main():
             disp.clear().update()
             disp.close()
             try:
-                os.exec(applist[current])
+                os.exec("/apps/%s/__init__.py" % applist[current][0])
             except OSError as e:
                 print("Loading failed: ", e)
                 os.exit(1)

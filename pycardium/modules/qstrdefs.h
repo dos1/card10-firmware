@@ -118,3 +118,7 @@ Q(INPUT)
 Q(OUTPUT)
 Q(PULL_UP)
 Q(PULL_DOWN)
+
+/* path */
+Q(/apps)
+Q(/lib)
