@@ -11,6 +11,9 @@ import display
 import os
 
 
+FACTORY_RESET_CMD = "! RESET !"
+
+
 def list_apps():
     """Create a list of available apps."""
     apps = sorted(os.listdir("."))
@@ -20,6 +23,8 @@ def list_apps():
 
     if "menu.py" in apps:
         apps.remove("menu.py")
+
+    apps.append(FACTORY_RESET_CMD)
 
     return apps
 
@@ -83,11 +88,18 @@ def main():
             # Select & start
             disp.clear().update()
             disp.close()
-            try:
-                os.exec(applist[current])
-            except OSError as e:
-                print("Loading failed: ", e)
-                os.exit(1)
+            
+            if applist[current] == FACTORY_RESET_CMD:
+                files = os.listdir(".")
+                for f in files:
+                    os.unlink(f)
+                os.exit(0)
+            else:
+                try:
+                    os.exec(applist[current])
+                except OSError as e:
+                    print("Loading failed: ", e)
+                    os.exit(1)
 
         draw_menu(disp, applist, current, 0)
 
