@@ -10,5 +10,6 @@ subdir('hello-world/')
 subdir('imutest/')
 subdir('ips/')
 subdir('bootloader-update/')
+subdir('fundamental-test/')
 # Disabled due to meson bug in older version
 # subdir('upy-minimal/')
