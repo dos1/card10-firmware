@@ -12,6 +12,16 @@ import os
 import ujson
 import sys
 
+def create_folders():
+    try:
+        os.mkdir("/apps")
+    except:
+        pass
+    try:
+        os.mkdir("/elf")
+    except:
+        pass
+
 def read_metadata(app_folder):
     try:
         info_file = "/apps/%s/metadata.json" % (app_folder)
@@ -28,10 +38,13 @@ def list_apps():
     
     apps = []
     for appFolder in appFolders:
-        apps.append([appFolder, read_metadata(appFolder)])
+        apps.append(["/apps/%s/__init__.py" % appFolder, read_metadata(appFolder)])
+    
+    for elfFile in sorted(os.listdir("/elf")):
+        if elfFile.endswith(".elf"):
+            apps.append(["/elf/%s" % elfFile, {'author':'', 'name':"ELF: "+elfFile[:-4], 'description':'', 'category':'', 'revision': 0}])
 
     return apps
-
 
 def button_events():
     """Iterate over button presses (event-loop)."""
@@ -75,6 +88,7 @@ def draw_menu(disp, applist, idx, offset):
 
 
 def main():
+    create_folders()
     disp = display.open()
     applist = list_apps()
     numapps = len(applist)
@@ -112,7 +126,7 @@ def main():
             disp.clear().update()
             disp.close()
             try:
-                os.exec("/apps/%s/__init__.py" % applist[current][0])
+                os.exec(applist[current][0])
             except OSError as e:
                 print("Loading failed: ", e)
                 os.exit(1)
