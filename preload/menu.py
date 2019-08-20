@@ -5,17 +5,22 @@ You can customize this script however you want :)  If you want to go back to
 the default version, just delete this file; the firmware will recreate it on
 next run.
 """
-import buttons, color, display, os, ujson, sys
+import buttons
+import color
+import display
+import os
+import ujson
+import sys
 
 def read_metadata(app_folder):
-	try:
-		info_file = "/apps/%s/metadata.json" % (app_folder)
-		with open(info_file) as f:
-			information = f.read()
-		return ujson.loads(information)
-	except BaseException as e:
-		sys.print_exception(e)
-		return {'author':'', 'name':app_folder, 'description':'', 'category':'', 'revision': 0}
+    try:
+        info_file = "/apps/%s/metadata.json" % (app_folder)
+        with open(info_file) as f:
+            information = f.read()
+        return ujson.loads(information)
+    except BaseException as e:
+        sys.print_exception(e)
+        return {'author':'', 'name':app_folder, 'description':'', 'category':'', 'revision': 0}
 
 def list_apps():
     """Create a list of available apps."""    
@@ -23,7 +28,7 @@ def list_apps():
     
     apps = []
     for appFolder in appFolders:
-		apps.append([appFolder, read_metadata(appFolder)])
+        apps.append([appFolder, read_metadata(appFolder)])
 
     return apps
 
