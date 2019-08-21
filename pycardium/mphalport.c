@@ -163,3 +163,11 @@ int mp_hal_trng_read_int(void)
 	epic_trng_read((uint8_t *)&result, sizeof(result));
 	return result;
 }
+
+/******************************************************************************
+ * Dummy implementations
+ */
+int mp_virtual_pin_read(mp_obj_t pin)
+{
+	return 0;
+}

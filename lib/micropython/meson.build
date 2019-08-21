@@ -194,4 +194,5 @@ micropython_extmod_sources = files(
   'micropython/extmod/modure.c',
   'micropython/extmod/moduselect.c',
   'micropython/extmod/modutimeq.c',
+  'micropython/extmod/machine_i2c.c',
 )

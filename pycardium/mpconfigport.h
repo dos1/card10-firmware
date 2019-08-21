@@ -44,6 +44,16 @@ int mp_hal_trng_read_int(void);
 #define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_UERRNO                   (1)
 
+/* I2C */ 
+#define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
+typedef void *mp_obj_t;
+int mp_virtual_pin_read(mp_obj_t pin);
+#define mp_hal_pin_open_drain(x) 
+#define mp_hal_pin_od_low(x)
+#define mp_hal_pin_od_high(x)
+#define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_I2C_MAKE_NEW     machine_hard_i2c_make_new
+
 /* Modules */
 #define MODULE_BUTTONS_ENABLED              (1)
 #define MODULE_DISPLAY_ENABLED              (1)
@@ -55,6 +65,7 @@ int mp_hal_trng_read_int(void);
 #define MODULE_PERSONAL_STATE_ENABLED       (1)
 #define MODULE_UTIME_ENABLED                (1)
 #define MODULE_VIBRA_ENABLED                (1)
+#define MODULE_UMACHINE_ENABLED             (1)
 
 /*
  * This port is intended to be 32-bit, but unfortunately, int32_t for

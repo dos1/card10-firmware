@@ -127,3 +127,6 @@ Q(NO_CONTACT)
 Q(CHAOS)
 Q(COMMUNICATION)
 Q(CAMP)
+
+/* umachine and i2c */
+Q(umachine)

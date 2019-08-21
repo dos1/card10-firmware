@@ -13,6 +13,8 @@ modsrc = files(
   'modules/sys_display.c',
   'modules/utime.c',
   'modules/vibra.c',
+  'modules/modmachine.c',
+  'modules/machine_i2c.c',
 )
 
 #################################
