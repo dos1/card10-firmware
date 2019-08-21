@@ -39,19 +39,18 @@ STATIC mp_obj_t mp_bhi160_read_sensor(mp_obj_t stream_id_in)
 
 	int n = epic_stream_read(sd, buf, sizeof(buf));
 
-//	mp_obj_list_t *list = mp_obj_new_list(0, NULL);
-	//for(int i = 0; i < n; i++) {
+	mp_obj_list_t *list = mp_obj_new_list(0, NULL);
+	for(int i = 0; i < n; i++) {
 		bhi160_sample_obj_t *o = m_new_obj(bhi160_sample_obj_t);
 		o->base.type         = &mp_type_bhi160_sample;
-		o->x                 = buf[0].x;
-		o->y                 = buf[0].y;
-		o->z                 = buf[0].z;
+		o->x                 = buf[i].x;
+		o->y                 = buf[i].y;
+		o->z                 = buf[i].z;
 
-		//mp_obj_list_append(list, o);
-	//}
+		mp_obj_list_append(list, MP_OBJ_FROM_PTR(o));
+	}
 
-	//return MP_OBJ_FROM_PTR(list);
-	return MP_OBJ_FROM_PTR(o);
+	return MP_OBJ_FROM_PTR(list);
 }
 
 STATIC mp_obj_t mp_bhi160_x(mp_obj_t type)
@@ -76,9 +75,9 @@ STATIC mp_obj_t mp_bhi160_z(mp_obj_t type)
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_bhi160_z_obj, mp_bhi160_z);
 
 STATIC const mp_rom_map_elem_t bhi160_sample_locals_dict_table[] = {
-	{ MP_ROM_QSTR(MP_QSTR_get_x), MP_ROM_PTR(&mp_bhi160_x_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_get_y), MP_ROM_PTR(&mp_bhi160_y_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_get_z), MP_ROM_PTR(&mp_bhi160_z_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&mp_bhi160_x_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&mp_bhi160_y_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_z), MP_ROM_PTR(&mp_bhi160_z_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bhi160_sample_locals_dict, bhi160_sample_locals_dict_table);
