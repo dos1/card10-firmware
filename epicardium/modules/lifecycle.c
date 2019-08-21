@@ -77,7 +77,7 @@ static int load_stat(char *name)
 		/* A python script */
 		return PL_PYTHON_SCRIPT;
 	} else if (strcmp(name + name_len - 4, ".elf") == 0) {
-		return PL_L0DABLE;
+		return 0;//PL_L0DABLE; //Dangerous!
 	}
 
 	return -ENOEXEC;
@@ -240,6 +240,54 @@ static int write_default_menu(void)
 }
 
 /*
+ * Embed the main.py script in the Epicardium binary.
+ */
+__asm(".section \".rodata\"\n"
+      "_main_script_start:\n"
+      ".incbin \"../preload/main.py\"\n"
+      "_main_script_end:\n"
+      ".previous\n");
+
+extern const uint8_t _main_script_start;
+extern const uint8_t _main_script_end;
+
+static int write_default_main(void)
+{
+	const size_t length =
+		(uintptr_t)&_main_script_end - (uintptr_t)&_main_script_start;
+	int ret;
+
+	LOG_INFO("lifecycle", "Writing default main ...");
+
+	int fd = epic_file_open("main.py", "w");
+	if (fd < 0) {
+		return fd;
+	}
+
+	ret = epic_file_write(fd, &_main_script_start, length);
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = epic_file_close(fd);
+	if (ret < 0) {
+		return ret;
+	}
+
+	return 0;
+}
+
+static void factory_reset(void)
+{
+	LOG_ERR("lifecycle", "Factory reset!");
+	epic_file_unlink("/main.py");
+	epic_file_unlink("/menu.py");
+	epic_file_unlink("/mac.txt");
+	write_default_menu();
+	write_default_main();
+}
+
+/*
  * Go back to the menu.
  */
 static void load_menu(bool reset)
@@ -367,13 +415,17 @@ void vLifecycleTask(void *pvParameters)
 	vTaskDelay(pdMS_TO_TICKS(10));
 
 	xSemaphoreGive(core1_mutex);
+	
+	hardware_init();
+
+	if (epic_buttons_read(BUTTON_RIGHT_TOP)) {
+		factory_reset();
+	}
 
 	/* If `main.py` exists, start it.  Otherwise, start `menu.py`. */
 	if (epic_exec("main.py") < 0) {
 		return_to_menu();
 	}
-
-	hardware_init();
 
 	/* When triggered, reset core 1 to menu */
 	while (1) {
