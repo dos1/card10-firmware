@@ -17,6 +17,8 @@
 #include "tmr_utils.h"
 #include "adc.h"
 #include "flc.h"
+#include "mx25.h"
+#include "mx25lba.h"
 
 #include "gfx.h"
 #include "display.h"
@@ -203,6 +205,9 @@ int main(void)
     }
 
     Color yellow = gfx_color(&display_screen, YELLOW);
+
+    mx25_init();
+    MX25_Erase(0, MX25_Erase_4K);
 
     sprintf(buf, "<-Press\n");
     printf(buf);

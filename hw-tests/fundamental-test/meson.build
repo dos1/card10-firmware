@@ -3,7 +3,7 @@ name = 'fundamentaltest'
 elf = executable(
   name + '.elf',
   'main.c',
-  dependencies: [libcard10, max32665_startup],
+  dependencies: [libcard10, max32665_startup, mx25lba],
   link_whole: [max32665_startup_lib, board_card10_lib],
   link_args: [
     '-Wl,-Map=' + meson.current_build_dir() + '/' + name + '.map',
