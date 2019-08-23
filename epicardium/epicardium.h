@@ -1391,8 +1391,6 @@ API(API_LIGHT_SENSOR_STOP, int epic_light_sensor_stop());
  * Get the light level directly. Each call has an intrinsic delay of about 240us, I recommend another 100-300us delay via utime.sleep_ms() between calls. Whether or not the IR LED is fast enough is another issue.
  *
  * :return: Light level
- *
- *      - ``-ENODATA``: Continuous readout not currently running.
  */
 API(API_LIGHT_SENSOR_READ, uint16_t epic_light_sensor_read(void));
 
