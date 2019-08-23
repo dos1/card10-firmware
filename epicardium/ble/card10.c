@@ -275,9 +275,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = sizeof(uint64_t),
 	  .settings = (ATTS_SET_WRITE_CBACK | ATTS_SET_READ_CBACK),
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH | ATTS_PERMIT_READ |
-		   ATTS_PERMIT_READ_ENC | ATTS_PERMIT_READ_AUTH) },
+		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_READ) },
 
 	// VIBRA
 
@@ -291,8 +289,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = sizeof(uint16_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// ROCKETS
 
@@ -306,8 +303,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = 3 * sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// BG LED Bottom left
 
@@ -321,8 +317,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = 3 * sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// BG LED Bottom right
 
@@ -336,8 +331,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = 3 * sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// BG LED top right
 
@@ -352,8 +346,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = 3 * sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// BG LED top left
 
@@ -367,8 +360,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = 3 * sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// Dim bottom module
 
@@ -383,8 +375,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// Dim top module
 
@@ -398,8 +389,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// led powersafe
 
@@ -413,8 +403,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// flashlight
 
@@ -428,8 +417,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// personal state
 
@@ -444,9 +432,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = sizeof(uint16_t),
 	  .settings = (ATTS_SET_WRITE_CBACK | ATTS_SET_READ_CBACK),
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH | ATTS_PERMIT_READ |
-		   ATTS_PERMIT_READ_ENC | ATTS_PERMIT_READ_AUTH) },
+		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_READ) },
 
 	// ABOVE LEDS
 
@@ -460,8 +446,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = 11 * 3 * sizeof(uint8_t),
 	  .settings = ATTS_SET_WRITE_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
-		   ATTS_PERMIT_WRITE_AUTH) },
+		  (ATTS_PERMIT_WRITE) },
 
 	// Light sensor
 
@@ -476,8 +461,7 @@ static const attsAttr_t card10SvcAttrList[] = {
 	  .maxLen   = sizeof(uint8_t),
 	  .settings = ATTS_SET_READ_CBACK,
 	  .permissions =
-		  (ATTS_PERMIT_READ | ATTS_PERMIT_READ_ENC |
-		   ATTS_PERMIT_READ_AUTH) },
+		  (ATTS_PERMIT_READ) },
 };
 
 // validating, that the service really get all charateristics
