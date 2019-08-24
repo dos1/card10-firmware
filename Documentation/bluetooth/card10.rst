@@ -80,6 +80,11 @@ The current draft uses following service specification:
   UUID: ``42230220-2342-2342-2342-234223422342``
   read and write no reponse
 
+- LCD brightness characteristic:
+
+  UUID: ``42230221-2342-2342-2342-234223422342``
+  write no reponse
+
 - Light sensor characteristic:
 
   UUID: ``422302f0-2342-2342-2342-234223422342``
@@ -177,6 +182,13 @@ This characteristic set or read the current value of every 11 leds on the top mo
 By defining 11x rgb from left to right. You need also to set exchange a bigger MTU to use this feature.
 
 - set a rainbow beginnig with red on the right edge: ``0xff0000ff8b00e8ff005dff0000ff2e00ffb900b9ff002eff5d00ffe800ffff008b``
+
+LCD brightness characteristic
+---------------------------------
+This charatieristic set the brightness of the lcd backlight 0-100 in ``uint16``.
+
+- set to 100 % ``0x6400``
+- set to 20 % ``0x1400`` (default value)
 
 Light sensor characteristic
 ---------------------------------

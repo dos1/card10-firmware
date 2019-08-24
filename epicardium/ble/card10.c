@@ -65,6 +65,9 @@ enum {
 	/*!< \brief leds above characteristic */
 	CARD10_LEDS_ABOVE_CH_HDL,
 	CARD10_LEDS_ABOVE_VAL_HDL,
+	/*!< \brief lcd birhtness characteristic */
+	CARD10_LCD_BRIGHTNESS_CH_HDL,
+	CARD10_LCD_BRIGHTNESS_VAL_HDL,
 	/*!< \brief light sensor characteristic */
 	CARD10_LIGHT_SENSOR_CH_HDL,
 	CARD10_LIGHT_SENSOR_VAL_HDL,
@@ -262,6 +265,17 @@ static uint8_t aboveLEDsValue[] = {
 	0,0,0, // 10
 };
 static uint16_t aboveLEDsLen = sizeof(aboveLEDsValue);
+
+/* BLE UUID for card10 set lcd brightness */
+static const uint8_t UUID_char_lcd_brightness[] = {
+	ATT_PROP_WRITE_NO_RSP,
+	UINT16_TO_BYTES(CARD10_LCD_BRIGHTNESS_VAL_HDL),
+	CARD10_UUID_SUFFIX, 0x21, CARD10_UUID_PREFIX
+};
+
+static const uint8_t UUID_attChar_lcd_brightness[] = {
+	CARD10_UUID_SUFFIX, 0x21, CARD10_UUID_PREFIX
+};
 
 // starting at 0xf0 with read only characteristics
 
@@ -543,6 +557,24 @@ static const attsAttr_t card10SvcAttrList[] = {
 			       ATTS_PERMIT_READ_ENC | ATTS_PERMIT_READ_AUTH,
 	},
 
+	// LCD Brightness
+
+	{
+		.pUuid       = attChUuid,
+		.pValue      = (uint8_t *)UUID_char_lcd_brightness,
+		.pLen        = (uint16_t *)&UUID_char_len,
+		.maxLen      = sizeof(UUID_char_lcd_brightness),
+		.permissions = ATTS_PERMIT_READ,
+	},
+	{
+		.pUuid       = UUID_attChar_lcd_brightness,
+		.pValue      = NULL,
+		.maxLen      = sizeof(uint16_t),
+		.settings    = ATTS_SET_WRITE_CBACK,
+		.permissions = ATTS_PERMIT_WRITE | ATTS_PERMIT_WRITE_ENC |
+			       ATTS_PERMIT_WRITE_AUTH,
+	},
+
 	// Light sensor
 
 	{
@@ -630,6 +662,7 @@ static uint8_t writeCard10CB(
 ) {
 	uint16_t ui16 = 0;
 	uint8_t ui8   = 0;
+	int intVar    = 0;
 
 	switch (handle) {
 	// time
@@ -787,6 +820,15 @@ static uint8_t writeCard10CB(
 			);
 		}
 		epic_leds_update();
+		return ATT_SUCCESS;
+	case CARD10_LCD_BRIGHTNESS_VAL_HDL:
+		BYTES_TO_UINT16(ui16, pValue);
+		intVar = epic_disp_backlight(ui16);
+		APP_TRACE_INFO2(
+			"ble-card10: set lcd brightness to %ld - %d\n",
+			ui16,
+			intVar
+		);
 		return ATT_SUCCESS;
 	default:
 		APP_TRACE_INFO1("ble-card10: unsupported handle: %x\n", handle);
