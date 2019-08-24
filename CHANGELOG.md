@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 
+## [v1.7] - 2019-08-24 21:48 - [Garlic]
+[Garlic]: https://card10.badge.events.ccc.de/release/card10-v1.7-Garlic.zip
+
+### Added
+- **ESB**: Epic Serial Bus (Better than USB!), stability improvements of the
+  USB module.  Preparation for mass-storage access in the Firmware.
+- Enabled the Hardware Watchdog;  Card10 will reset itself if the firmware crashes
+- Log messages when BLE is pairing / connected.
+- The name of the offending app is printed to the serial console, if an app
+  crashes the metatdata parser.
+
+### Changed
+- Improved log messages in cases of lock-contention.
+- Menu will show an error message if a crash occurs.
+
+### Fixed
+- Fixed race-conditions in serial writes by using a queue.
+- "Card10 Nickname" crashing if only `nickname.txt` exists.
+- Lockup when debug prints are enabled.
+- Delayed BHI160 startup a bit so the PMIC task can check the battery first.
+- Relaxed the PMIC lock-timeouts so other task can take a little more time.
+- Fixed off-by-one error in `gfx_line()`.
+- Fixed the API interrupts sometimes getting stuck.
+- Fixed binary building on MacOS.
+- Fixed race-conditions in serial console prints by introducing a queue.
+- Fixed API & MAX30001 mutexes being initialized late sometimes.
+- Fixed wrong stripe width in bi flag.
+
+
 ## [v1.6] - 2019-08-23 20:30 - [Fennel]
 [Fennel]: https://card10.badge.events.ccc.de/release/card10-v1.6-Fennel.zip
 
@@ -124,7 +153,8 @@ fbf7c8c0 fix(menu.py) Refactored menu.py based on !138
 ## [v1.0] - 2019-08-21 00:50
 Initial release.
 
-[Unreleased]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.6...master
+[Unreleased]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.7...master
+[v1.7]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.6...v1.7
 [v1.6]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.5...v1.6
 [v1.5]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.4...v1.5
 [v1.4]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.3...v1.4

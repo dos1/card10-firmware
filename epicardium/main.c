@@ -12,15 +12,22 @@
 
 int main(void)
 {
+	watchdog_init();
+
 	LOG_INFO("startup", "Epicardium startup ...");
 	LOG_INFO("startup", "Version " CARD10_VERSION);
 
 	LOG_DEBUG("startup", "Initializing hardware ...");
 	hardware_early_init();
 
-	char *version_buf = CARD10_VERSION;
-	epic_disp_print(0, 5, "epicardium:", 0xffff, 0x0000);
-	epic_disp_print(0, 24, version_buf, 0xffff, 0x0000);
+	/*
+	 * Version Splash
+	 */
+	const char *version_buf = CARD10_VERSION;
+	const int offset        = (160 - (int)strlen(version_buf) * 14) / 2;
+	epic_disp_clear(0x3b7);
+	epic_disp_print(10, 20, "Epicardium", 0x290, 0x3b7);
+	epic_disp_print(offset > 0 ? offset : 0, 40, version_buf, 0x290, 0x3b7);
 	epic_disp_update();
 	mxc_delay(2000000);
 
@@ -32,7 +39,7 @@ int main(void)
 		    (const char *)"Serial",
 		    configMINIMAL_STACK_SIZE * 2,
 		    NULL,
-		    tskIDLE_PRIORITY + 1,
+		    tskIDLE_PRIORITY + 3,
 		    NULL) != pdPASS) {
 		LOG_CRIT("startup", "Failed to create %s task!", "Serial");
 		abort();
@@ -127,13 +134,10 @@ int main(void)
 		abort();
 	}
 
-	/* Watchdog petting */
-#if 0
 	/*
-	 * Disabled for this release.
+	 * Initialize serial driver data structures.
 	 */
-	watchdog_clearer_init();
-#endif
+	serial_init();
 
 	LOG_DEBUG("startup", "Starting FreeRTOS ...");
 	vTaskStartScheduler();

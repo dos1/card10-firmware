@@ -28,20 +28,23 @@ Dependencies
     .. code-block:: shell-session
 
         dnf install arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib
-        
+
   - macOS (Note: The card10 firmware team used Linux so far. macOS recommendations here are experimental.) 
-    
-    You can use `Homebrew`_ to install the required tools.
-    The version of the Arm crosscompiler tool chain is quite important; with the wrong version, e.g. strip and/or ld might throw strange errors.
-    
+
+    You can use `Homebrew`_ to install the required tools.  The version of the
+    ARM crosscompiler tool chain is quite important; with the wrong version,
+    e.g. strip and/or ld might throw strange errors.
+
     .. code-block:: shell-session
-            
+
         brew tap px4/px4
         brew install px4/px4/gcc-arm-none-eabi-63
         brew install coreutils
 
+    .. _Homebrew: https://brew.sh/
+
   - Alternative: Download `ARM's GNU toolchain`_.  **TODO**
-.. _Homebrew: https://brew.sh/
+
 
 * **python3**:  For meson and various scripts needed for building.
 * **meson** (>0.43.0) & **ninja**:  Unfortunately most distros only have very old versions
@@ -140,3 +143,13 @@ In order to do a rebuild you can issue a clean command to ninja via
   $ ninja -C build/ -t clean
 
 Otherwise, rerunning ``./bootstrap.sh`` will also clean the build-directory.
+
+.. note::
+
+   If you try to flash pycardium_epicardium.bin (renamed to card10.bin) 
+   and the bootloader does not finish updating, the file might be too large.
+   ~700kB is the normal size, but problems were reported where the file size 
+   was >1MB. This was caused by the ``tr`` tool in the build process 
+   (it's supposed to create a large file with 0xff in it) - this requires the 
+   LC_ALL environment variable to be not set, or set to "C" 
+   (but not UTF8 or similar).

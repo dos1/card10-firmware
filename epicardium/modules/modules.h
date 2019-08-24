@@ -9,6 +9,7 @@
 
 /* ---------- Dispatcher --------------------------------------------------- */
 void vApiDispatcher(void *pvParameters);
+void dispatcher_mutex_init(void);
 extern SemaphoreHandle_t api_mutex;
 extern TaskHandle_t dispatcher_task_id;
 
@@ -23,9 +24,17 @@ void return_to_menu(void);
 
 /* ---------- Serial ------------------------------------------------------- */
 #define SERIAL_READ_BUFFER_SIZE 128
+#define SERIAL_WRITE_STREAM_BUFFER_SIZE 512
+void serial_init();
 void vSerialTask(void *pvParameters);
 void serial_enqueue_char(char chr);
 extern TaskHandle_t serial_task_id;
+
+// For the eSetBit xTaskNotify task semaphore trigger
+enum serial_notify{
+      SERIAL_WRITE_NOTIFY = 0x01,
+      SERIAL_READ_NOTIFY  = 0x02,
+};
 
 /* ---------- LED Animation / Personal States ------------------------------ */
 #define PERSONAL_STATE_LED 14
@@ -36,6 +45,7 @@ int personal_state_enabled();
 void vPmicTask(void *pvParameters);
 
 /* ---------- Watchdog ----------------------------------------------------- */
+void watchdog_init();
 void watchdog_clearer_init();
 
 /* Critical battery voltage */
@@ -90,7 +100,9 @@ void disp_forcelock();
 #define BHI160_MUTEX_WAIT_MS          50
 void vBhi160Task(void *pvParameters);
 
+/* ---------- MAX30001 ----------------------------------------------------- */
 #define MAX30001_MUTEX_WAIT_MS          50
 void vMAX30001Task(void *pvParameters);
+void max30001_mutex_init(void);
 
 #endif /* MODULES_H */
