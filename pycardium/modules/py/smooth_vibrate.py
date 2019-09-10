@@ -2,12 +2,12 @@ import vibra
 import utime
 
 
-def vibrate(times=None, dur=None, sle=None):
+def vibrate(times=None, duration=None, sleep=None):
     """
     trigger vibration motor with three values
-    times => how often we should triger
-    dur => how long should we trigger for each iteration
-    sle => how long should we wait in between
+    :param int times: how often we should trigger
+    :param int duration: how long should we trigger for each iteration (ms)
+    :param int sleep: how long should we wait in between (ms)
 
     combination out of this creates a fake PWM
     that enables easy and smooth vibrations
@@ -15,8 +15,8 @@ def vibrate(times=None, dur=None, sle=None):
     times = times or 1
 
     for i in range(times):
-        vibra.vibrate(dur)
-        utime.sleep_ms(sle)
+        vibra.vibrate(duration)
+        utime.sleep_ms(sleep)
 
 
 def simple():
@@ -37,9 +37,11 @@ def select():
 
 def pattern(n=None):
     """
+    :param int n: how often to repeat the pattern
+    n = 2 and n = 1 feels the same
+
     very distinctive but long pattern
     feels like duk-duk-duk
-    n = 2 and n = 1 feels the same
     """
     n = n or 3
     vibrate(n, 20, 100)
