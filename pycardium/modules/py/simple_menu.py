@@ -1,4 +1,5 @@
 import buttons
+import smooth_vibrate
 import color
 import display
 import sys
@@ -152,6 +153,7 @@ class Menu:
 
         .. versionadded:: 1.9
         """
+        smooth_vibrate.pattern()
         self.exit()
 
     def exit(self):
@@ -277,6 +279,7 @@ class Menu:
 
             for ev in button_events(timeout):
                 if ev == buttons.BOTTOM_RIGHT:
+                    smooth_vibrate.simple()
                     self.select_time = utime.time_ms()
                     self.draw_menu(-8)
                     self.idx = (self.idx + 1) % len(self.entries)
@@ -286,6 +289,7 @@ class Menu:
                         print("Exception during menu.on_scroll():")
                         sys.print_exception(e)
                 elif ev == buttons.BOTTOM_LEFT:
+                    smooth_vibrate.simple()
                     self.select_time = utime.time_ms()
                     self.draw_menu(8)
                     self.idx = (self.idx + len(self.entries) - 1) % len(self.entries)
@@ -296,9 +300,11 @@ class Menu:
                         sys.print_exception(e)
                 elif ev == buttons.TOP_RIGHT:
                     try:
+                        smooth_vibrate.select()
                         self.on_select(self.entries[self.idx], self.idx)
                         self.select_time = utime.time_ms()
                     except Exception as e:
+                        smooth_vibrate.pattern(5)
                         print("Menu crashed!")
                         sys.print_exception(e)
                         self.error("Menu", "crashed")
