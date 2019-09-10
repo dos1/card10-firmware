@@ -9,6 +9,7 @@ python_modules = files(
   'pride.py',
   'ledfx.py',
   'simple_menu.py',
+  'smooth_vibrate.py',
 
   # MicroPython Standard-Library
   'col_defaultdict.py',
