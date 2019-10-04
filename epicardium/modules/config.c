@@ -293,55 +293,47 @@ void load_config(void)
 				*eol = '\0';
 				doline(line, eol, lineNumber);
 				line = eol + 1;
-			} else {
-				if (line == buf) {
-					//line did not fit into buf
-					LOG_WARN(
-						"card10.cfg",
-						"line:%d: too long - aborting",
-						lineNumber
-					);
-					return;
-				} else {
-					int seek_back = last_eol - nread;
-					LOG_DEBUG(
-						"card10.cfg",
-						"nread, last_eol, seek_back: %d,%d,%d",
-						nread,
-						last_eol,
-						seek_back
-					);
-					assert(seek_back <= 0);
-					if (seek_back) {
-						int rc = epic_file_seek(
-							fd,
-							seek_back,
-							SEEK_CUR
-						);
-						if (rc < 0) {
-							LOG_ERR("card10.cfg",
-								"seek failed, aborting");
-							return;
-						}
-						char newline;
-						rc = epic_file_read(
-							fd, &newline, 1
-						);
-						if (rc < 0 || newline != '\n') {
-							LOG_ERR("card10.cfg",
-								"seek failed, aborting");
-							LOG_DEBUG(
-								"card10.cfg",
-								"seek failed at read-back of newline: rc: %d read: %d",
-								rc,
-								(int)newline
-							);
-							return;
-						}
-					}
-					break;
-				}
+				continue;
 			}
+			if (line == buf) {
+				//line did not fit into buf
+				LOG_WARN(
+					"card10.cfg",
+					"line:%d: too long - aborting",
+					lineNumber
+				);
+				return;
+			}
+			int seek_back = last_eol - nread;
+			LOG_DEBUG(
+				"card10.cfg",
+				"nread, last_eol, seek_back: %d,%d,%d",
+				nread,
+				last_eol,
+				seek_back
+			);
+			assert(seek_back <= 0);
+			if (!seek_back) {
+				break;
+			}
+			int rc = epic_file_seek(fd, seek_back, SEEK_CUR);
+			if (rc < 0) {
+				LOG_ERR("card10.cfg", "seek failed, aborting");
+				return;
+			}
+			char newline;
+			rc = epic_file_read(fd, &newline, 1);
+			if (rc < 0 || newline != '\n') {
+				LOG_ERR("card10.cfg", "seek failed, aborting");
+				LOG_DEBUG(
+					"card10.cfg",
+					"seek failed at read-back of newline: rc: %d read: %d",
+					rc,
+					(int)newline
+				);
+				return;
+			}
+			break;
 		}
 	} while (nread == sizeof(buf));
 	epic_file_close(fd);
