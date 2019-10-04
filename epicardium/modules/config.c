@@ -316,23 +316,15 @@ void load_config(void)
 			if (!seek_back) {
 				break;
 			}
-			int rc = epic_file_seek(
-				fd,
-				seek_back,
-				SEEK_CUR
-			);
+			int rc = epic_file_seek(fd, seek_back, SEEK_CUR);
 			if (rc < 0) {
-				LOG_ERR("card10.cfg",
-					"seek failed, aborting");
+				LOG_ERR("card10.cfg", "seek failed, aborting");
 				return;
 			}
 			char newline;
-			rc = epic_file_read(
-				fd, &newline, 1
-			);
+			rc = epic_file_read(fd, &newline, 1);
 			if (rc < 0 || newline != '\n') {
-				LOG_ERR("card10.cfg",
-					"seek failed, aborting");
+				LOG_ERR("card10.cfg", "seek failed, aborting");
 				LOG_DEBUG(
 					"card10.cfg",
 					"seek failed at read-back of newline: rc: %d read: %d",
