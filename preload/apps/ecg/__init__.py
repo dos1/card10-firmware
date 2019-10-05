@@ -7,12 +7,13 @@ import max30001
 import math
 import struct
 import itertools
+from ecg.settings import *
 
+config = ecg_settings()
 WIDTH = 160
 HEIGHT = 80
 OFFSET_Y = 49
-ECG_RATE = 128
-HISTORY_MAX = ECG_RATE * 4
+HISTORY_MAX = WIDTH * 4
 DRAW_AFTER_SAMPLES = 5
 SCALE_FACTOR = 30
 MODE_USB = "USB"
@@ -26,20 +27,9 @@ COLOR_MODE_USB = [0, 0, 255]
 COLOR_WRITE_FG = [255, 255, 255]
 COLOR_WRITE_BG = [255, 0, 0]
 
-current_mode = MODE_FINGER
-modes = itertools.cycle(
-    [
-        ({"bar", "pulse"}, {"text": "Top + Pulse", "posx": 0}),
-        ({}, {"text": "off", "posx": 55}),
-        ({"bar"}, {"text": "Top Only", "posx": 25}),
-        ({"pulse"}, {"text": "Pulse Only", "posx": 5}),
-    ]
-)
-led_mode = next(modes)[0]
 history = []
 filebuffer = bytearray()
 write = 0
-bias = True
 update_screen = 0
 pause_screen = 0
 pause_histogram = False
@@ -64,7 +54,7 @@ def update_history(datasets):
     global history, moving_average, alpha, beta, last_sample_count
     last_sample_count = len(datasets)
     for val in datasets:
-        if current_mode == MODE_FINGER:
+        if "HP" in config.get_option("Filter"):
             history.append(val - moving_average)
             moving_average += betadash * (val - moving_average)
             # identical to: moving_average = (alpha * moving_average + beta * val) / (alpha + beta)
@@ -81,7 +71,7 @@ samples_since_last_pulse = 0
 last_pulse_blink = 0
 q_threshold = -1
 r_threshold = 1
-q_spike = -ECG_RATE
+q_spike = -500 #just needs to be long ago
 
 
 def neighbours(n, lst):
@@ -103,6 +93,8 @@ def detect_pulse(num_new_samples):
     # consider ["CDE", "DEF"]
     # new samples: "GHI" => "ABCDEFGHI"
     # consider ["EFG", "FGH", "GHI"]
+    ecg_rate = config.get_option("Rate")
+
     for [prev, cur, next_] in neighbours(3, history[-(num_new_samples + 2) :]):
         samples_since_last_pulse += 1
 
@@ -113,17 +105,17 @@ def detect_pulse(num_new_samples):
         elif (
             prev < cur > next_
             and cur > r_threshold
-            and samples_since_last_pulse - q_spike < ECG_RATE // 10
+            and samples_since_last_pulse - q_spike < ecg_rate // 10
         ):
-            # the full QRS complex is < 0.1s long, so the q and r spike in particular cannot be more than ECG_RATE//10 samples apart
-            pulse = 60 * ECG_RATE // samples_since_last_pulse
+            # the full QRS complex is < 0.1s long, so the q and r spike in particular cannot be more than ecg_rate//10 samples apart
+            pulse = 60 * ecg_rate // samples_since_last_pulse
             samples_since_last_pulse = 0
-            q_spike = -ECG_RATE
+            q_spike = -ecg_rate
             if pulse < 30 or pulse > 210:
                 pulse = -1
             # we expect the next r-spike to be at least 60% as high as this one
             r_threshold = (cur * 3) // 5
-        elif samples_since_last_pulse > 2 * ECG_RATE:
+        elif samples_since_last_pulse > 2 * ecg_rate:
             q_threshold = -1
             r_threshold = 1
             pulse = -1
@@ -183,9 +175,9 @@ def write_filebuffer():
 def open_sensor():
     global sensor
     sensor = max30001.MAX30001(
-        usb=(current_mode == MODE_USB),
-        bias=bias,
-        sample_rate=ECG_RATE,
+        usb=(config.get_option("Mode") == "USB"),
+        bias=config.get_option("Bias"),
+        sample_rate=config.get_option("Rate"),
         callback=callback_ecg,
     )
 
@@ -193,34 +185,6 @@ def open_sensor():
 def close_sensor():
     global sensor
     sensor.close()
-
-
-def toggle_mode():
-    global current_mode, disp, pause_screen
-    if write > 0:
-        pause_screen = utime.time_ms() + 500
-        disp.clear(COLOR_BACKGROUND)
-        disp.print("Locked", posx=30, posy=30, fg=COLOR_TEXT)
-        disp.update()
-        return
-
-    close_sensor()
-    current_mode = MODE_USB if current_mode == MODE_FINGER else MODE_FINGER
-    open_sensor()
-
-
-def toggle_bias():
-    global bias, disp, pause_screen
-    if write > 0:
-        pause_screen = utime.time_ms() + 500
-        disp.clear(COLOR_BACKGROUND)
-        disp.print("Locked", posx=30, posy=30, fg=COLOR_TEXT)
-        disp.update()
-        return
-
-    close_sensor()
-    bias = not bias
-    open_sensor()
 
 
 def toggle_write():
@@ -252,22 +216,13 @@ def toggle_pause():
     leds.clear()
 
 
-def toggle_leds():
-    global led_mode, disp, pause_screen, leds, modes
-    led_mode, display_args = next(modes)
-
-    pause_screen = utime.time_ms() + 250
-    disp.clear(COLOR_BACKGROUND)
-    disp.print("LEDs", posx=50, posy=20, fg=COLOR_TEXT)
-    disp.print(**display_args, posy=40, fg=COLOR_TEXT)
-    disp.update()
-    leds.clear()
-
 
 def draw_leds(vmin, vmax):
     # vmin should be in [0, -1]
     # vmax should be in [0, 1]
     global pulse, samples_since_last_pulse, last_pulse_blink
+
+    led_mode = config.get_option("LEDs")
 
     # stop blinking
     if not bool(led_mode):
@@ -301,7 +256,7 @@ def draw_leds(vmin, vmax):
 
 
 def draw_histogram():
-    global disp, history, current_mode, bias, write, pause_screen, update_screen
+    global disp, history, write, pause_screen, update_screen
 
     # skip rendering due to message beeing shown
     if pause_screen == -1:
@@ -316,10 +271,10 @@ def draw_histogram():
     disp.clear(COLOR_BACKGROUND)
 
     # offset in pause_histogram mode
+    timeWindow = config.get_option("Window")
     window_end = int(len(history) - histogram_offset)
-    s_start = max(0, window_end - (ECG_RATE * 2))
     s_end = max(0, window_end)
-    s_draw = max(0, s_end - WIDTH)
+    s_start = max(0, s_end - WIDTH*timeWindow)
 
     # get max value and calc scale
     value_max = max(abs(x) for x in history[s_start:s_end])
@@ -327,11 +282,11 @@ def draw_histogram():
 
     # draw histogram
     # values need to be inverted so high values are drawn with low pixel coordinates (at the top of the screen)
-    draw_points = (int(-x * scale + OFFSET_Y) for x in history[s_draw:s_end])
+    draw_points = (int(-x * scale + OFFSET_Y) for x in history[s_start:s_end])
 
     prev = next(draw_points)
     for x, value in enumerate(draw_points):
-        disp.line(x, prev, x + 1, value, col=COLOR_LINE)
+        disp.line(x//timeWindow, prev, (x + 1)//timeWindow, value, col=COLOR_LINE)
         prev = value
 
     # draw text: mode/bias/write
@@ -339,7 +294,7 @@ def draw_histogram():
         disp.print(
             "Pause"
             + (
-                " -{:0.1f}s".format(histogram_offset / ECG_RATE)
+                " -{:0.1f}s".format(histogram_offset / config.get_option("Rate"))
                 if histogram_offset > 0
                 else ""
             ),
@@ -354,11 +309,11 @@ def draw_histogram():
         )
         if pulse < 0:
             disp.print(
-                current_mode + ("+Bias" if bias else ""),
+                config.get_option("Mode") + ("+Bias" if config.get_option("Bias") else ""),
                 posx=0,
                 posy=0,
                 fg=(
-                    COLOR_MODE_FINGER if current_mode == MODE_FINGER else COLOR_MODE_USB
+                    COLOR_MODE_FINGER if config.get_option("Mode") == MODE_FINGER else COLOR_MODE_USB
                 ),
             )
         else:
@@ -367,7 +322,7 @@ def draw_histogram():
                 posx=0,
                 posy=0,
                 fg=(
-                    COLOR_MODE_FINGER if current_mode == MODE_FINGER else COLOR_MODE_USB
+                    COLOR_MODE_FINGER if config.get_option("Mode") == MODE_FINGER else COLOR_MODE_USB
                 ),
             )
 
@@ -382,7 +337,7 @@ def draw_histogram():
 
 
 def main():
-    global pause_histogram, histogram_offset
+    global pause_histogram, histogram_offset, pause_screen
 
     # show button layout
     disp.clear(COLOR_BACKGROUND)
@@ -392,10 +347,10 @@ def main():
         "       Pause >", posx=0, posy=28, fg=COLOR_MODE_FINGER, font=display.FONT16
     )
     disp.print(
-        "   Mode/Bias >", posx=0, posy=44, fg=COLOR_MODE_USB, font=display.FONT16
+        "    Settings >", posx=0, posy=44, fg=COLOR_MODE_USB, font=display.FONT16
     )
     disp.print(
-        "< LED/WriteLog", posx=0, posy=64, fg=COLOR_WRITE_BG, font=display.FONT16
+        "< WriteLog    ", posx=0, posy=64, fg=COLOR_WRITE_BG, font=display.FONT16
     )
     disp.update()
     utime.sleep(3)
@@ -410,90 +365,64 @@ def main():
             )
 
             # TOP RIGHT
+            #
+            # pause
 
             # down
             if button_pressed["TOP_RIGHT"] == 0 and v & buttons.TOP_RIGHT != 0:
-                button_pressed["TOP_RIGHT"] = utime.time_ms()
+                button_pressed["TOP_RIGHT"] = 1
                 toggle_pause()
+                
 
             # up
             if button_pressed["TOP_RIGHT"] > 0 and v & buttons.TOP_RIGHT == 0:
-                duration = utime.time_ms() - button_pressed["TOP_RIGHT"]
                 button_pressed["TOP_RIGHT"] = 0
 
             # BOTTOM LEFT
             #
             # on pause = shift view left
-            # long = toggle write
-            # short = toggle leds
+            # else = toggle write
 
-            # down, and still pressed
-            if (
-                button_pressed["BOTTOM_LEFT"] > 0
-                and v & buttons.BOTTOM_LEFT != 0
-                and not pause_histogram
-            ):
-                duration = utime.time_ms() - button_pressed["BOTTOM_LEFT"]
-                if duration > 1000:
-                    button_pressed["BOTTOM_LEFT"] = -1
-                    toggle_write()
-
-            # register down event
-            elif button_pressed["BOTTOM_LEFT"] == 0 and v & buttons.BOTTOM_LEFT != 0:
-                button_pressed["BOTTOM_LEFT"] = utime.time_ms()
-
-            # register up event but event already called
-            if button_pressed["BOTTOM_LEFT"] == -1 and v & buttons.BOTTOM_LEFT == 0:
-                button_pressed["BOTTOM_LEFT"] = 0
-
-            # register normal up event
-            elif button_pressed["BOTTOM_LEFT"] > 0 and v & buttons.BOTTOM_LEFT == 0:
-                duration = utime.time_ms() - button_pressed["BOTTOM_LEFT"]
-                button_pressed["BOTTOM_LEFT"] = 0
-                if not pause_histogram:
-                    toggle_leds()
-                else:
+            # down
+            if button_pressed["BOTTOM_LEFT"] == 0 and v & buttons.BOTTOM_LEFT != 0:
+                button_pressed["BOTTOM_LEFT"] = 1
+                if pause_histogram:
                     l = len(history)
-                    histogram_offset += ECG_RATE / 2
-                    if l - histogram_offset < WIDTH:
-                        histogram_offset = l - WIDTH
+                    histogram_offset += config.get_option("Rate") / 2
+                    if l - histogram_offset < WIDTH*config.get_option("Window"):
+                        histogram_offset = l - WIDTH*config.get_option("Window")
+                else:
+                    toggle_write()
+                
+            # up
+            if button_pressed["BOTTOM_LEFT"] > 0 and v & buttons.BOTTOM_LEFT == 0:
+                button_pressed["BOTTOM_LEFT"] = 0
 
             # BOTTOM RIGHT
             #
             # on pause = shift view right
-            # long = toggle bias
-            # short = toggle mode (finger/usb)
+            # else = show settings
 
-            # down, and still pressed
-            if (
-                button_pressed["BOTTOM_RIGHT"] > 0
-                and v & buttons.BOTTOM_RIGHT != 0
-                and not pause_histogram
-            ):
-                duration = utime.time_ms() - button_pressed["BOTTOM_RIGHT"]
-                if duration > 1000:
-                    button_pressed["BOTTOM_RIGHT"] = -1
-                    toggle_bias()
-
-            # register down event
-            elif button_pressed["BOTTOM_RIGHT"] == 0 and v & buttons.BOTTOM_RIGHT != 0:
-                button_pressed["BOTTOM_RIGHT"] = utime.time_ms()
-
-            # register up event but event already called
-            if button_pressed["BOTTOM_RIGHT"] == -1 and v & buttons.BOTTOM_RIGHT == 0:
-                button_pressed["BOTTOM_RIGHT"] = 0
-
-            # register normal up event
-            elif button_pressed["BOTTOM_RIGHT"] > 0 and v & buttons.BOTTOM_RIGHT == 0:
-                duration = utime.time_ms() - button_pressed["BOTTOM_RIGHT"]
-                button_pressed["BOTTOM_RIGHT"] = 0
+            # down
+            if button_pressed["BOTTOM_RIGHT"] == 0 and v & buttons.BOTTOM_RIGHT != 0:
+                button_pressed["BOTTOM_RIGHT"] = 1
                 if pause_histogram:
-                    histogram_offset -= ECG_RATE / 2
-                    histogram_offset -= histogram_offset % (ECG_RATE / 2)
+                    histogram_offset -= config.get_option("Rate") / 2
+                    histogram_offset -= histogram_offset % (config.get_option("Rate") / 2)
                     if histogram_offset < 0:
                         histogram_offset = 0
                 else:
-                    toggle_mode()
+                    pause_screen = -1 # hide graph
+                    leds.clear() # disable all LEDs
+                    config.run() # show config menu
+                    close_sensor() # reset sensor in case mode or bias was changed TODO do not close sensor otherwise?
+                    open_sensor()
+                    pause_screen = 0 # start plotting graph again
+                    button_pressed["TOP_RIGHT"] = 1 # returning from menu was by pressing the TOP_RIGHT button
+                
+            # up
+            if button_pressed["BOTTOM_RIGHT"] > 0 and v & buttons.BOTTOM_RIGHT == 0:
+                button_pressed["BOTTOM_RIGHT"] = 0
 
 
 if __name__ == "__main__":
