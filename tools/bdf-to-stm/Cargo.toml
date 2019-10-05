@@ -1,0 +1,9 @@
+[package]
+name = "bdf-to-stm"
+version = "0.1.0"
+authors = ["meh"]
+edition = "2018"
+
+[dependencies]
+bdf = "0.5.3"
+itertools = "0.8.0"
