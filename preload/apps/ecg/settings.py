@@ -19,7 +19,6 @@ class Settings(simple_menu.Menu):
             self.options[value[0]] = next(value[1])
 
     def entry2name(self, value):
-        print(value, value[0])
         if value[0]=="return":
             return value[0]
         else:
@@ -83,6 +82,15 @@ def ecg_settings():
                     ("1x", 1),
                     ("2x", 2),
                     ("3x", 3)
+                ]
+            )
+    ))
+    config.add_option(("Log", 
+            itertools.cycle(
+                [
+                    ("full", {"graph", "pulse"}),
+                    ("graph", {"graph"}),
+                    ("pulse", {"pulse"}),
                 ]
             )
     ))

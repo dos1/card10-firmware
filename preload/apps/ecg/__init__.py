@@ -113,6 +113,8 @@ def detect_pulse(num_new_samples):
             q_spike = -ecg_rate
             if pulse < 30 or pulse > 210:
                 pulse = -1
+            elif write > 0 and "pulse" in config.get_option("Log"):
+                write_pulse()
             # we expect the next r-spike to be at least 60% as high as this one
             r_threshold = (cur * 3) // 5
         elif samples_since_last_pulse > 2 * ecg_rate:
@@ -131,7 +133,7 @@ def callback_ecg(datasets):
         detect_pulse(len(datasets))
 
     # buffer for writes
-    if write > 0:
+    if write > 0 and "graph" in config.get_option("Log"):
         for value in datasets:
             filebuffer.extend(struct.pack("h", value))
             if len(filebuffer) >= FILEBUFFERBLOCK:
@@ -141,11 +143,36 @@ def callback_ecg(datasets):
     if update_screen >= DRAW_AFTER_SAMPLES:
         draw_histogram()
 
+def write_pulse():
+    global write, pause_screen
+    # write to file
+    lt = utime.localtime(write)
+    filename = "/pulse-{:04d}-{:02d}-{:02d}_{:02d}{:02d}{:02d}.log".format(*lt)
+
+    # write stuff to disk
+    try:
+        f = open(filename, "ab")
+        print(utime.time(), pulse)
+        f.write(struct.pack("h", utime.time(), pulse))
+        f.close()
+    except OSError as e:
+        print("Please check the file or filesystem", e)
+        write = 0
+        pause_screen = -1
+        disp.clear(COLOR_BACKGROUND)
+        disp.print("IO Error", posy=0, fg=COLOR_TEXT)
+        disp.print("Please check", posy=20, fg=COLOR_TEXT)
+        disp.print("your", posy=40, fg=COLOR_TEXT)
+        disp.print("filesystem", posy=60, fg=COLOR_TEXT)
+        disp.update()
+        close_sensor()
+    except:
+        print("Unexpected error, stop writing logfile")
+        write = 0
 
 def write_filebuffer():
-    global write, filebuffer
+    global write, filebuffer, pause_screen
     # write to file
-    chars = ""
     lt = utime.localtime(write)
     filename = "/ecg-{:04d}-{:02d}-{:02d}_{:02d}{:02d}{:02d}.log".format(*lt)
 
@@ -166,7 +193,7 @@ def write_filebuffer():
         disp.update()
         close_sensor()
     except:
-        print("Unexpected error, stop writeing logfile")
+        print("Unexpected error, stop writing logfile")
         write = 0
 
     filebuffer = bytearray()
