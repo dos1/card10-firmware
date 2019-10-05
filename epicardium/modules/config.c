@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define CONFIG_MAX_LINE_LENGTH 80
+#define MAX_LINE_LENGTH 80
 
 enum OptionType {
 	OptionType_Boolean,
@@ -131,7 +131,7 @@ static bool set_string(struct config_option *opt, const char *value)
 	return true;
 }
 
-static void configure(const char *key, const char *value, int lineNumber)
+static void configure(const char *key, const char *value, int line_number)
 {
 	struct config_option *opt = findOption(key);
 	if (!opt) {
@@ -139,7 +139,7 @@ static void configure(const char *key, const char *value, int lineNumber)
 		LOG_WARN(
 			"card10.cfg",
 			"line %d: ignoring unknown option '%s'",
-			lineNumber,
+			line_number,
 			key
 		);
 		return;
@@ -165,14 +165,14 @@ static void configure(const char *key, const char *value, int lineNumber)
 		LOG_WARN(
 			"card10.cfg",
 			"line %d: ignoring invalid value '%s' for option '%s'",
-			lineNumber,
+			line_number,
 			value,
 			key
 		);
 	}
 }
 
-static void doline(char *line, char *eol, int lineNumber)
+static void doline(char *line, char *eol, int line_number)
 {
 	//skip leading whitespace
 	while (*line && isspace((int)*line))
@@ -190,7 +190,7 @@ static void doline(char *line, char *eol, int lineNumber)
 			LOG_WARN(
 				"card10.cfg",
 				"line %d (%s): syntax error",
-				lineNumber,
+				line_number,
 				elide(line)
 			);
 		}
@@ -203,7 +203,7 @@ static void doline(char *line, char *eol, int lineNumber)
 		--e_key;
 	e_key[1] = '\0';
 	if (*key == '\0') {
-		LOG_WARN("card10.cfg", "line %d: empty key", lineNumber);
+		LOG_WARN("card10.cfg", "line %d: empty key", line_number);
 		return;
 	}
 
@@ -220,13 +220,13 @@ static void doline(char *line, char *eol, int lineNumber)
 		LOG_WARN(
 			"card10.cfg",
 			"line %d: empty value for option '%s'",
-			lineNumber,
+			line_number,
 			key
 		);
 		return;
 	}
 
-	configure(key, value, lineNumber);
+	configure(key, value, line_number);
 }
 
 bool config_get_boolean(enum EpicConfigOption option)
@@ -270,12 +270,12 @@ void load_config(void)
 		);
 		return;
 	}
-	char buf[CONFIG_MAX_LINE_LENGTH + 1];
-	int lineNumber = 0;
+	char buf[MAX_LINE_LENGTH + 1];
+	int line_number = 0;
 	int nread;
 	do {
-		nread = epic_file_read(fd, buf, CONFIG_MAX_LINE_LENGTH);
-		if (nread < CONFIG_MAX_LINE_LENGTH) {
+		nread = epic_file_read(fd, buf, MAX_LINE_LENGTH);
+		if (nread < MAX_LINE_LENGTH) {
 			//add fake EOL to ensure termination
 			buf[nread++] = '\n';
 		}
@@ -288,10 +288,10 @@ void load_config(void)
 			//line points one character past the las (if any) '\n' hence '- 1'
 			last_eol = line - buf - 1;
 			eol      = strchr(line, '\n');
-			++lineNumber;
+			++line_number;
 			if (eol) {
 				*eol = '\0';
-				doline(line, eol, lineNumber);
+				doline(line, eol, line_number);
 				line = eol + 1;
 				continue;
 			}
@@ -300,7 +300,7 @@ void load_config(void)
 				LOG_WARN(
 					"card10.cfg",
 					"line:%d: too long - aborting",
-					lineNumber
+					line_number
 				);
 				return;
 			}
