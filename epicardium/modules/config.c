@@ -8,172 +8,128 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stddef.h>
 
 #define MAX_LINE_LENGTH 80
+#define KEYS_PER_BLOCK 16
+#define KEY_LENGTH 16
+#define NOT_INT_MAGIC 0x80000000
 
-enum OptionType {
-	OptionType_Boolean,
-	OptionType_Int,
-	OptionType_Float,
-	OptionType_String,
-};
+// one key-value pair representing a line in the config
+typedef struct {
+	char key[KEY_LENGTH];
 
-struct config_option {
-	const char *name;
-	enum OptionType type;
-	union {
-		bool boolean;
-		long integer;
-		double floating_point;
-		char *string;
-	} value;
-};
+	// the value in the config file, if it's an integer.
+	// for strings it's set to NOT_INT_MAGIC
+	int value;
 
-static struct config_option s_options[_EpicOptionCount] = {
-/* clang-format off */
-	#define INIT_Boolean(v)  { .boolean        = (v) }
-	#define INIT_Int(v)      { .integer        = (v) }
-	#define INIT_Float(v)    { .floating_point = (v) }
-	#define INIT_String(v)   { .string         = (v) }
-	#define INIT_(tp, v)     INIT_ ## tp (v)
-	#define INIT(tp, v)      INIT_ (tp, v)
+	// the byte offset in the config file to read the value string
+	size_t value_offset;
+} config_slot;
 
-	#define CARD10_SETTING(identifier, spelling, tp, default_value)         \
-		[Option ## identifier] = { .name  = (spelling),                 \
-		                           .type  = OptionType_ ## tp,          \
-		                           .value = INIT(tp, (default_value)) },
+// a block of 16 config slots
+// if more are needed, this becomes a linked list
+typedef struct {
+	config_slot slots[KEYS_PER_BLOCK];
+	void *next;
+} config_block;
 
-	#include "modules/config.def"
-	/* clang-format on */
-};
+static config_block *config_data = NULL;
 
-static struct config_option *findOption(const char *key)
+// returns the config slot for a key name
+static config_slot *find_config_slot(const char *key)
 {
-	for (int i = 0; i < _EpicOptionCount; ++i) {
-		if (!strcmp(key, s_options[i].name)) {
-			return &s_options[i];
+	config_block *current = config_data;
+
+	while (current) {
+		for (int i = 0; i < KEYS_PER_BLOCK; i++) {
+			config_slot *k = &current->slots[i];
+
+			if (strcmp(k->key, key) == 0) {
+				// found what we're looking for
+				return k;
+
+			} else if (*k->key == '\0') {
+				// found the first empty key
+				return NULL;
+			}
 		}
+		current = current->next;
 	}
+
 	return NULL;
 }
 
-static bool set_bool(struct config_option *opt, const char *value)
+// returns the next available config slot, or allocates a new block if needed
+static config_slot *allocate_config_slot()
 {
-	bool val;
-	if (!strcmp(value, "1")) {
-		val = true;
-	} else if (!strcmp(value, "true")) {
-		val = true;
-	} else if (!strcmp(value, "0")) {
-		val = false;
-	} else if (!strcmp(value, "false")) {
-		val = false;
-	} else {
-		return false;
+	config_block *current;
+
+	if (config_data == NULL) {
+		config_data = malloc(sizeof(config_block));
+		memset(config_data, 0, sizeof(config_block));
 	}
-	opt->value.boolean = val;
-	LOG_DEBUG(
-		"card10.cfg",
-		"setting '%s' to %s",
-		opt->name,
-		val ? "true" : "false"
-	);
-	return true;
+
+	current = config_data;
+
+	while (current) {
+		for (int i = 0; i < KEYS_PER_BLOCK; i++) {
+			config_slot *k = &current->slots[i];
+			if (*k->key == '\0') {
+				return k;
+			}
+		}
+
+		// this block is full and there's no next allocated block
+		if (current->next == NULL) {
+			current->next = malloc(sizeof(config_block));
+			current       = current->next;
+			memset(current, 0, sizeof(config_block));
+		}
+	}
+
+	return NULL;
 }
 
-static bool set_int(struct config_option *opt, const char *value)
+// parses an int out of 'value' or returns NOT_INT_MAGIC
+static int try_parse_int(const char *value)
 {
 	char *endptr;
 	size_t len = strlen(value);
 	int v      = strtol(value, &endptr, 0);
+
 	if (endptr != (value + len)) {
-		return false;
+		return NOT_INT_MAGIC;
 	}
-	opt->value.integer = v;
-	LOG_DEBUG("card10.cfg", "setting '%s' to %d (0x%08x)", opt->name, v, v);
-	return true;
+
+	return v;
 }
 
-static bool set_float(struct config_option *opt, const char *value)
-{
-	char *endptr;
-	size_t len = strlen(value);
-	double v   = strtod(value, &endptr);
-	if (endptr != (value + len)) {
-		return false;
-	}
-	opt->value.floating_point = v;
-	LOG_DEBUG("card10.cfg", "setting '%s' to %f", opt->name, v);
-	return true;
-}
-
-const char *elide(const char *str)
-{
-	static char ret[21];
-	size_t len = strlen(str);
-	if (len <= 20) {
-		return str;
-	}
-	strncpy(ret, str, 17);
-	ret[17] = '.';
-	ret[18] = '.';
-	ret[19] = '.';
-	ret[20] = '\0';
-	return ret;
-}
-
-static bool set_string(struct config_option *opt, const char *value)
-{
-	//this leaks, but the lifetime of these ends when epicardium exits, so...
-	char *leaks       = strdup(value);
-	opt->value.string = leaks;
-	LOG_DEBUG("card10.cfg", "setting '%s' to %s", opt->name, elide(leaks));
-	return true;
-}
-
-static void configure(const char *key, const char *value, int line_number)
-{
-	struct config_option *opt = findOption(key);
-	if (!opt) {
-		//invalid key
+// loads a key/value pair into a new config slot
+static void add_config_pair(
+	const char *key, const char *value, int line_number, size_t value_offset
+) {
+	if (strlen(key) > KEY_LENGTH - 1) {
 		LOG_WARN(
 			"card10.cfg",
-			"line %d: ignoring unknown option '%s'",
-			line_number,
-			key
+			"line:%d: too long - aborting",
+			line_number
 		);
 		return;
 	}
-	bool ok = false;
-	switch (opt->type) {
-	case OptionType_Boolean:
-		ok = set_bool(opt, value);
-		break;
-	case OptionType_Int:
-		ok = set_int(opt, value);
-		break;
-	case OptionType_Float:
-		ok = set_float(opt, value);
-		break;
-	case OptionType_String:
-		ok = set_string(opt, value);
-		break;
-	default:
-		assert(0 && "unreachable");
-	}
-	if (!ok) {
-		LOG_WARN(
-			"card10.cfg",
-			"line %d: ignoring invalid value '%s' for option '%s'",
-			line_number,
-			value,
-			key
-		);
-	}
+
+	config_slot *slot = allocate_config_slot();
+	strncpy(slot->key, key, KEY_LENGTH);
+	slot->value        = try_parse_int(value);
+	slot->value_offset = value_offset;
 }
 
-static void doline(char *line, char *eol, int line_number)
+// parses one line of the config file
+static void
+parse_line(char *line, char *eol, int line_number, size_t line_offset)
 {
+	char *line_start = line;
+
 	//skip leading whitespace
 	while (*line && isspace((int)*line))
 		++line;
@@ -189,9 +145,8 @@ static void doline(char *line, char *eol, int line_number)
 		if (*key) {
 			LOG_WARN(
 				"card10.cfg",
-				"line %d (%s): syntax error",
-				line_number,
-				elide(line)
+				"line %d: syntax error",
+				line_number
 			);
 		}
 		return;
@@ -226,37 +181,12 @@ static void doline(char *line, char *eol, int line_number)
 		return;
 	}
 
-	configure(key, value, line_number);
+	size_t value_offset = value - line_start + line_offset;
+
+	add_config_pair(key, value, line_number, value_offset);
 }
 
-bool config_get_boolean(enum EpicConfigOption option)
-{
-	struct config_option *opt = &s_options[option];
-	assert(opt->type == OptionType_Boolean);
-	return opt->value.boolean;
-}
-
-long config_get_integer(enum EpicConfigOption option)
-{
-	struct config_option *opt = &s_options[option];
-	assert(opt->type == OptionType_Int);
-	return opt->value.integer;
-}
-
-double config_get_float(enum EpicConfigOption option)
-{
-	struct config_option *opt = &s_options[option];
-	assert(opt->type == OptionType_Float);
-	return opt->value.floating_point;
-}
-
-const char *config_get_string(enum EpicConfigOption option)
-{
-	struct config_option *opt = &s_options[option];
-	assert(opt->type == OptionType_String);
-	return opt->value.string;
-}
-
+// parses the entire config file
 void load_config(void)
 {
 	LOG_DEBUG("card10.cfg", "loading...");
@@ -271,7 +201,8 @@ void load_config(void)
 		return;
 	}
 	char buf[MAX_LINE_LENGTH + 1];
-	int line_number = 0;
+	int line_number    = 0;
+	size_t file_offset = 0;
 	int nread;
 	do {
 		nread = epic_file_read(fd, buf, MAX_LINE_LENGTH);
@@ -291,7 +222,8 @@ void load_config(void)
 			++line_number;
 			if (eol) {
 				*eol = '\0';
-				doline(line, eol, line_number);
+				parse_line(line, eol, line_number, file_offset);
+				file_offset += eol - line + 1;
 				line = eol + 1;
 				continue;
 			}
@@ -305,6 +237,7 @@ void load_config(void)
 				return;
 			}
 			int seek_back = last_eol - nread;
+
 			LOG_DEBUG(
 				"card10.cfg",
 				"nread, last_eol, seek_back: %d,%d,%d",
@@ -316,12 +249,15 @@ void load_config(void)
 			if (!seek_back) {
 				break;
 			}
+
+			file_offset += seek_back;
 			int rc = epic_file_seek(fd, seek_back, SEEK_CUR);
 			if (rc < 0) {
 				LOG_ERR("card10.cfg", "seek failed, aborting");
 				return;
 			}
 			char newline;
+			file_offset += 1;
 			rc = epic_file_read(fd, &newline, 1);
 			if (rc < 0 || newline != '\n') {
 				LOG_ERR("card10.cfg", "seek failed, aborting");
@@ -337,4 +273,91 @@ void load_config(void)
 		}
 	} while (nread == sizeof(buf));
 	epic_file_close(fd);
+}
+
+// opens the config file, seeks to seek_offset and reads buf_len bytes
+// used for reading strings without storing them in memory
+// since we don't need to optimize for that use case as much
+static size_t read_config_offset(size_t seek_offset, char *buf, size_t buf_len)
+{
+	int fd = epic_file_open("card10.cfg", "r");
+	if (fd < 0) {
+		LOG_DEBUG(
+			"card10.cfg",
+			"opening config failed: %s (%d)",
+			strerror(-fd),
+			fd
+		);
+		return 0;
+	}
+
+	int rc = epic_file_seek(fd, seek_offset, SEEK_SET);
+	if (rc < 0) {
+		LOG_ERR("card10.cfg", "seek failed, aborting");
+		return 0;
+	}
+
+	int nread = epic_file_read(fd, buf, buf_len);
+
+	buf[nread] = '\0';
+
+	epic_file_close(fd);
+
+	return nread;
+}
+
+// returns default_value if not found or invalid
+int config_get_integer(const char *key, int default_value)
+{
+	config_slot *slot = find_config_slot(key);
+	if (slot && slot->value != NOT_INT_MAGIC) {
+		return slot->value;
+	}
+	return default_value;
+}
+
+// returns NULL if not found, otherwise same pointer as buf
+char *config_get_string(const char *key, char *buf, size_t buf_len)
+{
+	config_slot *slot = find_config_slot(key);
+	if (!(slot && slot->value_offset)) {
+		return NULL;
+	}
+
+	size_t nread = read_config_offset(slot->value_offset, buf, buf_len);
+	if (nread == 0) {
+		return NULL;
+	}
+
+	char *eol = strchr(buf, '\n');
+	if (eol) {
+		*eol = '\0';
+	}
+
+	return buf;
+}
+
+// returns default_value if not found or invalid
+bool config_get_boolean(const char *key, bool default_value)
+{
+	int int_value = config_get_integer(key, -1);
+
+	if (int_value != -1) {
+		return !!int_value;
+	}
+
+	char buf[MAX_LINE_LENGTH + 1];
+	config_get_string(key, buf, MAX_LINE_LENGTH);
+
+	if (buf == NULL) {
+		return default_value;
+	}
+
+	if (!strcmp(buf, "true")) {
+		return true;
+	} else if (!strcmp(buf, "false")) {
+		return false;
+	}
+
+	return default_value;
 }
