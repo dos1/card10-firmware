@@ -2,6 +2,7 @@
 #include "modules/log.h"
 #include "modules/modules.h"
 #include "modules/config.h"
+#include "modules/mutex.h"
 #include "api/dispatcher.h"
 #include "api/interrupt-sender.h"
 #include "l0der/l0der.h"
@@ -10,7 +11,6 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 
 #include <string.h>
 #include <stdbool.h>
@@ -26,8 +26,7 @@
 #define PYINTERPRETER ""
 
 static TaskHandle_t lifecycle_task = NULL;
-static StaticSemaphore_t core1_mutex_data;
-static SemaphoreHandle_t core1_mutex = NULL;
+static struct mutex core1_mutex    = { 0 };
 
 enum payload_type {
 	PL_INVALID       = 0,
@@ -254,11 +253,7 @@ static void load_menu(bool reset)
 {
 	LOG_DEBUG("lifecycle", "Into the menu");
 
-	if (xSemaphoreTake(core1_mutex, BLOCK_WAIT) != pdTRUE) {
-		LOG_ERR("lifecycle",
-			"Can't load because mutex is blocked (menu).");
-		return;
-	}
+	mutex_lock(&core1_mutex);
 
 	int ret = load_async("menu.py", reset);
 	if (ret < 0) {
@@ -278,7 +273,7 @@ static void load_menu(bool reset)
 		}
 	}
 
-	xSemaphoreGive(core1_mutex);
+	mutex_unlock(&core1_mutex);
 }
 /* Helpers }}} */
 
@@ -298,14 +293,9 @@ void epic_system_reset(void)
  */
 int epic_exec(char *name)
 {
-	if (xSemaphoreTake(core1_mutex, BLOCK_WAIT) != pdTRUE) {
-		LOG_ERR("lifecycle",
-			"Can't load because mutex is blocked (epi exec).");
-		return -EBUSY;
-	}
-
+	mutex_lock(&core1_mutex);
 	int ret = load_sync(name, true);
-	xSemaphoreGive(core1_mutex);
+	mutex_unlock(&core1_mutex);
 	return ret;
 }
 
@@ -318,13 +308,9 @@ int epic_exec(char *name)
  */
 int __epic_exec(char *name)
 {
-	if (xSemaphoreTake(core1_mutex, BLOCK_WAIT) != pdTRUE) {
-		LOG_ERR("lifecycle",
-			"Can't load because mutex is blocked (1 exec).");
-		return -EBUSY;
-	}
+	mutex_lock(&core1_mutex);
 	int ret = load_async(name, false);
-	xSemaphoreGive(core1_mutex);
+	mutex_unlock(&core1_mutex);
 	return ret;
 }
 
@@ -361,17 +347,14 @@ void return_to_menu(void)
 void vLifecycleTask(void *pvParameters)
 {
 	lifecycle_task = xTaskGetCurrentTaskHandle();
-	core1_mutex    = xSemaphoreCreateMutexStatic(&core1_mutex_data);
-
-	if (xSemaphoreTake(core1_mutex, 0) != pdTRUE) {
-		panic("lifecycle: Failed to acquire mutex after creation.");
-	}
+	mutex_create(&core1_mutex);
+	mutex_lock(&core1_mutex);
 
 	LOG_DEBUG("lifecycle", "Booting core 1 ...");
 	core1_boot();
 	vTaskDelay(pdMS_TO_TICKS(10));
 
-	xSemaphoreGive(core1_mutex);
+	mutex_unlock(&core1_mutex);
 
 	/* If `main.py` exists, start it.  Otherwise, start `menu.py`. */
 	if (epic_exec("main.py") < 0) {
@@ -386,11 +369,7 @@ void vLifecycleTask(void *pvParameters)
 	while (1) {
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-		if (xSemaphoreTake(core1_mutex, BLOCK_WAIT) != pdTRUE) {
-			LOG_ERR("lifecycle",
-				"Can't load because mutex is blocked (task).");
-			continue;
-		}
+		mutex_lock(&core1_mutex);
 
 		if (write_menu) {
 			write_menu = false;
@@ -406,6 +385,6 @@ void vLifecycleTask(void *pvParameters)
 
 		do_load((struct load_info *)&async_load);
 
-		xSemaphoreGive(core1_mutex);
+		mutex_unlock(&core1_mutex);
 	}
 }
