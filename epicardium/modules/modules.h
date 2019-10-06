@@ -97,7 +97,7 @@ enum hwlock_periph {
 	_HWLOCK_MAX,
 };
 
-int hwlock_acquire(enum hwlock_periph p, TickType_t wait);
+int hwlock_acquire_timeout(enum hwlock_periph p, TickType_t wait);
 void hwlock_release(enum hwlock_periph p);
 
 /* ---------- Display ------------------------------------------------------ */

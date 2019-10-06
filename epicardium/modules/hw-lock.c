@@ -21,7 +21,7 @@ void hwlock_init(void)
 	}
 }
 
-int hwlock_acquire(enum hwlock_periph p, TickType_t wait)
+int hwlock_acquire_timeout(enum hwlock_periph p, TickType_t wait)
 {
 	assert(p < _HWLOCK_MAX);
 

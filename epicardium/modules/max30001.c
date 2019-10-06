@@ -54,7 +54,7 @@ int epic_max30001_enable_sensor(struct max30001_sensor_config *config)
 {
 	int result = 0;
 
-	result = hwlock_acquire(HWLOCK_SPI_ECG, pdMS_TO_TICKS(100));
+	result = hwlock_acquire_timeout(HWLOCK_SPI_ECG, portMAX_DELAY);
 	if (result < 0) {
 		return result;
 	}
@@ -107,7 +107,7 @@ int epic_max30001_disable_sensor(void)
 {
 	int result = 0;
 
-	result = hwlock_acquire(HWLOCK_SPI_ECG, pdMS_TO_TICKS(100));
+	result = hwlock_acquire_timeout(HWLOCK_SPI_ECG, portMAX_DELAY);
 	if (result < 0) {
 		return result;
 	}
@@ -298,7 +298,7 @@ static int max30001_fetch_fifo(void)
 {
 	int result = 0;
 
-	result = hwlock_acquire(HWLOCK_SPI_ECG, pdMS_TO_TICKS(100));
+	result = hwlock_acquire_timeout(HWLOCK_SPI_ECG, portMAX_DELAY);
 	if (result < 0) {
 		return result;
 	}
@@ -376,7 +376,7 @@ void vMAX30001Task(void *pvParameters)
 {
 	max30001_task_id = xTaskGetCurrentTaskHandle();
 
-	int lockret = hwlock_acquire(HWLOCK_SPI_ECG, pdMS_TO_TICKS(100));
+	int lockret = hwlock_acquire_timeout(HWLOCK_SPI_ECG, portMAX_DELAY);
 	if (lockret < 0) {
 		LOG_CRIT("max30001", "Failed to acquire SPI lock!");
 		vTaskDelay(portMAX_DELAY);

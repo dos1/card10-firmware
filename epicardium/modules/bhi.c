@@ -135,7 +135,7 @@ int epic_bhi160_enable_sensor(
 		return -ENODEV;
 	}
 
-	result = hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100));
+	result = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
 	if (result < 0) {
 		return result;
 	}
@@ -192,7 +192,7 @@ int epic_bhi160_disable_sensor(enum bhi160_sensor_type sensor_type)
 		return -ENODEV;
 	}
 
-	result = hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100));
+	result = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
 	if (result < 0) {
 		return result;
 	}
@@ -347,7 +347,7 @@ static int bhi160_fetch_fifo(void)
 	/* Number of bytes left in BHI160's FIFO buffer */
 	uint16_t bytes_left_in_fifo = 1;
 
-	result = hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100));
+	result = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
 	if (result < 0) {
 		return result;
 	}
@@ -433,7 +433,7 @@ void vBhi160Task(void *pvParameters)
 	 */
 	vTaskDelay(pdMS_TO_TICKS(3));
 
-	int lockret = hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100));
+	int lockret = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
 	if (lockret < 0) {
 		LOG_CRIT("bhi160", "Failed to acquire I2C lock!");
 		vTaskDelay(portMAX_DELAY);
@@ -469,7 +469,7 @@ void vBhi160Task(void *pvParameters)
 	/* Wait for first interrupt */
 	hwlock_release(HWLOCK_I2C);
 	ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
-	lockret = hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100));
+	lockret = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
 	if (lockret < 0) {
 		LOG_CRIT("bhi160", "Failed to acquire I2C lock!");
 		vTaskDelay(portMAX_DELAY);

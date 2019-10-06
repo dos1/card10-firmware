@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define LOCK_WAIT pdMS_TO_TICKS(1000)
+#define LOCK_WAIT portMAX_DELAY
 
 /* Task ID for the pmic handler */
 static TaskHandle_t pmic_task_id = NULL;
@@ -53,12 +53,12 @@ int pmic_read_amux(enum pmic_amux_signal sig, float *result)
 		return -EINVAL;
 	}
 
-	int adc_ret = hwlock_acquire(HWLOCK_ADC, LOCK_WAIT);
+	int adc_ret = hwlock_acquire_timeout(HWLOCK_ADC, LOCK_WAIT);
 	if (adc_ret < 0) {
 		ret = adc_ret;
 		goto done;
 	}
-	i2c_ret = hwlock_acquire(HWLOCK_I2C, LOCK_WAIT);
+	i2c_ret = hwlock_acquire_timeout(HWLOCK_I2C, LOCK_WAIT);
 	if (i2c_ret < 0) {
 		ret = i2c_ret;
 		goto done;
@@ -75,7 +75,7 @@ int pmic_read_amux(enum pmic_amux_signal sig, float *result)
 	hwlock_release(HWLOCK_I2C);
 
 	vTaskDelay(pdMS_TO_TICKS(5));
-	i2c_ret = hwlock_acquire(HWLOCK_I2C, LOCK_WAIT);
+	i2c_ret = hwlock_acquire_timeout(HWLOCK_I2C, LOCK_WAIT);
 	if (i2c_ret < 0) {
 		ret = i2c_ret;
 		goto done;
@@ -138,7 +138,7 @@ done:
  */
 static uint8_t pmic_poll_interrupts(void)
 {
-	while (hwlock_acquire(HWLOCK_I2C, LOCK_WAIT) < 0) {
+	while (hwlock_acquire_timeout(HWLOCK_I2C, LOCK_WAIT) < 0) {
 		LOG_WARN("pmic", "Failed to acquire I2C. Retrying ...");
 		vTaskDelay(pdMS_TO_TICKS(100));
 	}

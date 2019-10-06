@@ -43,7 +43,7 @@ int epic_bme680_init()
 		return 0;
 	}
 
-	if (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100)) < 0) {
+	if (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 		return -EBUSY;
 	}
 
@@ -110,7 +110,7 @@ int epic_bme680_deinit()
 		return 0;
 	}
 
-	if (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100)) < 0) {
+	if (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 		return -EBUSY;
 	}
 
@@ -133,7 +133,7 @@ int epic_bme680_read_sensors(struct bme680_sensor_data *data)
 		return -EINVAL;
 	}
 
-	if (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100)) < 0) {
+	if (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 		return -EBUSY;
 	}
 
@@ -152,7 +152,7 @@ int epic_bme680_read_sensors(struct bme680_sensor_data *data)
 	 */
 	hwlock_release(HWLOCK_I2C);
 	vTaskDelay(pdMS_TO_TICKS(profile_dur));
-	if (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100)) < 0) {
+	if (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 		return -EBUSY;
 	}
 
