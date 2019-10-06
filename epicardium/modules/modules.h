@@ -98,6 +98,8 @@ enum hwlock_periph {
 };
 
 int hwlock_acquire_timeout(enum hwlock_periph p, TickType_t wait);
+void hwlock_acquire(enum hwlock_periph p);
+int hwlock_acquire_nonblock(enum hwlock_periph p);
 void hwlock_release(enum hwlock_periph p);
 
 /* ---------- Display ------------------------------------------------------ */

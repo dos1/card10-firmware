@@ -21,6 +21,22 @@ void hwlock_init(void)
 	}
 }
 
+void hwlock_acquire(enum hwlock_periph p)
+{
+	assert(p < _HWLOCK_MAX);
+	mutex_lock(&hwlock_mutex[p]);
+}
+
+int hwlock_acquire_nonblock(enum hwlock_periph p)
+{
+	assert(p < _HWLOCK_MAX);
+	if (mutex_trylock(&hwlock_mutex[p])) {
+		return 0;
+	} else {
+		return -EBUSY;
+	}
+}
+
 int hwlock_acquire_timeout(enum hwlock_periph p, TickType_t wait)
 {
 	assert(p < _HWLOCK_MAX);
