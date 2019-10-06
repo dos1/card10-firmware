@@ -98,7 +98,7 @@ enum hwlock_periph {
 };
 
 int hwlock_acquire(enum hwlock_periph p, TickType_t wait);
-int hwlock_release(enum hwlock_periph p);
+void hwlock_release(enum hwlock_periph p);
 
 /* ---------- Display ------------------------------------------------------ */
 /* Forces an unlock of the display. Only to be used in Epicardium */

@@ -55,9 +55,8 @@ int hwlock_acquire(enum hwlock_periph p, TickType_t wait)
 	return 0;
 }
 
-int hwlock_release(enum hwlock_periph p)
+void hwlock_release(enum hwlock_periph p)
 {
 	assert(p < _HWLOCK_MAX);
 	mutex_unlock(&hwlock_mutex[p]);
-	return 0;
 }
