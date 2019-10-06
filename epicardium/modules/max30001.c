@@ -9,7 +9,6 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 #include "queue.h"
 
 #include "api/interrupt-sender.h"
@@ -17,9 +16,7 @@
 #include "modules/log.h"
 #include "modules/modules.h"
 #include "modules/stream.h"
-
-/* Ticks to wait when trying to acquire lock */
-#define LOCK_WAIT pdMS_TO_TICKS(MAX30001_MUTEX_WAIT_MS)
+#include "modules/mutex.h"
 
 /* Interrupt Pin */
 static const gpio_cfg_t max30001_interrupt_pin = {
@@ -36,8 +33,7 @@ static const gpio_cfg_t analog_switch = {
 static TaskHandle_t max30001_task_id = NULL;
 
 /* MAX30001 Mutex */
-static StaticSemaphore_t max30001_mutex_data;
-static SemaphoreHandle_t max30001_mutex = NULL;
+static struct mutex max30001_mutex = { 0 };
 
 /* Stream */
 static struct stream_info max30001_stream;
@@ -54,15 +50,8 @@ int epic_max30001_enable_sensor(struct max30001_sensor_config *config)
 {
 	int result = 0;
 
-	result = hwlock_acquire_timeout(HWLOCK_SPI_ECG, portMAX_DELAY);
-	if (result < 0) {
-		return result;
-	}
-
-	if (xSemaphoreTake(max30001_mutex, LOCK_WAIT) != pdTRUE) {
-		result = -EBUSY;
-		goto out_free_spi;
-	}
+	mutex_lock(&max30001_mutex);
+	hwlock_acquire(HWLOCK_SPI_ECG);
 
 	struct stream_info *stream = &max30001_stream;
 	;
@@ -97,9 +86,8 @@ int epic_max30001_enable_sensor(struct max30001_sensor_config *config)
 	result                 = SD_MAX30001_ECG;
 
 out_free_both:
-	xSemaphoreGive(max30001_mutex);
-out_free_spi:
 	hwlock_release(HWLOCK_SPI_ECG);
+	mutex_unlock(&max30001_mutex);
 	return result;
 }
 
@@ -107,15 +95,8 @@ int epic_max30001_disable_sensor(void)
 {
 	int result = 0;
 
-	result = hwlock_acquire_timeout(HWLOCK_SPI_ECG, portMAX_DELAY);
-	if (result < 0) {
-		return result;
-	}
-
-	if (xSemaphoreTake(max30001_mutex, LOCK_WAIT) != pdTRUE) {
-		result = -EBUSY;
-		goto out_free_spi;
-	}
+	mutex_lock(&max30001_mutex);
+	hwlock_acquire(HWLOCK_SPI_ECG);
 
 	struct stream_info *stream = &max30001_stream;
 	result                     = stream_deregister(SD_MAX30001_ECG, stream);
@@ -134,9 +115,8 @@ int epic_max30001_disable_sensor(void)
 
 	result = 0;
 out_free_both:
-	xSemaphoreGive(max30001_mutex);
-out_free_spi:
 	hwlock_release(HWLOCK_SPI_ECG);
+	mutex_unlock(&max30001_mutex);
 	return result;
 }
 
@@ -298,15 +278,8 @@ static int max30001_fetch_fifo(void)
 {
 	int result = 0;
 
-	result = hwlock_acquire_timeout(HWLOCK_SPI_ECG, portMAX_DELAY);
-	if (result < 0) {
-		return result;
-	}
-
-	if (xSemaphoreTake(max30001_mutex, LOCK_WAIT) != pdTRUE) {
-		result = -EBUSY;
-		goto out_free_spi;
-	}
+	mutex_lock(&max30001_mutex);
+	hwlock_acquire(HWLOCK_SPI_ECG);
 
 	uint32_t ecgFIFO, readECGSamples, ETAG[32], status;
 	int16_t ecgSample[32];
@@ -344,9 +317,8 @@ static int max30001_fetch_fifo(void)
 		max30001_handle_samples(ecgSample, readECGSamples);
 	}
 
-	xSemaphoreGive(max30001_mutex);
-out_free_spi:
 	hwlock_release(HWLOCK_SPI_ECG);
+	mutex_unlock(&max30001_mutex);
 	return result;
 }
 
@@ -369,24 +341,15 @@ static void max300001_interrupt_callback(void *_)
 
 void max30001_mutex_init(void)
 {
-	max30001_mutex = xSemaphoreCreateMutexStatic(&max30001_mutex_data);
+	mutex_create(&max30001_mutex);
 }
 
 void vMAX30001Task(void *pvParameters)
 {
 	max30001_task_id = xTaskGetCurrentTaskHandle();
 
-	int lockret = hwlock_acquire_timeout(HWLOCK_SPI_ECG, portMAX_DELAY);
-	if (lockret < 0) {
-		LOG_CRIT("max30001", "Failed to acquire SPI lock!");
-		vTaskDelay(portMAX_DELAY);
-	}
-
-	/* Take Mutex during initialization, just in case */
-	if (xSemaphoreTake(max30001_mutex, 0) != pdTRUE) {
-		LOG_CRIT("max30001", "Failed to acquire MAX30001 mutex!");
-		vTaskDelay(portMAX_DELAY);
-	}
+	mutex_lock(&max30001_mutex);
+	hwlock_acquire(HWLOCK_SPI_ECG);
 
 	/* Install interrupt callback */
 	GPIO_Config(&max30001_interrupt_pin);
@@ -407,20 +370,15 @@ void vMAX30001Task(void *pvParameters)
 	GPIO_Config(&analog_switch);
 	GPIO_OutClr(&analog_switch); // Wrist
 
-	xSemaphoreGive(max30001_mutex);
 	hwlock_release(HWLOCK_SPI_ECG);
+	mutex_unlock(&max30001_mutex);
 
 	/* ----------------------------------------- */
 
 	while (1) {
 		if (max30001_sensor_active) {
 			int ret = max30001_fetch_fifo();
-			if (ret == -EBUSY) {
-				LOG_WARN(
-					"max30001", "Could not acquire mutex?"
-				);
-				continue;
-			} else if (ret < 0) {
+			if (ret < 0) {
 				LOG_ERR("max30001", "Unknown error: %d", -ret);
 			}
 		}
