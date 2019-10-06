@@ -2,8 +2,8 @@
 #define MODULES_H
 
 #include "FreeRTOS.h"
-#include "semphr.h"
 #include "gpio.h"
+#include "modules/mutex.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -15,7 +15,7 @@ void panic(const char *format, ...)
 /* ---------- Dispatcher --------------------------------------------------- */
 void vApiDispatcher(void *pvParameters);
 void dispatcher_mutex_init(void);
-extern SemaphoreHandle_t api_mutex;
+extern struct mutex api_mutex;
 extern TaskHandle_t dispatcher_task_id;
 
 /* ---------- Hardware Init & Reset ---------------------------------------- */

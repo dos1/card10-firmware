@@ -1,21 +1,20 @@
 #include "modules/log.h"
+#include "modules/mutex.h"
 
 #include "api/dispatcher.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 
 #define TIMEOUT pdMS_TO_TICKS(2000)
 
 TaskHandle_t dispatcher_task_id;
 
-static StaticSemaphore_t api_mutex_data;
-SemaphoreHandle_t api_mutex = NULL;
+struct mutex api_mutex = { 0 };
 
 void dispatcher_mutex_init(void)
 {
-	api_mutex = xSemaphoreCreateMutexStatic(&api_mutex_data);
+	mutex_create(&api_mutex);
 }
 
 /*
@@ -27,12 +26,9 @@ void vApiDispatcher(void *pvParameters)
 	LOG_DEBUG("dispatcher", "Ready.");
 	while (1) {
 		if (api_dispatcher_poll()) {
-			if (xSemaphoreTake(api_mutex, TIMEOUT) != pdTRUE) {
-				LOG_ERR("dispatcher", "API mutex blocked");
-				continue;
-			}
+			mutex_lock(&api_mutex);
 			api_dispatcher_exec();
-			xSemaphoreGive(api_mutex);
+			mutex_unlock(&api_mutex);
 		}
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 	}

@@ -98,10 +98,7 @@ static int do_load(struct load_info *info)
 		LOG_INFO("lifecycle", "Loading \"%s\" ...", info->name);
 	}
 
-	if (xSemaphoreTake(api_mutex, BLOCK_WAIT) != pdTRUE) {
-		LOG_ERR("lifecycle", "API blocked");
-		return -EBUSY;
-	}
+	mutex_lock(&api_mutex);
 
 	if (info->do_reset) {
 		LOG_DEBUG("lifecycle", "Triggering core 1 reset.");
@@ -119,7 +116,7 @@ static int do_load(struct load_info *info)
 	 */
 	res = hardware_reset();
 	if (res < 0) {
-		return res;
+		goto out_free_api;
 	}
 
 	switch (info->type) {
@@ -133,8 +130,8 @@ static int do_load(struct load_info *info)
 			res = l0der_load_path(info->name, &l0dable);
 			if (res != 0) {
 				LOG_ERR("lifecycle", "l0der failed: %d\n", res);
-				xSemaphoreGive(api_mutex);
-				return -ENOEXEC;
+				res = -ENOEXEC;
+				goto out_free_api;
 			}
 			core1_load(l0dable.isr_vector, "");
 		} else {
@@ -148,12 +145,14 @@ static int do_load(struct load_info *info)
 		LOG_ERR("lifecyle",
 			"Attempted to load invalid payload (%s)",
 			info->name);
-		xSemaphoreGive(api_mutex);
-		return -EINVAL;
+		res = -EINVAL;
+		goto out_free_api;
 	}
 
-	xSemaphoreGive(api_mutex);
-	return 0;
+	res = 0;
+out_free_api:
+	mutex_unlock(&api_mutex);
+	return res;
 }
 
 /*
