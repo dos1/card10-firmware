@@ -1,3 +1,4 @@
 meson~=0.51.1
 crc16~=0.1.1
 pillow~=6.1.0
+pyserial~=3.4
