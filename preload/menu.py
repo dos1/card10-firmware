@@ -16,19 +16,28 @@ import utime
 
 App = collections.namedtuple("App", ["name", "path"])
 
+# Favorite apps which are shown at the very top of the app list
+FAVORITE_APPS = ["personal_state", "ecg"]
+
 
 def enumerate_entries():
     for f in os.listdir("/"):
         if f == "main.py":
             yield App("Home", f)
 
+    yield from enumerate_apps(FAVORITE_APPS)
+
     yield from sorted(enumerate_apps(), key=lambda b: b.name.lower())
 
 
-def enumerate_apps():
+def enumerate_apps(apps=None):
     """List all installed apps."""
-    for app in os.listdir("/apps"):
+    for app in apps or os.listdir("/apps"):
         if app.startswith("."):
+            continue
+
+        # Skip special apps when enumerating from filesystem
+        if apps is None and app in FAVORITE_APPS:
             continue
 
         if app.endswith(".py") or app.endswith(".elf"):
