@@ -5,6 +5,7 @@ You can customize this script however you want :)  If you want to go back to
 the default version, just delete this file; the firmware will recreate it on
 next run.
 """
+import buttons
 import collections
 import color
 import display
@@ -24,6 +25,8 @@ def enumerate_entries():
     for f in os.listdir("/"):
         if f == "main.py":
             yield App("Home", f)
+
+    yield App("USB Storage", "USB_STORAGE_FLAG")
 
     yield from enumerate_apps(FAVORITE_APPS)
 
@@ -56,6 +59,25 @@ def enumerate_apps(apps=None):
             sys.print_exception(e)
 
 
+def usb_mode(disp):
+    os.usbconfig(os.USB_FLASH)
+
+    disp.clear(color.CAMPGREEN)
+    disp.print("USB Storage", posx=3, posy=20, fg=color.CAMPGREEN_DARK)
+    disp.print("open", posx=52, posy=40, fg=color.CAMPGREEN_DARK)
+    disp.update()
+
+    # Wait for select button to be released
+    while buttons.read(0xFF) == buttons.TOP_RIGHT:
+        pass
+
+    # Wait for any button to be pressed and disable USB storage again
+    while buttons.read(0xFF) == 0:
+        pass
+
+    os.usbconfig(os.USB_SERIAL)
+
+
 class MainMenu(simple_menu.Menu):
     timeout = 30.0
 
@@ -65,6 +87,10 @@ class MainMenu(simple_menu.Menu):
     def on_select(self, app, index):
         self.disp.clear().update()
         try:
+            if app.path == "USB_STORAGE_FLAG":
+                usb_mode(self.disp)
+                return
+
             print("Trying to load " + app.path)
             os.exec(app.path)
         except OSError as e:
