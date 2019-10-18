@@ -17,13 +17,17 @@ import utime
 App = collections.namedtuple("App", ["name", "path"])
 
 
-def enumerate_apps():
-    """List all installed apps."""
+def enumerate_entries():
     for f in os.listdir("/"):
         if f == "main.py":
             yield App("Home", f)
 
-    for app in sorted(os.listdir("/apps")):
+    yield from sorted(enumerate_apps(), key=lambda b: b.name.lower())
+
+
+def enumerate_apps():
+    """List all installed apps."""
+    for app in os.listdir("/apps"):
         if app.startswith("."):
             continue
 
@@ -88,7 +92,7 @@ def no_apps_message():
 
 if __name__ == "__main__":
     try:
-        apps = list(enumerate_apps())
+        apps = list(enumerate_entries())
     except OSError:
         apps = []
 
