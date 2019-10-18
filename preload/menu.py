@@ -74,6 +74,14 @@ class MainMenu(simple_menu.Menu):
             pass
 
 
+def loading_message():
+    with display.open() as disp:
+        disp.clear(color.CHAOSBLUE)
+        disp.print("Loading", posx=31, posy=20)
+        disp.print("menu ...", posx=24, posy=40)
+        disp.update()
+
+
 def no_apps_message():
     """Display a warning if no apps are installed."""
     with display.open() as disp:
@@ -91,6 +99,8 @@ def no_apps_message():
 
 
 if __name__ == "__main__":
+    loading_message()
+
     try:
         apps = list(enumerate_entries())
     except OSError:
