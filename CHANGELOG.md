@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+### Added
+- **USB Storage mode**!  You can now select 'USB Storage' in the menu and
+  access card10's filesystem via USB.  No more rebooting into bootloader!
+- LED feedback on boot.  If your display is broken, you can still see it doing
+  something now.
+- `./tools/pycard10.py --set-time` to set card10's system time from your host.
+- 4 new functions in `utime` modules:
+  * `set_time_ms()`
+  * `set_unix_time_ms()`
+  * `unix_time()`
+  * `unix_time_ms()`
+
+### Changed
+- Updated BLE stack
+- Refactored gfx API for drawing images (internal).
+- Draw partially clipped primitives in all cases (Fixes menu scrolling
+  animation).
+- Fatal errors are now handled in a central 'panic' module.
+
+### Fixed
+- Make BLE interrupts higher priority than anything else to hopefully increase
+  stability.
+- Turn off BLE encryption after closing a connection.
+- Fixed mainline bootloader being broken.
+- Fixed menu entries being ordered by path instead of name.
+- Fixed menu crashing without a message.
+- Fixed QSTR build-system.
 
 
 ## [v1.11] - 2019-09-24 - [Karotte]

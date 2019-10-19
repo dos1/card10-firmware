@@ -34,20 +34,26 @@ clockwise around their respective axis.
         utime.sleep(0.25)
 
 
-.. autoclass:: bhi160.BHI160
-
+Orientation
+-----------
 .. autoclass:: bhi160.BHI160Orientation
    :members:
    :inherited-members:
 
+Accelerometer
+-------------
 .. autoclass:: bhi160.BHI160Accelerometer
   :members:
   :inherited-members:
 
+Gyroscope
+---------
 .. autoclass:: bhi160.BHI160Gyroscope
   :members:
   :inherited-members:
 
+Magnetometer
+------------
 .. autoclass:: bhi160.BHI160Magnetometer
   :members:
   :inherited-members:

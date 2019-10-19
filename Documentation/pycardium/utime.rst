@@ -45,6 +45,18 @@ alarm.
 
    .. versionadded:: 1.11
 
+.. py:function:: unix_time()
+
+   Return the current unix time as seconds since the epoch.
+
+   .. versionadded:: 1.12
+
+.. py:function:: unix_time_ms()
+
+   Return the current unix time as milliseconds since the epoch.
+
+   .. versionadded:: 1.12
+
 .. py:function:: set_time(secs)
 
    Sets the time to ``secs`` seconds since 2000-01-01 00:00 in the local
@@ -54,12 +66,25 @@ alarm.
       :py:func:`utime.set_time` previously applied a wrong timezone offset,
       thus leading to wrong results.
 
+.. py:function:: set_time_ms(msecs)
+
+   Set the time to ``msecs`` seconds since 2000-01-01 00:00 in the local
+   timezone.
+
+   .. versionadded:: 1.12
+
 .. py:function:: set_unix_time(secs)
 
    Sets the time to ``secs`` seconds since 1970-01-01 00:00 UTC.
    This corresponds to a regular Unix timestamp which can be obtained
    by running ``date +%s`` in a command line or ``int(time.time())``
    in Python.
+
+.. py:function:: set_unix_time_ms(msecs)
+
+   Set the time to ``msecs`` milliseconds since the unix epoch.
+
+   .. versionadded:: 1.12
 
 .. py:function:: localtime([secs])
 
