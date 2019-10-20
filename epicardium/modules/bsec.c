@@ -168,6 +168,37 @@ done:
 	epic_file_close(fd);
 }
 
+static int8_t
+i2c_write(uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t size)
+{
+    printf("write reg: %02x ", reg); dump(p_buf, size); printf("\n");
+    int8_t ret;
+	int lockret = hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100));
+	if (lockret < 0) {
+		LOG_CRIT("bhi160", "Failed to acquire I2C lock!");
+		vTaskDelay(portMAX_DELAY);
+	}
+
+    ret = card10_bosch_i2c_write(addr, reg, p_buf, size);
+	hwlock_release(HWLOCK_I2C);
+    return ret;
+}
+
+static int8_t
+i2c_read(uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t size)
+{
+    int8_t ret;
+	int lockret = hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100));
+	if (lockret < 0) {
+		LOG_CRIT("bhi160", "Failed to acquire I2C lock!");
+		vTaskDelay(portMAX_DELAY);
+	}
+    ret = card10_bosch_i2c_read(addr, reg, p_buf, size);
+    hwlock_release(HWLOCK_I2C);
+    printf("read reg: %02x ", reg); dump(p_buf, size); printf("\n");
+    return ret;
+}
+
 /*!
  * @brief           Load library config from non-volatile memory
  *
@@ -216,6 +247,12 @@ void ulp_plus_button_press()
 }
 #endif
 
+static void delay(uint32_t msec)
+{
+    printf("delay %u\n", msec);
+	vTaskDelay(pdMS_TO_TICKS(msec));
+}
+
 /*!
  * @brief       Main function which configures BSEC library and then reads and processes the data from sensor based
  *              on timer ticks
@@ -233,9 +270,9 @@ void vBSECTask(void *pvParameters)
 	ret = bsec_iot_init(
 		BSEC_SAMPLE_RATE_LP,
 		0.0f,
-		card10_bosch_i2c_write,
-		card10_bosch_i2c_read,
-		card10_bosch_delay,
+		i2c_write,
+		i2c_read,
+		delay,
 		state_load,
 		config_load
 	);
@@ -259,7 +296,7 @@ void vBSECTask(void *pvParameters)
 
 	/* State is saved every 100 samples, which means every 1200 * 3 secs = 60 minutes  */
 	bsec_iot_loop(
-		card10_bosch_delay,
+		delay,
 		get_timestamp_us,
 		output_ready,
 		state_save,
