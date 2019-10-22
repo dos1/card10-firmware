@@ -3,6 +3,8 @@ import subprocess
 import sys
 import time
 import sphinx.util.logging
+from docutils import nodes
+from docutils.parsers import rst
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -46,6 +48,21 @@ todo_include_todos = True
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["output", "Thumbs.db", ".DS_Store", "hawkmoth"]
+
+# -- Extensions -------------------------------------------------------------- {{{
+
+
+class ColorExample(rst.Directive):
+    has_content = False
+    required_arguments = 1
+    optional_arguments = 0
+    option_spec = {}
+
+    def run(self):
+        color = self.arguments[0]
+        html_text = '<div style="width: 30px;height: 30px;background: {};border: black 1px solid;border-radius: 15px;"></div>'
+        return [nodes.raw("", html_text.format(color), format="html")]
+# }}}
 
 # -- Options for HTML output ------------------------------------------------- {{{
 
@@ -125,3 +142,4 @@ except ImportError as e:
 # -- Sphinx Setup ------------------------------------------------------------
 def setup(app):
     app.add_config_value("has_hawkmoth", has_hawkmoth, "")
+    app.add_directive("color-example", ColorExample)
