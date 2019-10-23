@@ -57,7 +57,8 @@ COLORS = [((23 + (15 * i)) % 360, 1.0, 1.0) for i in range(11)]
 moving_average = 0
 alpha = 2
 beta = 3
-betadash = beta/(alpha+beta)
+betadash = beta / (alpha + beta)
+
 
 def update_history(datasets):
     global history, moving_average, alpha, beta, last_sample_count
@@ -65,7 +66,7 @@ def update_history(datasets):
     for val in datasets:
         if current_mode == MODE_FINGER:
             history.append(val - moving_average)
-            moving_average += betadash*(val-moving_average)
+            moving_average += betadash * (val - moving_average)
             # identical to: moving_average = (alpha * moving_average + beta * val) / (alpha + beta)
         else:
             history.append(val)
