@@ -62,8 +62,11 @@ def update_history(datasets):
     global history, moving_average, alpha, beta, last_sample_count
     last_sample_count = len(datasets)
     for val in datasets:
-        history.append(val - moving_average)
-        moving_average = (alpha * moving_average + beta * val) / (alpha + beta)
+        if current_mode == MODE_FINGER:
+            history.append(val - moving_average)
+            moving_average = (alpha * moving_average + beta * val) / (alpha + beta)
+        else:
+            history.append(val)
 
     # trim old elements
     history = history[-HISTORY_MAX:]
