@@ -51,19 +51,25 @@ last_sample_count = 1
 leds.dim_top(1)
 COLORS = [((23 + (15 * i)) % 360, 1.0, 1.0) for i in range(11)]
 
-
 # variables for high-pass filter
+# note: corresponds to 1st order hpf with -3dB at ~18.7Hz
+# general formula: f(-3dB)=-(sample_rate/tau)*ln(1-betadash)
 moving_average = 0
 alpha = 2
 beta = 3
+betadash = beta / (alpha + beta)
 
 
 def update_history(datasets):
     global history, moving_average, alpha, beta, last_sample_count
     last_sample_count = len(datasets)
     for val in datasets:
-        history.append(val - moving_average)
-        moving_average = (alpha * moving_average + beta * val) / (alpha + beta)
+        if current_mode == MODE_FINGER:
+            history.append(val - moving_average)
+            moving_average += betadash * (val - moving_average)
+            # identical to: moving_average = (alpha * moving_average + beta * val) / (alpha + beta)
+        else:
+            history.append(val)
 
     # trim old elements
     history = history[-HISTORY_MAX:]
