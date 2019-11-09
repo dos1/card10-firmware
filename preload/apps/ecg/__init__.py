@@ -71,7 +71,7 @@ samples_since_last_pulse = 0
 last_pulse_blink = 0
 q_threshold = -1
 r_threshold = 1
-q_spike = -500 #just needs to be long ago
+q_spike = -500  # just needs to be long ago
 
 
 def neighbours(n, lst):
@@ -143,17 +143,19 @@ def callback_ecg(datasets):
     if update_screen >= DRAW_AFTER_SAMPLES:
         draw_histogram()
 
-def write_pulse():
+
+def append_to_file(fileprefix, content):
     global write, pause_screen
     # write to file
     lt = utime.localtime(write)
-    filename = "/pulse-{:04d}-{:02d}-{:02d}_{:02d}{:02d}{:02d}.log".format(*lt)
+    filename = "/ecg_logs/{}-{:04d}-{:02d}-{:02d}_{:02d}{:02d}{:02d}.log".format(
+        fileprefix, *lt
+    )
 
     # write stuff to disk
     try:
         f = open(filename, "ab")
-        print(utime.time(), pulse)
-        f.write(struct.pack("h", utime.time(), pulse))
+        f.write(content)
         f.close()
     except OSError as e:
         print("Please check the file or filesystem", e)
@@ -169,33 +171,15 @@ def write_pulse():
     except:
         print("Unexpected error, stop writing logfile")
         write = 0
+
+
+def write_pulse():
+    append_to_file("pulse", struct.pack("ib", utime.time(), pulse))
+
 
 def write_filebuffer():
-    global write, filebuffer, pause_screen
-    # write to file
-    lt = utime.localtime(write)
-    filename = "/ecg-{:04d}-{:02d}-{:02d}_{:02d}{:02d}{:02d}.log".format(*lt)
-
-    # write stuff to disk
-    try:
-        f = open(filename, "ab")
-        f.write(filebuffer)
-        f.close()
-    except OSError as e:
-        print("Please check the file or filesystem", e)
-        write = 0
-        pause_screen = -1
-        disp.clear(COLOR_BACKGROUND)
-        disp.print("IO Error", posy=0, fg=COLOR_TEXT)
-        disp.print("Please check", posy=20, fg=COLOR_TEXT)
-        disp.print("your", posy=40, fg=COLOR_TEXT)
-        disp.print("filesystem", posy=60, fg=COLOR_TEXT)
-        disp.update()
-        close_sensor()
-    except:
-        print("Unexpected error, stop writing logfile")
-        write = 0
-
+    global filebuffer
+    append_to_file("ecg", filebuffer)
     filebuffer = bytearray()
 
 
@@ -226,6 +210,10 @@ def toggle_write():
     else:
         filebuffer = bytearray()
         write = utime.time()
+        try:
+            os.mkdir("ecg_logs")
+        except:
+            pass
         disp.print("Start", posx=45, posy=20, fg=COLOR_TEXT)
         disp.print("logging", posx=30, posy=40, fg=COLOR_TEXT)
 
@@ -241,7 +229,6 @@ def toggle_pause():
         pause_histogram = True
     histogram_offset = 0
     leds.clear()
-
 
 
 def draw_leds(vmin, vmax):
@@ -301,7 +288,7 @@ def draw_histogram():
     timeWindow = config.get_option("Window")
     window_end = int(len(history) - histogram_offset)
     s_end = max(0, window_end)
-    s_start = max(0, s_end - WIDTH*timeWindow)
+    s_start = max(0, s_end - WIDTH * timeWindow)
 
     # get max value and calc scale
     value_max = max(abs(x) for x in history[s_start:s_end])
@@ -313,7 +300,7 @@ def draw_histogram():
 
     prev = next(draw_points)
     for x, value in enumerate(draw_points):
-        disp.line(x//timeWindow, prev, (x + 1)//timeWindow, value, col=COLOR_LINE)
+        disp.line(x // timeWindow, prev, (x + 1) // timeWindow, value, col=COLOR_LINE)
         prev = value
 
     # draw text: mode/bias/write
@@ -336,11 +323,14 @@ def draw_histogram():
         )
         if pulse < 0:
             disp.print(
-                config.get_option("Mode") + ("+Bias" if config.get_option("Bias") else ""),
+                config.get_option("Mode")
+                + ("+Bias" if config.get_option("Bias") else ""),
                 posx=0,
                 posy=0,
                 fg=(
-                    COLOR_MODE_FINGER if config.get_option("Mode") == MODE_FINGER else COLOR_MODE_USB
+                    COLOR_MODE_FINGER
+                    if config.get_option("Mode") == MODE_FINGER
+                    else COLOR_MODE_USB
                 ),
             )
         else:
@@ -349,7 +339,9 @@ def draw_histogram():
                 posx=0,
                 posy=0,
                 fg=(
-                    COLOR_MODE_FINGER if config.get_option("Mode") == MODE_FINGER else COLOR_MODE_USB
+                    COLOR_MODE_FINGER
+                    if config.get_option("Mode") == MODE_FINGER
+                    else COLOR_MODE_USB
                 ),
             )
 
@@ -399,7 +391,6 @@ def main():
             if button_pressed["TOP_RIGHT"] == 0 and v & buttons.TOP_RIGHT != 0:
                 button_pressed["TOP_RIGHT"] = 1
                 toggle_pause()
-                
 
             # up
             if button_pressed["TOP_RIGHT"] > 0 and v & buttons.TOP_RIGHT == 0:
@@ -416,11 +407,11 @@ def main():
                 if pause_histogram:
                     l = len(history)
                     histogram_offset += config.get_option("Rate") / 2
-                    if l - histogram_offset < WIDTH*config.get_option("Window"):
-                        histogram_offset = l - WIDTH*config.get_option("Window")
+                    if l - histogram_offset < WIDTH * config.get_option("Window"):
+                        histogram_offset = l - WIDTH * config.get_option("Window")
                 else:
                     toggle_write()
-                
+
             # up
             if button_pressed["BOTTOM_LEFT"] > 0 and v & buttons.BOTTOM_LEFT == 0:
                 button_pressed["BOTTOM_LEFT"] = 0
@@ -435,18 +426,21 @@ def main():
                 button_pressed["BOTTOM_RIGHT"] = 1
                 if pause_histogram:
                     histogram_offset -= config.get_option("Rate") / 2
-                    histogram_offset -= histogram_offset % (config.get_option("Rate") / 2)
+                    histogram_offset -= histogram_offset % (
+                        config.get_option("Rate") / 2
+                    )
                     if histogram_offset < 0:
                         histogram_offset = 0
                 else:
-                    pause_screen = -1 # hide graph
-                    leds.clear() # disable all LEDs
-                    config.run() # show config menu
-                    close_sensor() # reset sensor in case mode or bias was changed TODO do not close sensor otherwise?
+                    pause_screen = -1  # hide graph
+                    leds.clear()  # disable all LEDs
+                    config.run()  # show config menu
+                    close_sensor()  # reset sensor in case mode or bias was changed TODO do not close sensor otherwise?
                     open_sensor()
-                    pause_screen = 0 # start plotting graph again
-                    button_pressed["TOP_RIGHT"] = 1 # returning from menu was by pressing the TOP_RIGHT button
-                
+                    pause_screen = 0  # start plotting graph again
+                    # returning from menu was by pressing the TOP_RIGHT button
+                    button_pressed["TOP_RIGHT"] = 1
+
             # up
             if button_pressed["BOTTOM_RIGHT"] > 0 and v & buttons.BOTTOM_RIGHT == 0:
                 button_pressed["BOTTOM_RIGHT"] = 0
