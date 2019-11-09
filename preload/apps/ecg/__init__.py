@@ -28,8 +28,13 @@ COLOR_WRITE_FG = [255, 255, 255]
 COLOR_WRITE_BG = [255, 0, 0]
 
 history = []
+
+# variables for file output
 filebuffer = bytearray()
 write = 0
+write_time_string = ""
+samples_since_start_of_write = 0
+
 update_screen = 0
 pause_screen = 0
 pause_graph = False
@@ -109,7 +114,6 @@ def detect_pulse(num_new_samples):
         ):
             # the full QRS complex is < 0.1s long, so the q and r spike in particular cannot be more than ecg_rate//10 samples apart
             pulse = 60 * ecg_rate // samples_since_last_pulse
-            samples_since_last_pulse = 0
             q_spike = -ecg_rate
             if pulse < 30 or pulse > 210:
                 pulse = -1
@@ -117,6 +121,7 @@ def detect_pulse(num_new_samples):
                 write_pulse()
             # we expect the next r-spike to be at least 60% as high as this one
             r_threshold = (cur * 3) // 5
+            samples_since_last_pulse = 0
         elif samples_since_last_pulse > 2 * ecg_rate:
             q_threshold = -1
             r_threshold = 1
@@ -124,8 +129,10 @@ def detect_pulse(num_new_samples):
 
 
 def callback_ecg(datasets):
-    global update_screen, history, filebuffer, write
+    global update_screen, history, filebuffer, write, samples_since_start_of_write
     update_screen += len(datasets)
+    if write > 0:
+        samples_since_start_of_write += len(datasets)
 
     # update graph datalist
     if not pause_graph:
@@ -147,10 +154,7 @@ def callback_ecg(datasets):
 def append_to_file(fileprefix, content):
     global write, pause_screen
     # write to file
-    lt = utime.localtime(write)
-    filename = "/ecg_logs/{}-{:04d}-{:02d}-{:02d}_{:02d}{:02d}{:02d}.log".format(
-        fileprefix, *lt
-    )
+    filename = "/ecg_logs/{}-{}.log".format(fileprefix, write_time_string)
 
     # write stuff to disk
     try:
@@ -174,7 +178,9 @@ def append_to_file(fileprefix, content):
 
 
 def write_pulse():
-    append_to_file("pulse", struct.pack("ib", utime.time(), pulse))
+    # estimates timestamp as calls to utime.time() take too much time
+    approx_timestamp = write + samples_since_start_of_write // config.get_option("Rate")
+    append_to_file("pulse", struct.pack("ib", approx_timestamp, pulse))
 
 
 def write_filebuffer():
@@ -199,7 +205,7 @@ def close_sensor():
 
 
 def toggle_write():
-    global write, disp, pause_screen
+    global write, disp, pause_screen, filebuffer, samples_since_start_of_write, write_time_string
     pause_screen = utime.time_ms() + 1000
     disp.clear(COLOR_BACKGROUND)
     if write > 0:
@@ -210,6 +216,9 @@ def toggle_write():
     else:
         filebuffer = bytearray()
         write = utime.time()
+        lt = utime.localtime(write)
+        write_time_string = "{:04d}-{:02d}-{:02d}_{:02d}{:02d}{:02d}".format(*lt)
+        samples_since_start_of_write = 0
         try:
             os.mkdir("ecg_logs")
         except:
@@ -426,9 +435,7 @@ def main():
                 button_pressed["BOTTOM_RIGHT"] = 1
                 if pause_graph:
                     graph_offset -= config.get_option("Rate") / 2
-                    graph_offset -= graph_offset % (
-                        config.get_option("Rate") / 2
-                    )
+                    graph_offset -= graph_offset % (config.get_option("Rate") / 2)
                     if graph_offset < 0:
                         graph_offset = 0
                 else:
