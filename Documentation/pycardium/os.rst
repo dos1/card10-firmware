@@ -8,12 +8,6 @@ functions found in CPythons ``os`` module.
 CPython-Like
 ------------
 
-.. py:function:: unlink(path)
-
-   Unlink (remove) a file.
-
-   :param str path: The file to remove.
-
 .. py:function:: listdir(dir)
 
    List contents of a directory.
@@ -21,6 +15,28 @@ CPython-Like
    :param str dir: Path to the directory to list.
    :returns: A list of entities (files or subdirectories) in the directory
       ``dir``.
+
+.. py:function:: mkdir(path)
+
+   Create a directory named *path*.
+
+   :param str path: Path to the directory to create.  Only the last component
+      of this path will be created.
+
+.. py:function:: rename(src, dst)
+
+   Rename the file or directory *src* to *dst*. If *dst* exists, the operation
+   will fail.
+
+   :param str src: Path to source file to rename.
+   :param str dst: Destination path to rename to.  Must not exist before
+      calling :py:func:`os.rename`.
+
+.. py:function:: unlink(path)
+
+   Unlink (remove) a file.
+
+   :param str path: The file to remove.
 
 .. py:function:: urandom(n)
 
