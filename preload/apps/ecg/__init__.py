@@ -32,8 +32,8 @@ filebuffer = bytearray()
 write = 0
 update_screen = 0
 pause_screen = 0
-pause_histogram = False
-histogram_offset = 0
+pause_graph = False
+graph_offset = 0
 sensor = 0
 disp = display.open()
 last_sample_count = 1
@@ -127,8 +127,8 @@ def callback_ecg(datasets):
     global update_screen, history, filebuffer, write
     update_screen += len(datasets)
 
-    # update histogram datalist
-    if not pause_histogram:
+    # update graph datalist
+    if not pause_graph:
         update_history(datasets)
         detect_pulse(len(datasets))
 
@@ -141,7 +141,7 @@ def callback_ecg(datasets):
 
     # don't update on every callback
     if update_screen >= DRAW_AFTER_SAMPLES:
-        draw_histogram()
+        draw_graph()
 
 
 def append_to_file(fileprefix, content):
@@ -221,13 +221,13 @@ def toggle_write():
 
 
 def toggle_pause():
-    global pause_histogram, histogram_offset, history, leds
-    if pause_histogram:
-        pause_histogram = False
+    global pause_graph, graph_offset, history, leds
+    if pause_graph:
+        pause_graph = False
         history = []
     else:
-        pause_histogram = True
-    histogram_offset = 0
+        pause_graph = True
+    graph_offset = 0
     leds.clear()
 
 
@@ -269,7 +269,7 @@ def draw_leds(vmin, vmax):
     leds.update()
 
 
-def draw_histogram():
+def draw_graph():
     global disp, history, write, pause_screen, update_screen
 
     # skip rendering due to message beeing shown
@@ -284,9 +284,9 @@ def draw_histogram():
 
     disp.clear(COLOR_BACKGROUND)
 
-    # offset in pause_histogram mode
+    # offset in pause_graph mode
     timeWindow = config.get_option("Window")
-    window_end = int(len(history) - histogram_offset)
+    window_end = int(len(history) - graph_offset)
     s_end = max(0, window_end)
     s_start = max(0, s_end - WIDTH * timeWindow)
 
@@ -294,7 +294,7 @@ def draw_histogram():
     value_max = max(abs(x) for x in history[s_start:s_end])
     scale = SCALE_FACTOR / (value_max if value_max > 0 else 1)
 
-    # draw histogram
+    # draw graph
     # values need to be inverted so high values are drawn with low pixel coordinates (at the top of the screen)
     draw_points = (int(-x * scale + OFFSET_Y) for x in history[s_start:s_end])
 
@@ -304,12 +304,12 @@ def draw_histogram():
         prev = value
 
     # draw text: mode/bias/write
-    if pause_histogram:
+    if pause_graph:
         disp.print(
             "Pause"
             + (
-                " -{:0.1f}s".format(histogram_offset / config.get_option("Rate"))
-                if histogram_offset > 0
+                " -{:0.1f}s".format(graph_offset / config.get_option("Rate"))
+                if graph_offset > 0
                 else ""
             ),
             posx=0,
@@ -356,7 +356,7 @@ def draw_histogram():
 
 
 def main():
-    global pause_histogram, histogram_offset, pause_screen
+    global pause_graph, graph_offset, pause_screen
 
     # show button layout
     disp.clear(COLOR_BACKGROUND)
@@ -404,11 +404,11 @@ def main():
             # down
             if button_pressed["BOTTOM_LEFT"] == 0 and v & buttons.BOTTOM_LEFT != 0:
                 button_pressed["BOTTOM_LEFT"] = 1
-                if pause_histogram:
+                if pause_graph:
                     l = len(history)
-                    histogram_offset += config.get_option("Rate") / 2
-                    if l - histogram_offset < WIDTH * config.get_option("Window"):
-                        histogram_offset = l - WIDTH * config.get_option("Window")
+                    graph_offset += config.get_option("Rate") / 2
+                    if l - graph_offset < WIDTH * config.get_option("Window"):
+                        graph_offset = l - WIDTH * config.get_option("Window")
                 else:
                     toggle_write()
 
@@ -424,13 +424,13 @@ def main():
             # down
             if button_pressed["BOTTOM_RIGHT"] == 0 and v & buttons.BOTTOM_RIGHT != 0:
                 button_pressed["BOTTOM_RIGHT"] = 1
-                if pause_histogram:
-                    histogram_offset -= config.get_option("Rate") / 2
-                    histogram_offset -= histogram_offset % (
+                if pause_graph:
+                    graph_offset -= config.get_option("Rate") / 2
+                    graph_offset -= graph_offset % (
                         config.get_option("Rate") / 2
                     )
-                    if histogram_offset < 0:
-                        histogram_offset = 0
+                    if graph_offset < 0:
+                        graph_offset = 0
                 else:
                     pause_screen = -1  # hide graph
                     leds.clear()  # disable all LEDs
