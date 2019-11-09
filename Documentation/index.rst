@@ -52,6 +52,7 @@ Last but not least, if you want to start hacking the lower-level firmware, the
    debugger
    pycardium-guide
    memorymap
+   epicardium/mutex
    epicardium/sensor-streams
 
 .. toctree::

@@ -25,14 +25,11 @@
 #include "modules/log.h"
 #include "modules/modules.h"
 #include "api/common.h"
+#include "modules/mutex.h"
 
 #define SSLOG_DEBUG(...) LOG_DEBUG("fatfs", __VA_ARGS__)
 #define SSLOG_INFO(...) LOG_INFO("fatfs", __VA_ARGS__)
 #define SSLOG_ERR(...) LOG_ERR("fatfs", __VA_ARGS__)
-
-#ifndef EPIC_FAT_STATIC_SEMAPHORE
-#define EPIC_FAT_STATIC_SEMAPHORE 0
-#endif
 
 /* clang-format off */
 #define EPIC_FAT_MAX_OPENED           (1 << (EPIC_FAT_FD_INDEX_BITS))
@@ -67,8 +64,6 @@ struct EpicFileSystem {
 static const int s_libffToErrno[20];
 
 static const char *f_get_rc_string(FRESULT rc);
-static bool globalLockAccquire();
-static void globalLockRelease();
 static void efs_close_all(EpicFileSystem *fs, int coreMask);
 
 /**
@@ -97,11 +92,7 @@ static void efs_init_stat(struct epic_stat *stat, FILINFO *finfo);
 
 static EpicFileSystem s_globalFileSystem;
 
-#if (EPIC_FAT_STATIC_SEMAPHORE == 1)
-static StaticSemaphore_t s_globalLockBuffer;
-#endif
-
-static SemaphoreHandle_t s_globalLock = NULL;
+static struct mutex fatfs_lock = { 0 };
 
 static void cb_attachTimer(void *a, uint32_t b)
 {
@@ -118,11 +109,7 @@ void fatfs_init()
 	assert(!s_initCalled);
 	s_initCalled = true;
 
-#if (EPIC_FAT_STATIC_SEMAPHORE == 1)
-	s_globalLock = xSemaphoreCreateMutexStatic(&s_globalLockBuffer);
-#else
-	s_globalLock = xSemaphoreCreateMutex();
-#endif
+	mutex_create(&fatfs_lock);
 
 	s_globalFileSystem.generationCount = 1;
 	fatfs_attach();
@@ -142,26 +129,24 @@ int fatfs_attach()
 {
 	FRESULT ff_res;
 	int rc = 0;
-	if (globalLockAccquire()) {
-		EpicFileSystem *fs = &s_globalFileSystem;
-		if (!fs->attached) {
-			ff_res = f_mount(&fs->FatFs, "/", 0);
-			if (ff_res == FR_OK) {
-				fs->attached = true;
-				SSLOG_INFO("attached\n");
-			} else {
-				SSLOG_ERR(
-					"f_mount error %s\n",
-					f_get_rc_string(ff_res)
-				);
-				rc = -s_libffToErrno[ff_res];
-			}
-		}
 
-		globalLockRelease();
-	} else {
-		SSLOG_ERR("Failed to lock\n");
+	mutex_lock(&fatfs_lock);
+
+	EpicFileSystem *fs = &s_globalFileSystem;
+	if (!fs->attached) {
+		ff_res = f_mount(&fs->FatFs, "/", 0);
+		if (ff_res == FR_OK) {
+			fs->attached = true;
+			SSLOG_INFO("attached\n");
+		} else {
+			SSLOG_ERR(
+				"f_mount error %s\n", f_get_rc_string(ff_res)
+			);
+			rc = -s_libffToErrno[ff_res];
+		}
 	}
+
+	mutex_unlock(&fatfs_lock);
 	return rc;
 }
 
@@ -227,24 +212,12 @@ static const char *f_get_rc_string(FRESULT rc)
 	return p;
 }
 
-static bool globalLockAccquire()
-{
-	return (int)(xSemaphoreTake(s_globalLock, FF_FS_TIMEOUT) == pdTRUE);
-}
-
-static void globalLockRelease()
-{
-	xSemaphoreGive(s_globalLock);
-}
-
 int efs_lock_global(EpicFileSystem **fs)
 {
 	*fs = NULL;
-	if (!globalLockAccquire()) {
-		return -EBUSY;
-	}
+	mutex_lock(&fatfs_lock);
 	if (!s_globalFileSystem.attached) {
-		globalLockRelease();
+		mutex_unlock(&fatfs_lock);
 		return -ENODEV;
 	}
 	*fs = &s_globalFileSystem;
@@ -259,7 +232,7 @@ int efs_lock_global(EpicFileSystem **fs)
 void efs_unlock_global(EpicFileSystem *fs)
 {
 	(void)fs;
-	globalLockRelease();
+	mutex_unlock(&fatfs_lock);
 }
 
 static bool efs_get_opened(
