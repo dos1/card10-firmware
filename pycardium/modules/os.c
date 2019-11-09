@@ -91,10 +91,16 @@ static mp_obj_t mp_os_reset(void)
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(reset_obj, mp_os_reset);
 
-static mp_obj_t mp_os_listdir(mp_obj_t py_path)
+static mp_obj_t mp_os_listdir(size_t n_args, const mp_obj_t *args)
 {
-	const char *path = mp_obj_str_get_str(py_path);
-	int fd           = epic_file_opendir(path);
+	const char *path;
+	if (n_args == 1) {
+		path = mp_obj_str_get_str(args[0]);
+	} else {
+		path = "";
+	}
+
+	int fd = epic_file_opendir(path);
 
 	if (fd < 0) {
 		mp_raise_OSError(-fd);
@@ -118,7 +124,7 @@ static mp_obj_t mp_os_listdir(mp_obj_t py_path)
 	epic_file_close(fd);
 	return MP_OBJ_FROM_PTR(list);
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(listdir_obj, mp_os_listdir);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(listdir_obj, 0, 1, mp_os_listdir);
 
 static mp_obj_t mp_os_unlink(mp_obj_t py_path)
 {
