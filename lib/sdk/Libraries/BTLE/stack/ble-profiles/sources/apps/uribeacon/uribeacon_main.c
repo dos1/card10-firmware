@@ -783,10 +783,11 @@ void UriBeaconStart(void)
   }
   if (AppParamRead(URI_BEACON_PARAM_URI_DATA, sizeof(uriData), &uriData[0]) == sizeof(uriData))
   {
+    uint8_t *pUriData;
     APP_TRACE_INFO0("URI rd URI data from param DB ");
     uriBeaconPrintUri(uriData);
 
-    uint8_t *pUriData = uriData;
+    pUriData = uriData;
     while ((*pUriData != 0xFF) && (uriDataLen < URICFG_MAXSIZE_URIDATA_ATT))
     {
       pUriData++;

@@ -137,7 +137,7 @@ static const uint8_t hidAppScanDataDisc[] =
 /*! WSF message event enumeration */
 enum
 {
-  HIDAPP_BATT_TIMER_IND = HIDAPP_MSG_START,       /*! Battery timer expired */
+  HIDAPP_BATT_TIMER_IND = HIDAPP_MSG_START        /*! Battery timer expired */
 };
 
 /* HidApp TX path flags */

@@ -1092,10 +1092,6 @@ int usb_read_endpoint(usb_req_t *req)
                     if (req->callback) {
                         req->callback(req->cbdata);
                     }
-#if MAXUSB_DEBUG
-                    printf("MAXUSB ISSUE 4\n");
-#endif
-                    MAXUSB_EXIT_CRITICAL();
 		    return 0;
                 } else {
 		    /* Not done, more data requested */

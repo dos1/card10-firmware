@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-07-12 08:43:53 -0500 (Fri, 12 Jul 2019) $ 
- * $Revision: 44590 $
+ * $Date: 2019-10-23 14:57:03 -0500 (Wed, 23 Oct 2019) $ 
+ * $Revision: 48024 $
  *
  ******************************************************************************/
 
@@ -45,6 +45,11 @@
 #include "simo_regs.h"
 #include "gcr_regs.h"
 #include "sdma_regs.h"
+#include "hci_drv_sdma.h"
+
+#ifdef _RTE_
+#include "RTE_Components.h"             // Component selection
+#endif
 
 /**************************************************************************************************
   Macros
@@ -74,7 +79,8 @@ shared_mem_t __attribute__ ((section (".sdma_shared"))) sdma_shared_mem;
 #ifdef __ICCARM__
 _Pragma("location=\".bin\"") uint8_t sdma_code[] = {
 #else
-volatile uint8_t __attribute__ ((section (".sdma_code"))) sdma_code[] = {  
+volatile uint8_t __attribute__ ((section (".sdma_code"))) sdma_code[] = {
+#endif
 #if defined(SDMA_ADV)
 #include "sdma_adv.inc"
 #elif defined(SDMA_SCN)
@@ -83,7 +89,6 @@ volatile uint8_t __attribute__ ((section (".sdma_code"))) sdma_code[] = {
 #include "sdma.inc"
 #endif
 };
-#endif
 
 // SDMA can not read from OTP, have to copy it into an SRAM section
 #ifdef __ICCARM__

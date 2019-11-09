@@ -39,9 +39,10 @@
 #include "mxc_delay.h"
 
 /* **** File Scope Variables **** */
-static volatile int overflows = -1;
-static uint32_t endtick;
 static uint32_t ctrl_save;
+static volatile uint64_t compare_value = 0;
+static volatile uint64_t curr_value;
+static volatile uint32_t reload;
 
 static void mxc_delay_init(unsigned long us);
 extern void SysTick_Handler(void);
@@ -57,11 +58,12 @@ void mxc_delay_handler(void)
 {
     // Check and clear overflow flag
     if (SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) {
-        // Decrement overflow flag if delay is still ongoing
-        if (overflows > 0) {
-            overflows--;
-        } else {
-            mxc_delay_stop();
+    	// Is a delay in progress?
+    	if(compare_value != 0) {
+    		curr_value += reload;
+    		if(curr_value >= compare_value)	{
+            	mxc_delay_stop();
+        	}
         }
     }
 }
@@ -69,7 +71,7 @@ void mxc_delay_handler(void)
 /* ************************************************************************** */
 static void mxc_delay_init(unsigned long us)
 {
-    uint32_t starttick, reload, ticks, lastticks;
+    uint32_t starttick, ticks;
     
     // Record the current tick value and clear the overflow flag
     starttick = SysTick->VAL;
@@ -81,28 +83,21 @@ static void mxc_delay_init(unsigned long us)
     if (!(SysTick->CTRL & SysTick_CTRL_ENABLE_Msk)) {
         SysTick->LOAD = SysTick_LOAD_RELOAD_Msk;
         SysTick->VAL = SysTick_VAL_CURRENT_Msk;
-        SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;
+        SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk;
         starttick = SysTick_VAL_CURRENT_Msk;
         reload = SysTick_LOAD_RELOAD_Msk + 1;
     } else {
         reload = SysTick->LOAD + 1; // get the current reload value
     }
-    
+
     // Calculate the total number of ticks to delay
     ticks = (uint32_t)(((uint64_t)us * (uint64_t)SystemCoreClock) / 1000000);
+
+    compare_value = ticks + (reload - starttick);
+    curr_value = 0;
     
-    // How many overflows of the SysTick will occur
-    overflows = ticks / reload;
-    
-    // How many remaining ticks after the last overflow
-    lastticks = ticks % reload;
-    
-    // Check if there will be another overflow due to the current value of the SysTick
-    if (lastticks >= starttick) {
-        overflows++;
-        endtick = reload - (lastticks - starttick);
-    } else {
-        endtick = starttick - lastticks;
+    if (!(SysTick->CTRL & SysTick_CTRL_ENABLE_Msk)) {
+        SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
     }
 }
 
@@ -110,7 +105,7 @@ static void mxc_delay_init(unsigned long us)
 int mxc_delay_start(unsigned long us)
 {
     // Check if timeout currently ongoing
-    if (overflows > 0) {
+    if (compare_value != 0) {
         return E_BUSY;
     }
     
@@ -123,7 +118,7 @@ int mxc_delay_start(unsigned long us)
     mxc_delay_init(us);
     
     // Enable SysTick interrupt if necessary
-    if (overflows > 0) {
+    if (compare_value != 0) {
         SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
     }
     
@@ -134,16 +129,15 @@ int mxc_delay_start(unsigned long us)
 int mxc_delay_check(void)
 {
     // Check if timeout currently ongoing
-    if (overflows < 0) {
+    if (compare_value == 0) {
         return E_NO_ERROR;
     }
     
-    // Check the global values
-    if ((overflows == 0) && (SysTick->VAL <= endtick)) {
+    if((curr_value + (reload - SysTick->VAL)) >= compare_value) {
         mxc_delay_stop();
         return E_NO_ERROR;
     }
-    
+
     return E_BUSY;
 }
 
@@ -151,14 +145,14 @@ int mxc_delay_check(void)
 void mxc_delay_stop(void)
 {
     SysTick->CTRL = ctrl_save;
-    overflows = -1;
+    compare_value = 0;
 }
 
 /* ************************************************************************** */
 int mxc_delay(unsigned long us)
 {
     // Check if timeout currently ongoing
-    if (overflows > 0) {
+    if (compare_value != 0) {
         return E_BUSY;
     }
     
@@ -170,20 +164,16 @@ int mxc_delay(unsigned long us)
     // Calculate the necessary delay and start the timer
     mxc_delay_init(us);
     
-    // Wait for the number of overflows
-    while (overflows > 0) {
+    // Wait until the total number of ticks exceeds the compare value.
+    while ((curr_value + (reload - SysTick->VAL)) < compare_value) {
         // If SysTick interrupts are enabled, COUNTFLAG will never be set here and
-        // overflows will be decremented in the ISR. If SysTick interrupts are
-        // disabled, overflows is decremented here.
+        // curr_value will be incremented in the ISR. If SysTick interrupts are
+        // disabled, curr_value is incremented here.
         if (SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) {
-            overflows--;
+	    	curr_value += reload;
         }
     }
-    
-    // Wait for the counter value
-    while (SysTick->VAL > endtick);
-    
+
     mxc_delay_stop();
-    
     return E_NO_ERROR;
 }

@@ -37,6 +37,11 @@
 #include "sec_api.h"
 #include "ll_init_api.h"
 
+#ifdef _RTE_
+#include "RTE_Components.h"             // Component selection
+#endif
+
+
 #define LL_IMPL_REV             0x2303
 
 #define LL_MEMORY_FOOTPRINT     0xC152
@@ -98,6 +103,7 @@ void StackInitFit(void)
 {
   wsfHandlerId_t handlerId;
 
+
 #ifndef ENABLE_SDMA
   uint32_t memUsed;
 
@@ -124,6 +130,7 @@ void StackInitFit(void)
           LL_MEMORY_FOOTPRINT);
   }
 #endif
+
 
   handlerId = WsfOsSetNextHandler(HciHandler);
   HciHandlerInit(handlerId);

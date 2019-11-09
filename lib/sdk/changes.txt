@@ -1,3 +1,15 @@
+###### Changes in version 0.2.1-7 #############################################
+* Improved USB_CompositeDevice example to support high speed USB.
+* Added function to enter background mode to lp.c/h.
+* Added function to read the device's serial number (USN) to mxc_sys.c/h.
+* Provided missing wakeup timer functions (wut.c/h).
+* Added BLE deep sleep example.
+* Removed debug symbols from pre-built BLE libraries.
+* Made BLE transmit power a build time option.
+
+###### Changes in version 0.2.1-6 #############################################
+* Changed gcc.mk to allow overriding the -mfloat-abi and -mfpu switches.
+
 ###### Changes in version 0.2.1-5 #############################################
 * Removed the CONSOLE_UART override in the config.mk files for BLE.
 * Addressed an issue with the BLE scanning apps that was causing a hard fault.

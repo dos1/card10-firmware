@@ -129,7 +129,7 @@ int main(void)
         printf("PASS: No errors\n");
         test_pass++;
     }
-        
+
     // Initialize data
     badData = 0xDEADBEEF;
 

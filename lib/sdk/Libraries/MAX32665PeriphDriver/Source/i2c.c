@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-03-11 12:57:08 +0000 (Mon, 11 Mar 2019) $
- * $Revision: 41563 $
+ * $Date: 2019-09-11 13:25:48 -0500 (Wed, 11 Sep 2019) $
+ * $Revision: 46045 $
  *
  *************************************************************************** */
 
@@ -525,7 +525,7 @@ int I2C_Slave(mxc_i2c_regs_t *i2c, uint8_t addr, const uint8_t* read_data, int r
                 break;
             }
 
-            // Check for stop bit
+            // Check for done bit
             if (i2c->int_fl0 & MXC_F_I2C_INT_FL0_DONE) {
                 break;
             }
@@ -537,7 +537,7 @@ int I2C_Slave(mxc_i2c_regs_t *i2c, uint8_t addr, const uint8_t* read_data, int r
             }
         }
 
-        // Wait for Stop
+        // Wait for Done
         while (!(i2c->int_fl0 & MXC_F_I2C_INT_FL0_DONE)) {}
 
         // Calculate number of bytes sent by the slave
@@ -567,7 +567,7 @@ int I2C_Slave(mxc_i2c_regs_t *i2c, uint8_t addr, const uint8_t* read_data, int r
                 return E_COMM_ERR;
             }
 
-            // Check for stop bit
+            // Check for done bit
             if (i2c->int_fl0 & MXC_F_I2C_INT_FL0_DONE) {
                 break;
             }
@@ -579,7 +579,7 @@ int I2C_Slave(mxc_i2c_regs_t *i2c, uint8_t addr, const uint8_t* read_data, int r
             }
         }
 
-        // Wait for Stop
+        // Wait for done
         while (!(i2c->int_fl0 & MXC_F_I2C_INT_FL0_DONE)) {
             
         }

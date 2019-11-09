@@ -29,7 +29,7 @@
 # property whatsoever. Maxim Integrated Products, Inc. retains all
 # ownership rights.
 #
-# $Id: Makefile 45395 2019-08-13 21:04:28Z kevin.gillespie $
+# $Id: Makefile 48012 2019-10-23 18:41:06Z kevin.gillespie $
 #
 ################################################################################
 
@@ -65,15 +65,20 @@ ifneq "$(BLE_ADDR_LSB)" ""
 PROJ_CFLAGS+=-DBLE_ADDR_LSB=$(BLE_ADDR_LSB)
 endif
 
-## Subsitute WSF critical section entry for default MAXUSB
+# Suppress compiler warnings on undefined names (define as zeros)
+PROJ_CFLAGS+=-DIAR_PRAGMAS=0
+
+# Subsitute WSF critical section entry for default MAXUSB
 #PROJ_CFLAGS+=-DMAXUSB_ENTER_CRITICAL=WsfCsEnter
 #PROJ_CFLAGS+=-DMAXUSB_EXIT_CRITICAL=WsfCsExit
 
 # This is the path to the CMSIS root directory
 ifeq "$(MAXIM_PATH)" ""
 LIBS_DIR=../../../Libraries
+NDALIBS_DIR=../../../NDALibraries
 else
 LIBS_DIR=/$(subst \,/,$(subst :,,$(MAXIM_PATH))/Firmware/$(TARGET_UC)/Libraries)
+NDALIBS_DIR=/$(subst \,/,$(subst :,,$(MAXIM_PATH))/Firmware/$(TARGET_UC)/NDALibraries)
 endif
 CMSIS_ROOT=$(LIBS_DIR)/CMSIS
 
@@ -150,7 +155,7 @@ PROJ_CFLAGS+=-DINIT_BROADCASTER
 PROJ_CFLAGS+=-DINIT_PERIPHERAL
 PROJ_CFLAGS+=-DINIT_ENCRYPTED
 
-ENABLE_LL_TESTER?=#1
+# ENABLE_LL_TESTER?=#1
 
 # Use this variable to override default compilier optimization.
 #MXC_OPTIMIZE_CFLAGS=-Os
@@ -173,10 +178,6 @@ include ${PERIPH_DRIVER_DIR}/periphdriver.mk
 # Include Cordio BTLE Library
 CORDIO_DIR=$(LIBS_DIR)/BTLE
 include ${CORDIO_DIR}/btle.mk
-
-# Include MAXUSB library
-MAXUSB_DIR=$(LIBS_DIR)/MAXUSB
-include $(MAXUSB_DIR)/maxusb.mk
 
 ################################################################################
 # Include the rules for building for this target. All other makefiles should be

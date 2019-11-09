@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-10-15 21:49:29 +0000 (Mon, 15 Oct 2018) $
- * $Revision: 38520 $
+ * $Date: 2019-09-11 13:22:10 -0500 (Wed, 11 Sep 2019) $
+ * $Revision: 46044 $
  *
  **************************************************************************** */
 
@@ -145,6 +145,11 @@ static void sha_size(unsigned int *blocks, unsigned int *length, unsigned int *l
 // ********************************** Function to Configure SHA Algorithm *************************************
 int TPU_Hash_Config(tpu_hashfunsel_t func)
 {
+    if((func < MXC_V_TPU_HASH_CTRL_HASH_DIS) || (func > MXC_V_TPU_HASH_CTRL_HASH_SHA512))
+    {
+        return E_BAD_PARAM;
+    }
+    
     // Reset Crypto Block
     TPU_Hash_Reset();
     

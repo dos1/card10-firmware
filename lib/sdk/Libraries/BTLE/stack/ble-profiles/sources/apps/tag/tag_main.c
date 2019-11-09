@@ -52,7 +52,7 @@
 /*! WSF message event enumeration */
 enum
 {
-  TAG_RSSI_TIMER_IND = TAG_MSG_START,     /*! Read RSSI value timer expired */
+  TAG_RSSI_TIMER_IND = TAG_MSG_START      /*! Read RSSI value timer expired */
 };
 
 /*! Read RSSI interval in seconds */

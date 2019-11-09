@@ -34,8 +34,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-01-03 21:47:24 +0000 (Thu, 03 Jan 2019) $
- * $Revision: 40273 $
+ * $Date: 2019-10-24 16:10:14 -0500 (Thu, 24 Oct 2019) $
+ * $Revision: 48075 $
  *
  *************************************************************************** */
 
@@ -65,7 +65,7 @@ typedef enum {
     DMA_PRIO_HIGH = MXC_S_DMA_CFG_PRI_HIGH,         /**< High Priority */
     DMA_PRIO_MEDHIGH = MXC_S_DMA_CFG_PRI_MEDHIGH,   /**< Medium High Priority */
     DMA_PRIO_MEDLOW = MXC_S_DMA_CFG_PRI_MEDLOW,     /**< Medium Low Priority */
-    DMA_PRIO_LOW = MXC_S_DMA_CFG_PRI_LOW,           /**< Low Priority */
+    DMA_PRIO_LOW = MXC_S_DMA_CFG_PRI_LOW            /**< Low Priority */
 } dma_priority_t;
 
 /** @brief DMA request select */
@@ -113,7 +113,7 @@ typedef enum {
     DMA_REQSEL_USBTXEP8 = MXC_S_DMA_CFG_REQSEL_USBTXEP8,        /**< USB TX Endpoint 8 DMA Request Selection */
     DMA_REQSEL_USBTXEP9 = MXC_S_DMA_CFG_REQSEL_USBTXEP9,        /**< USB TX Endpoint 9 DMA Request Selection */
     DMA_REQSEL_USBTXEP10 = MXC_S_DMA_CFG_REQSEL_USBTXEP10,      /**< USB TX Endpoint 10 DMA Request Selection */
-    DMA_REQSEL_USBTXEP11 = MXC_S_DMA_CFG_REQSEL_USBTXEP11,      /**< USB TX Endpoint 11 DMA Request Selection */
+    DMA_REQSEL_USBTXEP11 = MXC_S_DMA_CFG_REQSEL_USBTXEP11       /**< USB TX Endpoint 11 DMA Request Selection */
 } dma_reqsel_t;
 
 /** @brief Enumeration for the DMA prescaler */
@@ -121,7 +121,7 @@ typedef enum {
     DMA_PRESCALE_DISABLE = MXC_S_DMA_CFG_PSSEL_DIS,     /**< Prescaler disabled */
     DMA_PRESCALE_DIV256 = MXC_S_DMA_CFG_PSSEL_DIV256,   /**< Divide by 256 */
     DMA_PRESCALE_DIV64K = MXC_S_DMA_CFG_PSSEL_DIV64K,   /**< Divide by 65,536 */
-    DMA_PRESCALE_DIV16M = MXC_S_DMA_CFG_PSSEL_DIV16M,   /**< Divide by 16,777,216 */
+    DMA_PRESCALE_DIV16M = MXC_S_DMA_CFG_PSSEL_DIV16M    /**< Divide by 16,777,216 */
 } dma_prescale_t;
 
 /** @brief Enumeration for the DMA timeout value */
@@ -133,7 +133,7 @@ typedef enum {
     DMA_TIMEOUT_64_CLK = MXC_S_DMA_CFG_TOSEL_TO64,      /**< DMA timeout of 64 clocks */
     DMA_TIMEOUT_128_CLK = MXC_S_DMA_CFG_TOSEL_TO128,    /**< DMA timeout of 128 clocks */
     DMA_TIMEOUT_256_CLK = MXC_S_DMA_CFG_TOSEL_TO256,    /**< DMA timeout of 256 clocks */
-    DMA_TIMEOUT_512_CLK = MXC_S_DMA_CFG_TOSEL_TO512,    /**< DMA timeout of 512 clocks */
+    DMA_TIMEOUT_512_CLK = MXC_S_DMA_CFG_TOSEL_TO512     /**< DMA timeout of 512 clocks */
 } dma_timeout_t;
 
 /** @brief DMA transfer data width */
@@ -143,7 +143,7 @@ typedef enum {
        prior to writing the cfg register. */
     DMA_WIDTH_BYTE = MXC_V_DMA_CFG_SRCWD_BYTE,          /**< DMA transfer in bytes */
     DMA_WIDTH_HALFWORD = MXC_V_DMA_CFG_SRCWD_HALFWORD,  /**< DMA transfer in 16-bit half-words */
-    DMA_WIDTH_WORD = MXC_V_DMA_CFG_SRCWD_WORD,          /**< DMA transfer in 32-bit words */
+    DMA_WIDTH_WORD = MXC_V_DMA_CFG_SRCWD_WORD           /**< DMA transfer in 32-bit words */
 } dma_width_t;
 
 /** @brief Convenience defines for options */

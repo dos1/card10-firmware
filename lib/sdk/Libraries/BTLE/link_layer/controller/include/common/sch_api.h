@@ -61,6 +61,9 @@ void SchReload(BbOpDesc_t *pBod);
 void SchRemoveBackground(void);
 void SchInsertBackground(BbOpDesc_t *pBod);
 void SchTerminateBackground(void);
+bool_t SchCancelHead(void);
+bool_t SchSleep(void);
+void SchWake(void);
 
 #ifdef __cplusplus
 };

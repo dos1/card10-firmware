@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include "mxc_device.h"
 #include "wsf_types.h"
 #include "util/bstream.h"
 #include "wsf_msg.h"
@@ -41,6 +42,7 @@
 #include "wpc/wpc_api.h"
 #include "datc/datc_api.h"
 #include "util/calc128.h"
+#include "gcr_regs.h"
 
 /**************************************************************************************************
 Macros
@@ -983,7 +985,13 @@ static void datcSetup(dmEvt_t *pMsg)
   DmDevSetFilterPolicy(DM_FILT_POLICY_MODE_INIT, HCI_FILT_WHITE_LIST);
 #endif /* BTLE_APP_USE_WHITELIST */
 
-  DmSetDefaultPhy(0, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT);
+  /* Enable coded PHY */
+  if(MXC_GCR->revision != 0xA1) {
+    DmSetDefaultPhy(0, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT | HCI_PHY_LE_CODED_BIT, 
+      HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT | HCI_PHY_LE_CODED_BIT);
+  } else {
+    DmSetDefaultPhy(0, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT);
+  }
   testCb.phy = HCI_PHY_LE_1M_BIT;
 
   DmConnSetConnSpec((hciConnSpec_t *) &datcConnCfg);
@@ -1153,12 +1161,21 @@ static void testTimerHandler(void)
       (testCb.connId != DM_CONN_ID_NONE) &&
       (datcCb.discState[testCb.connId-1] == DATC_DISC_SVC_MAX))
   {
-    if(testCb.phy == HCI_PHY_LE_1M_BIT) {
+    if(testCb.phy == HCI_PHY_LE_2M_BIT) {
       /* Change from 1M to 2M PHY */
-      testCb.phy = HCI_PHY_LE_2M_BIT;
-    } else {
-      /* Change from Coded to 1M PHY */
       testCb.phy = HCI_PHY_LE_1M_BIT;
+    } else if (testCb.phy == HCI_PHY_LE_1M_BIT) {
+
+      /* Change to the coded PHY if we're not using A1 */
+      if(MXC_GCR->revision != 0xA1) {
+        testCb.phy = HCI_PHY_LE_CODED_BIT;
+      } else {
+        testCb.phy = HCI_PHY_LE_2M_BIT;
+      }
+
+    } else {
+      /* Change to 2M PHY */
+      testCb.phy = HCI_PHY_LE_2M_BIT;
     }
 
     DmSetPhy(testCb.connId, 0, testCb.phy, testCb.phy, 0);

@@ -21,9 +21,17 @@
 /*************************************************************************************************/
 
 #include "sch_int.h"
+#include "sch_api.h"
 #include "bb_api.h"
 #include "wsf_trace.h"
 #include <string.h>
+
+/**************************************************************************************************
+  Macros
+**************************************************************************************************/
+
+#define schIsEarlier(time1, time2)  \
+  ((int)((uint32_t)(time2) - (uint32_t)(time1)) > 0)
 
 /**************************************************************************************************
   Constants
@@ -327,4 +335,30 @@ bool_t schDueTimeInFuture(BbOpDesc_t *pBod)
   }
 
   return result;
+}
+
+/*************************************************************************************************/
+bool_t SchSleep(void)
+{
+
+  if (schCb.state != SCH_STATE_IDLE) {
+
+    /* Attempt to preempt the current operation. */
+    uint32_t preemptDeadline = BbDrvGetCurrentTime() +
+          BB_US_TO_BB_TICKS(BB_SCH_SETUP_DELAY_US);
+
+    BbOpDesc_t * pBod = schCb.pHead;
+    if (schIsEarlier(preemptDeadline, pBod->due)) {
+      return SchCancelHead();
+    }
+
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/*************************************************************************************************/
+void SchWake(void)
+{
+  schLoadNext();
 }

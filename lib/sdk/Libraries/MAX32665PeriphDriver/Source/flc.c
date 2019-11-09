@@ -34,8 +34,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-10-15 21:49:29 +0000 (Mon, 15 Oct 2018) $
- * $Revision: 38520 $
+ * $Date: 2019-08-20 09:48:54 -0500 (Tue, 20 Aug 2019) $
+ * $Revision: 45528 $
  *
  *************************************************************************** */
 
@@ -59,7 +59,7 @@
 
 /* **** Functions **** */
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))
@@ -69,7 +69,7 @@ static int busy_flc(mxc_flc_regs_t *flc)
     return (flc->cn & (MXC_F_FLC_CN_WR | MXC_F_FLC_CN_ME | MXC_F_FLC_CN_PGE));
 }
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))
@@ -95,7 +95,7 @@ static int prepare_flc(mxc_flc_regs_t *flc)
     return E_NO_ERROR;
 }
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))
@@ -115,7 +115,7 @@ static int verify_data(uint32_t address, uint32_t length, uint32_t * data)
     return E_NO_ERROR;
 }
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     // IAR memory section declaration for the in-system flash programming functions to be loaded in RAM.
     #pragma section=".flashprog"
 #else
@@ -127,7 +127,7 @@ int FLC_Init(const sys_cfg_t *sys_cfg)
 }
 
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     // IAR memory section declaration for the in-system flash programming functions to be loaded in RAM.
     #pragma section=".flashprog"
 #else
@@ -149,7 +149,7 @@ int FLC_Busy(void)
 }
 
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))
@@ -188,7 +188,7 @@ int FLC_MassErase(void)
 }
 
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))
@@ -237,7 +237,7 @@ int FLC_PageErase(uint32_t address)
 }
 
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))
@@ -262,7 +262,7 @@ int FLC_MultiPageErase(uint32_t start, uint32_t end)
 }
 
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))
@@ -341,7 +341,7 @@ int FLC_Erase(uint32_t start, uint32_t end, uint32_t *buffer, unsigned length)
 }
 
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))
@@ -405,7 +405,7 @@ int FLC_Write32(uint32_t address, uint32_t data)
 }
 
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))
@@ -465,7 +465,7 @@ int FLC_Write128(uint32_t address, uint32_t *data)
 }
 
 //******************************************************************************
-#if IAR_PRAGMAS
+#ifdef __IAR_SYSTEMS_ICC__
     #pragma section=".flashprog"
 #else
     __attribute__((section(".flashprog")))

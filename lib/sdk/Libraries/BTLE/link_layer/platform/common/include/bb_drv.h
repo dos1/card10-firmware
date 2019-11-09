@@ -54,6 +54,20 @@ extern "C" {
 /*************************************************************************************************/
 void BbDrvInit(void);
 
+
+/*************************************************************************************************/
+/*!
+ *  \brief      Initialize the baseband driver after a wakeup event.
+ *
+ *  \return     None.
+ *
+ *  Perform re-initialization after a wakeup event.
+ *
+ *  This routine should block until the BB hardware is completely initialized.
+ */
+/*************************************************************************************************/
+void BbDrvInitWake(void);
+
 /*************************************************************************************************/
 /*!
  *  \brief      Enable the BB hardware.

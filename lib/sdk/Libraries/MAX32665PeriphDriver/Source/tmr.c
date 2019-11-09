@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-08-28 22:03:02 +0000 (Tue, 28 Aug 2018) $
- * $Revision: 37424 $
+ * $Date: 2019-09-11 14:43:14 -0500 (Wed, 11 Sep 2019) $
+ * $Revision: 46048 $
  *
  **************************************************************************** */
 
@@ -47,12 +47,17 @@
 /* **** Functions **** */
 
 /* ************************************************************************** */
-void TMR_Init(mxc_tmr_regs_t *tmr, tmr_pres_t pres, const sys_cfg_tmr_t* sys_cfg)
+int TMR_Init(mxc_tmr_regs_t *tmr, tmr_pres_t pres, const sys_cfg_tmr_t* sys_cfg)
 {
     MXC_ASSERT(tmr);
     
+    int err;
+
     // System settigns
-    SYS_TMR_Init(tmr, sys_cfg);
+    if((err = SYS_TMR_Init(tmr, sys_cfg)) != E_NO_ERROR)
+    {
+        return err;
+    }
     
     // Disable timer and clear settings
     tmr->cn = 0;
@@ -62,42 +67,59 @@ void TMR_Init(mxc_tmr_regs_t *tmr, tmr_pres_t pres, const sys_cfg_tmr_t* sys_cfg
     
     // Set the prescaler
     tmr->cn = pres;
+
+    return err;
 }
 
-void TMR_Shutdown(mxc_tmr_regs_t *tmr)
+int TMR_Shutdown(mxc_tmr_regs_t *tmr)
 {
     MXC_ASSERT(tmr);
     
+    int err;
+
     // System settigns
-    SYS_TMR_Shutdown(tmr);
+    if((err = SYS_TMR_Shutdown(tmr)) != E_NO_ERROR)
+    {
+        return err;
+    }
     
     // Disable timer and clear settings
     tmr->cn = 0;
     
+    return err;
 }
 
 /* ************************************************************************** */
 void TMR_Enable(mxc_tmr_regs_t* tmr)
 {
+    MXC_ASSERT(tmr);
+
     tmr->cn |= MXC_F_TMR_CN_TEN;
 }
 
 /* ************************************************************************** */
 void TMR_Disable(mxc_tmr_regs_t* tmr)
 {
+    MXC_ASSERT(tmr);
+
     tmr->cn &= ~(MXC_F_TMR_CN_TEN);
 }
 
 /* ************************************************************************** */
-void TMR_Config(mxc_tmr_regs_t *tmr, const tmr_cfg_t *cfg)
+int TMR_Config(mxc_tmr_regs_t *tmr, const tmr_cfg_t *cfg)
 {
+    MXC_ASSERT(tmr);
+
     // Configure the timer
     tmr->cn = (tmr->cn & ~(MXC_F_TMR_CN_TMODE | MXC_F_TMR_CN_TPOL)) |
               ((cfg->mode << MXC_F_TMR_CN_TMODE_POS) & MXC_F_TMR_CN_TMODE) |
               ((cfg->pol << MXC_F_TMR_CN_TPOL_POS) & MXC_F_TMR_CN_TPOL);
               
     tmr->cnt = 0x1;
+
     tmr->cmp = cfg->cmp_cnt;
+
+    return E_NO_ERROR;
 }
 
 /* ************************************************************************** */

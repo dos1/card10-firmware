@@ -29,8 +29,8 @@
  # property whatsoever. Maxim Integrated Products, Inc. retains all
  # ownership rights.
  #
- # $Date: 2018-08-31 19:08:14 +0000 (Fri, 31 Aug 2018) $ 
- # $Revision: 37586 $
+ # $Date: 2019-09-04 09:22:39 -0500 (Wed, 04 Sep 2019) $ 
+ # $Revision: 45915 $
  #
  ###############################################################################
 
@@ -40,7 +40,7 @@
 ################################################################################
 
 ifeq "$(PERIPH_DRIVER_DIR)" ""
-$(error PERIPH_DRIVER_DIR must be specified")
+$(error "PERIPH_DRIVER_DIR must be specified")
 endif
 
 # Specify the build directory if not defined by the project
@@ -67,12 +67,16 @@ export MXC_OPTIMIZE_CFLAGS
 export DUAL_CORE
 
 # Add to library list
+ifeq "$(PERIPH_DRIVER_DEFS_ONLY)" ""
 LIBS += ${PERIPH_DRIVER_BUILD_DIR}/PeriphDriver.a
+endif
 
 # Add to include directory list
 IPATH += ${PERIPH_DRIVER_DIR}/Include
 
 # Add rule to build the Driver Library
+ifeq "$(PERIPH_DRIVER_DEFS_ONLY)" ""
 ${PERIPH_DRIVER_BUILD_DIR}/PeriphDriver.a: FORCE
 	$(MAKE) -C ${PERIPH_DRIVER_DIR} lib BUILD_DIR=${PERIPH_DRIVER_BUILD_DIR}
+endif
 

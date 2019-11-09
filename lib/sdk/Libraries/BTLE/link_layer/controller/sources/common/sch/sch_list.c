@@ -171,7 +171,7 @@ uint32_t SchGetStartRefTime(void)
  *  \return     TRUE if successful, FALSE otherwise.
  */
 /*************************************************************************************************/
-bool_t schCancelHead(void)
+bool_t SchCancelHead(void)
 {
   bool_t result = FALSE;
 
@@ -605,7 +605,7 @@ void SchInsertNextAvailable(BbOpDesc_t *pBod)
     schInsertToEmptyList(pBod);
   }
   else if (SCH_IS_DONE_BEFORE(pBod, schCb.pHead, startRef) &&
-           schCancelHead())
+           SchCancelHead())
   {
     /* Insert at head */
     WSF_ASSERT(pBod != schCb.pHead);
@@ -767,7 +767,7 @@ bool_t SchInsertEarlyAsPossible(BbOpDesc_t *pBod, uint32_t min, uint32_t max)
     }
     else if (SCH_IS_DUE_BEFORE (pBod, schCb.pHead, startRef) &&
              SCH_IS_DONE_BEFORE(pBod, schCb.pHead, startRef) &&
-             schCancelHead())
+             SchCancelHead())
     {
       /* Insert at head */
       WSF_ASSERT(pBod != schCb.pHead);
@@ -907,7 +907,7 @@ bool_t SchInsertLateAsPossible(BbOpDesc_t *pBod, uint32_t min, uint32_t max)
 
         if ((nextAvailInter >= min) &&
             (nextAvailInter <= max) &&
-            schCancelHead())
+            SchCancelHead())
         {
           /* Insert at head. */
           schInsertBefore(pBod, pCur);
@@ -1057,7 +1057,7 @@ bool_t SchRemove(BbOpDesc_t *pBod)
 void SchReload(BbOpDesc_t *pBod)
 {
   if ((schCb.pHead == pBod) &&
-      schCancelHead())
+      SchCancelHead())
   {
     schLoadNext();
   }

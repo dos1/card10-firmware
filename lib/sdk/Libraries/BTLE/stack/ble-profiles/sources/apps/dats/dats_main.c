@@ -616,6 +616,8 @@ static void datsBtnCback(uint8_t btn)
   if (AppConnIsOpen() != DM_CONN_ID_NONE)
 #endif /* CS50_INCLUDED */
   {
+
+#if ((CS50_INCLUDED == TRUE) || (WDXS_INCLUDED == TRUE))
     switch (btn)
     {
 #if CS50_INCLUDED == TRUE
@@ -656,6 +658,7 @@ static void datsBtnCback(uint8_t btn)
       default:
         break;
     }
+#endif
   }
   else
   {

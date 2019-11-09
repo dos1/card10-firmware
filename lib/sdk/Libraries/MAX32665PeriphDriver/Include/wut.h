@@ -1,10 +1,10 @@
 /**
  * @file    wut.h
- * @brief   WUT function prototypes and data types.
+ * @brief   Wakeup Timer (WUT) function prototypes and data types.
  */
 
 /* ****************************************************************************
- * Copyright (C) 2017 Maxim Integrated Products, Inc., All Rights Reserved.
+ * Copyright (C) 2016 Maxim Integrated Products, Inc., All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -34,8 +34,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-11-08 21:08:58 +0000 (Thu, 08 Nov 2018) $
- * $Revision: 39056 $
+ * $Date: 2019-10-25 14:21:06 -0500 (Fri, 25 Oct 2019) $
+ * $Revision: 48094 $
  *
  *************************************************************************** */
 
@@ -52,129 +52,205 @@ extern "C" {
 #endif
 
 /**
- * @defgroup wut Wake-up Timer (WUT)
+ * @defgroup wut Wakeup Timer (WUT)
  * @ingroup periphlibs
  * @{
  */
 
-
-/** Wake-up timer initialization state */
+/**
+ * @brief Wakeup Timer prescaler values
+ */
 typedef enum {
-	WUT_STATE_NOT_INITIALIZED = 0, 							/**< State not initialized */
-	WUT_STATE_INITIALIZED 									/**< State initialized */
-} wut_state_t;
+    WUT_PRES_1      = MXC_S_WUT_CN_PRES_DIV1,           /// Divide input clock by 1
+    WUT_PRES_2      = MXC_S_WUT_CN_PRES_DIV2,           /// Divide input clock by 2
+    WUT_PRES_4      = MXC_S_WUT_CN_PRES_DIV4,           /// Divide input clock by 4
+    WUT_PRES_8      = MXC_S_WUT_CN_PRES_DIV8,           /// Divide input clock by 8
+    WUT_PRES_16     = MXC_S_WUT_CN_PRES_DIV16,          /// Divide input clock by 16
+    WUT_PRES_32     = MXC_S_WUT_CN_PRES_DIV32,          /// Divide input clock by 32
+    WUT_PRES_64     = MXC_S_WUT_CN_PRES_DIV64,          /// Divide input clock by 64
+    WUT_PRES_128    = MXC_S_WUT_CN_PRES_DIV128,         /// Divide input clock by 128
+    WUT_PRES_256    = MXC_F_WUT_CN_PRES3 | MXC_S_WUT_CN_PRES_DIV1,  /// Divide input clock by 256
+    WUT_PRES_512    = MXC_F_WUT_CN_PRES3 | MXC_S_WUT_CN_PRES_DIV2,  /// Divide input clock by 512
+    WUT_PRES_1024   = MXC_F_WUT_CN_PRES3 | MXC_S_WUT_CN_PRES_DIV4,  /// Divide input clock by 1024
+    WUT_PRES_2048   = MXC_F_WUT_CN_PRES3 | MXC_S_WUT_CN_PRES_DIV8,  /// Divide input clock by 2048
+    WUT_PRES_4096   = MXC_F_WUT_CN_PRES3 | MXC_S_WUT_CN_PRES_DIV16  /// Divide input clock by 4096
+} wut_pres_t;
 
-/** Wake-up timer status values */
+/**
+ * @brief Wakeup Timer modes
+ */
 typedef enum {
-	WUT_STATUS_DISABLED = 0, 								/**< Status disabled */
-	WUT_STATUS_ENABLED 										/**< Status enabled */
-} wut_status_t;
-
-typedef enum {
-	WUT_MODE_WUT
+    WUT_MODE_ONESHOT          = MXC_V_WUT_CN_TMODE_ONESHOT,       /// Wakeup Timer Mode ONESHOT
+    WUT_MODE_CONTINUOUS       = MXC_V_WUT_CN_TMODE_CONTINUOUS,    /// Wakeup Timer Mode CONTINUOUS
+    WUT_MODE_COUNTER          = MXC_V_WUT_CN_TMODE_COUNTER,       /// Wakeup Timer Mode COUNTER
+    WUT_MODE_PWM              = MXC_V_WUT_CN_TMODE_PWM,           /// Wakeup Timer Mode PWM
+    WUT_MODE_CAPTURE          = MXC_V_WUT_CN_TMODE_CAPTURE,       /// Wakeup Timer Mode CAPTURE
+    WUT_MODE_COMPARE          = MXC_V_WUT_CN_TMODE_COMPARE,       /// Wakeup Timer Mode COMPARE
+    WUT_MODE_GATED            = MXC_V_WUT_CN_TMODE_GATED,         /// Wakeup Timer Mode GATED
+    WUT_MODE_CAPTURE_COMPARE  = MXC_V_WUT_CN_TMODE_CAPTURECOMPARE /// Wakeup Timer Mode CAPTURECOMPARE
 } wut_mode_t;
 
+/**
+ * @brief Wakeup Timer units of time enumeration
+ */
 typedef enum {
-	WUT_POLARITY_NORM,
-	WUT_POLARITY_INV
-} wut_polarity_t;
+    WUT_UNIT_NANOSEC = 0,       /**< Nanosecond Unit Indicator. */
+    WUT_UNIT_MICROSEC,          /**< Microsecond Unit Indicator. */
+    WUT_UNIT_MILLISEC,          /**< Millisecond Unit Indicator. */
+    WUT_UNIT_SEC                /**< Second Unit Indicator. */
+} wut_unit_t;
 
-typedef enum {
-	WUT_PRESCALE_1
-} wut_prescale_t;
-
-/* Structures *****************************************************************/
-typedef void (*wut_handler_t)(void);
-
-/** This structure contains the Wake-up Wake-up timer device configuration parameters */
+/**
+ * @brief Wakeup Timer Configuration
+ */
 typedef struct {
-	unsigned int timeout; 					/**< Compare value which is used to set the maximum count value to initiate a reload of the wake-up timer to 0x0001 */
-	unsigned int count; 					/**< Value set in WUT_CNT register */
-	unsigned int pwm_value; 				/**< PWM value. pwm_value is value compared to the current wake-up timer count (store in WUT_CNT) */
-	wut_prescale_t clock; 				/**< Prescaler */
-	wut_mode_t mode; 					/**< Wake-up timer mode */
-	wut_polarity_t polarity;				/**< Wake-up timer polarity */
-	volatile wut_handler_t handler;		/**< IRQ handler */
-} wut_config_t;
+    wut_mode_t mode;    /// Desired timer mode
+    uint32_t cmp_cnt;   /// Compare register value in timer ticks
+} wut_cfg_t;
 
-/** This structure contains information about wake-up timer */
-typedef struct {
-	wut_state_t state; 					/**< Wake-up timer state */
-	wut_status_t status; 				/**< Wake-up timer status */
-	wut_handler_t handler; 				/**< Wake-up timer interrupt handler */
-} wut_info_t;
+/* **** Definitions **** */
+
+/* **** Function Prototypes **** */
 
 /**
- * This function initializes specified wake-up timer with the configuration parameters.
- * @param[in] config				Points to configuration parameters
- * @retval NO_ERROR					No error
+ * @brief      Initialize timer module clock.
+ * @param      wut        Pointer to timer module to initialize.
+ * @param      pres       Prescaler value.
+ * @param      sys_cfg    System configuration object
+ * @return     #E_NO_ERROR if successful. 
  */
-int WUT_init(wut_config_t *config);
+void WUT_Init(wut_pres_t pres);
 
 /**
- * This function enables (starts) the timer
- * @retval NO_ERROR							No error
+ * @brief      Shutdown timer module clock.
+ * @param      wut  Pointer to timer module to initialize.
+ * @return     #E_NO_ERROR if successful. 
  */
-int WUT_enable(void);
+void WUT_Shutdown(void);
 
 /**
- * This function disables (stops) the timer 
- * @retval NO_ERROR							No error
+ * @brief      Enable the timer.
+ * @param      wut  Pointer to timer module to initialize.
+ * @return     #E_NO_ERROR if successful. 
  */
-int WUT_disable(void);
+void WUT_Enable(void);
 
 /**
- * This function reads the timer ID current value
- * @retval 		Current Timer Value
+ * @brief      Disable the timer.
+ * @param      wut  Pointer to timer module to initialize.
  */
-int WUT_get_time(void);
+void WUT_Disable(void);
 
 /**
- * This function registers the interrupt handler function for the
- * specified Wake-up timer ID device.
- * @param[in] handler						Interrupt handler to be registered
- * @retval NO_ERROR							No error
+ * @brief      Configure the timer.
+ * @param      wut  Pointer to timer module to initialize.
+ * @param      cfg  Pointer to timer configuration struct.
+ * @return     #E_NO_ERROR if successful. 
  */
-int WUT_register_callback(wut_handler_t handler);
+void WUT_Config(const wut_cfg_t *cfg);
 
 /**
- * This function unregisters the interrupt handler function for the
- * specified Wake-up timer ID device if any.
- * @retval NO_ERROR							No error
- * @retval ERR_NOT_INITIALIZED		Wake-up timer is not initialized
- * @retval ERR_NOT_ALLOWED			Operation not allowed
+ * @brief   Get the timer compare count.
+ * @param   wut     Pointer to timer module to initialize.
+ * @return  Returns the current compare count.
  */
-int WUT_unregister_callback(void);
+uint32_t WUT_GetCompare(void);
 
 /**
- * This functions clears interrupt
+ * @brief   Get the timer capture count.
+ * @param   wut     Pointer to timer module to initialize.
+ * @return  Returns the most recent capture count.
  */
-void WUT_clear_flags(void);
+uint32_t WUT_GetCapture(void);
 
 /**
- * @brief returns the WUT interrupt flags
- * @return flags
+ * @brief   Get the timer count.
+ * @param   wut     Pointer to timer module to initialize.
+ * @return  Returns the current count.
  */
-int WUT_get_flags(void);
+uint32_t WUT_GetCount(void);
 
 /**
- * This function is used to set a timeout.
- * @param[in] timeout			Timeout value to set in milliseconds.
- * @retval NO_ERROR				No error
+ * @brief   Clear the timer interrupt.
+ * @param   wut     Pointer to timer module to initialize.
  */
-int WUT_set_timeout_ms(unsigned int timeout);
+void WUT_IntClear(void);
 
 /**
- * This function configures the mode for the Wake-up timer
- * @param config							Points to configuration parameters
- * @retval NO_ERROR							No error
+ * @brief   Get the timer interrupt status.
+ * @param   wut     Pointer to timer module to initialize.
+ * @return  Returns the interrupt status. 1 if interrupt has occurred.
  */
-int WUT_mode_ctrl(wut_mode_t config);
+uint32_t WUT_IntStatus(void);
 
 /**
- *  Wake-up timer interrupt handler for all timers
+ * @brief   Set the timer compare count.
+ * @param   wut     Pointer to timer module to initialize.
+ * @param   cmp_cnt New compare count.
+ * @note    This function does not protect against output glitches in PWM mode.
+ *          Use WUT_PWMSetPeriod when in PWM mode.
  */
-void WUT_handler(void);
+void WUT_SetCompare(uint32_t cmp_cnt);
+
+/**
+ * @brief   Set the timer count.
+ * @param   wut     Pointer to timer module to initialize.
+ * @param   cnt     New count.
+ */
+void WUT_SetCount(uint32_t cnt);
+
+/**
+ * @brief   Convert real time to timer ticks.
+ * @param   wut     Pointer to timer module to initialize.
+ * @param   time    Number of units of time.
+ * @param   units   Which units of time you want to convert.
+ * @param   ticks   Pointer to store the number of ticks calculated.
+ * @return     #E_NO_ERROR If everything is successful. 
+ * @return     @ref MXC_Error_Codes If function is unsuccessful.
+ */
+int WUT_GetTicks(uint32_t time, wut_unit_t units, uint32_t *ticks);
+
+/**
+ * @brief   Convert timer ticks to real time.
+ * @param   wut     Pointer to timer module to initialize.
+ * @param   ticks   Number of ticks.
+ * @param   time    Pointer to store number of units of time.
+ * @param   units   Pointer to store the units that time represents.
+ * @return     #E_NO_ERROR If everything is successful. 
+ * @return     @ref MXC_Error_Codes If function is unsuccessful.
+ */
+int WUT_GetTime(uint32_t ticks, uint32_t *time, wut_unit_t *units);
+
+/**
+ * @brief   Wait for an edge of the WUT count register.
+ */
+void WUT_Edge(void);
+
+/**
+ * @brief   Store the count and snapshot values.
+ */
+void WUT_Store(void);
+
+/**
+ * @brief   Restore the DBB clock with the stored count and snapshot values.
+ * @param   dbbFreq  Frequency of DBB clock.
+ */
+void WUT_RestoreBBClock(uint32_t dbbFreq);
+
+/**
+ * @brief   Get the difference between the stored counter value 
+ *          and the current counter value.
+ * @param   dbbFreq  Frequency of DBB clock.
+ * @return  Returns the current counter value - stored counter value.
+ */
+uint32_t WUT_GetSleepTicks(void);
+
+/**
+ * @brief   Delays for the given number of milliseconds.
+ * @param   waitMs  Number of milliseconds to wait.
+ */
+void WUT_Delay_MS(uint32_t waitMs);
+
 /**@} end of group wut */
 
 #ifdef __cplusplus

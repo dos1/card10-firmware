@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-02-19 17:10:07 +0000 (Tue, 19 Feb 2019) $
- * $Revision: 41068 $
+ * $Date: 2019-09-30 13:40:25 -0500 (Mon, 30 Sep 2019) $
+ * $Revision: 47261 $
  *
  ******************************************************************************/
 
@@ -61,6 +61,11 @@
 
 #if(TARGET_REV == 0x4131) 
 // A1
+#define MXC_PBM_REV         0
+#define MXC_TMR_REV         0
+#define MXC_UART_REV        0
+#elif(TARGET_REV == 0x4132) 
+// A2
 #define MXC_PBM_REV         0
 #define MXC_TMR_REV         0
 #define MXC_UART_REV        0

@@ -33,6 +33,10 @@
 #define LL_MEMORY_FOOTPRINT     0x9e92
 // #define LL_MEMORY_FOOTPRINT     0xEA0
 
+#ifdef _RTE_
+#include "RTE_Components.h"             // IAR/Keil Component selection
+#endif
+
 uint8_t LlMem[LL_MEMORY_FOOTPRINT];
 
 const LlRtCfg_t _ll_cfg = {
@@ -54,7 +58,7 @@ const LlRtCfg_t _ll_cfg = {
     /*maxExtScanDataLen*/       LL_MAX_ADV_DATA_LEN,
 
     /* Connection */
-    /*maxConn*/                 1,
+    /*maxConn*/                 8,
     /*numTxBufs*/               16,
     /*numRxBufs*/               16,
     /*maxAclLen*/               512,

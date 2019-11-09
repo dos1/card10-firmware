@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-03-28 21:06:37 +0000 (Thu, 28 Mar 2019) $ 
- * $Revision: 41966 $
+ * $Date: 2019-10-25 17:17:43 -0500 (Fri, 25 Oct 2019) $ 
+ * $Revision: 48103 $
  *
  ******************************************************************************/
 
@@ -413,6 +413,7 @@ static int clearfeature(usb_setup_pkt *sud)
       return -1;
     }
   } else {
+    /* Per USB 2.0: The Test_Mode feature cannot be cleared by the ClearFeature() request. */
     /* Unsupported */ 
     return -1;
   }
@@ -440,7 +441,7 @@ static int setfeature(usb_setup_pkt *sud)
       return result;
     }
   } else if ((sud->wValue == FEAT_REMOTE_WAKE)) {
-    /* Clear the remote wakeup feature */
+    /* Set the remote wakeup feature */
     if (callback[ENUM_SETFEATURE].fnaddr != NULL) {
       result = callback[ENUM_SETFEATURE].fnaddr(sud, NULL);
       if (result < 0) {
@@ -451,7 +452,7 @@ static int setfeature(usb_setup_pkt *sud)
       return -1;
     }
   } else if ((sud->wValue == FEAT_TEST_MODE)) {
-    /* Clear the test mode feature */
+    /* Set the test mode feature */
     if (callback[ENUM_SETFEATURE].fnaddr != NULL) {
       result = callback[ENUM_SETFEATURE].fnaddr(sud, NULL);
       if (result < 0) {

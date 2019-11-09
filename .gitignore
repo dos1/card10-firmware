@@ -1,4 +1,4 @@
-build/
+/build/
 /Documentation/output/
 __pycache__/
 *.pyc

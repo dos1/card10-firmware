@@ -215,7 +215,7 @@ enum
 {
   WATCH_DISC_MASTER_GATT_SVC,      /* GATT service */
   WATCH_DISC_MASTER_DIS_SVC,       /* Device Information service */
-  WATCH_DISC_MASTER_HRS_SVC,       /* Heart Rate service */
+  WATCH_DISC_MASTER_HRS_SVC        /* Heart Rate service */
 };
 
 /*! the Client handle list, watchCb.hdlList[], is set as follows:

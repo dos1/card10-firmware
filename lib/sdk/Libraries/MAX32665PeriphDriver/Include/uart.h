@@ -35,8 +35,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-02-14 15:36:39 +0000 (Thu, 14 Feb 2019) $
- * $Revision: 41018 $
+ * $Date: 2019-10-24 16:10:14 -0500 (Thu, 24 Oct 2019) $
+ * $Revision: 48075 $
  *
  *************************************************************************** */
 
@@ -86,7 +86,7 @@ typedef enum {
                            MXC_F_UART_CTRL_PARMD),          /**< Use for space parity 0 */
     UART_PARITY_SPACE_1 = (MXC_F_UART_CTRL_PARITY_EN |
                            MXC_S_UART_CTRL_PARITY_SPACE),   /**< Use for space parity 1 */
-    UART_PARITY_SPACE   = UART_PARITY_SPACE_1,              /**< Conventional space parity */
+    UART_PARITY_SPACE   = UART_PARITY_SPACE_1               /**< Conventional space parity */
 } uart_parity_t;
 
 /**
@@ -95,7 +95,7 @@ typedef enum {
     UART_DATA_SIZE_5_BITS = MXC_S_UART_CTRL_CHAR_SIZE_5,   /**< Data Size 5 Bits */
     UART_DATA_SIZE_6_BITS = MXC_S_UART_CTRL_CHAR_SIZE_6,   /**< Data Size 6 Bits */
     UART_DATA_SIZE_7_BITS = MXC_S_UART_CTRL_CHAR_SIZE_7,   /**< Data Size 7 Bits */
-    UART_DATA_SIZE_8_BITS = MXC_S_UART_CTRL_CHAR_SIZE_8,   /**< Data Size 8 Bits */
+    UART_DATA_SIZE_8_BITS = MXC_S_UART_CTRL_CHAR_SIZE_8    /**< Data Size 8 Bits */
 } uart_size_t;
 
 /**
@@ -103,21 +103,21 @@ typedef enum {
 typedef enum {
     UART_STOP_1   = 0,                                      /**< UART Stop 1 clock cycle */
     UART_STOP_1P5 = MXC_F_UART_CTRL_STOPBITS,               /**< UART Stop 1.5 clock cycle */
-    UART_STOP_2   = MXC_F_UART_CTRL_STOPBITS,               /**< UART Stop 2 clock cycle */
+    UART_STOP_2   = MXC_F_UART_CTRL_STOPBITS                /**< UART Stop 2 clock cycle */
 } uart_stop_t;
 
 /**
  * @brief      Flow control */
 typedef enum {
     UART_FLOW_CTRL_DIS = 0,                                 /**< RTS/CTS flow is disabled */
-    UART_FLOW_CTRL_EN  = MXC_F_UART_CTRL_FLOW_CTRL,         /**< RTS/CTS flow is enabled */
+    UART_FLOW_CTRL_EN  = MXC_F_UART_CTRL_FLOW_CTRL          /**< RTS/CTS flow is enabled */
 } uart_flow_ctrl_t;
 
 /**
  * @brief      Flow control Polarity */
 typedef enum {
     UART_FLOW_POL_DIS = 0,                                  /**< RTS/CTS asserted is low */
-    UART_FLOW_POL_EN  = MXC_F_UART_CTRL_FLOW_POL,           /**< RTS/CTS asserted is high */
+    UART_FLOW_POL_EN  = MXC_F_UART_CTRL_FLOW_POL            /**< RTS/CTS asserted is high */
 } uart_flow_pol_t;
 
 #if (TARGET != 32660)
@@ -125,7 +125,7 @@ typedef enum {
  * @brief      Clock Source Select */
 typedef enum {
     UART_CLKSEL_SYSTEM = 0,                                 /**< Peripheral clock will be used as the bit rate clock */
-    UART_CLKSEL_ALTERNATE = MXC_F_UART_CTRL_CLKSEL,         /**< Use the device's alternate UART bit rate clock. */
+    UART_CLKSEL_ALTERNATE = MXC_F_UART_CTRL_CLKSEL          /**< Use the device's alternate UART bit rate clock. */
 } uart_clksel_t;
 #endif
 

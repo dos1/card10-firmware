@@ -29,8 +29,8 @@
  # property whatsoever. Maxim Integrated Products, Inc. retains all
  # ownership rights.
  #
- # $Date: 2019-04-24 16:56:03 -0500 (Wed, 24 Apr 2019) $ 
- # $Revision: 42914 $
+ # $Date: 2019-09-11 16:20:50 -0500 (Wed, 11 Sep 2019) $ 
+ # $Revision: 46050 $
  #
  ###############################################################################
 
@@ -130,14 +130,24 @@ ifeq "$(MXC_OPTIMIZE_CFLAGS)" ""
 MXC_OPTIMIZE_CFLAGS = -Os
 endif
 
+ifeq "$(MFLOAT_FLAGS)" ""
+# Default is softfp for maximum compatibility
+MFLOAT_FLAGS = softfp
+endif
+
+ifeq "$(MFPU_FLAGS)" ""
+# Default is softfp for maximum compatibility
+MFPU_FLAGS = fpv4-sp-d16
+endif
+
 # The flags passed to the compiler.
 # fno-isolate-erroneous-paths-dereference disables the check for pointers with the value of 0
 #  add this below when gcc-arm-none-eabi version is past 4.8       -fno-isolate-erroneous-paths-dereference
 
 CFLAGS=-mthumb                                                                 \
        -mcpu=cortex-m4                                                         \
-       -mfloat-abi=softfp                                                      \
-       -mfpu=fpv4-sp-d16                                                       \
+       -mfloat-abi=$(MFLOAT_FLAGS)                                                      \
+       -mfpu=$(MFPU_FLAGS)                                                       \
        -Wa,-mimplicit-it=thumb                                                 \
        $(MXC_OPTIMIZE_CFLAGS)                                                  \
        $(CMD_CFLAGS)                                                           \
@@ -175,11 +185,14 @@ AR=${PREFIX}-ar
 # The command for calling the linker.
 LD=${PREFIX}-gcc
 
+# the command for striping objects.
+STRIP=$(PREFIX)-strip
+
 # The flags passed to the linker.
 LDFLAGS=-mthumb                                                                \
         -mcpu=cortex-m4                                                        \
-        -mfloat-abi=softfp                                                     \
-        -mfpu=fpv4-sp-d16                                                      \
+        -mfloat-abi=$(MFLOAT_FLAGS)                                                      \
+        -mfpu=$(MFPU_FLAGS)                                                       \
         -Xlinker --gc-sections                                                 \
 	-Xlinker -Map -Xlinker ${BUILD_DIR}/$(PROJECT).map
 LDFLAGS+=$(PROJ_LDFLAGS)
@@ -279,6 +292,23 @@ ${BUILD_DIR}/%.a:
 	    echo ${AR} -cr $(call fixpath,${@}) $(call fixpath,${^});               \
 	fi
 	@${AR} -cr $(call fixpath,${@}) $(call fixpath,${^})
+ifneq ($(STRIP_LIBRARIES),)
+ifneq ($(STRIP),)
+	@if [ 'x${ECLIPSE}' != x ];                                                 \
+	 then                                                                        \
+	    echo ${STRIP} $(call fixpath,${@}) | sed 's/-I\/\(.\)\//-I\1:\//g' ;    \
+	elif [ 'x${VERBOSE}' != x ];                                                \
+	then                                                                        \
+	    echo ${STRIP} --strip-unneeded $(call fixpath,${@});                                     \
+	elif [ 'x${QUIET}' != x ];                                                  \
+	then                                                                        \
+	    :;                                                                      \
+	else                                                                        \
+	    echo "  STRIP ${@}";                                                    \
+	fi
+	@${STRIP} --strip-unneeded $(call fixpath,${@})
+endif
+endif
 
 # The rule for linking the application.
 ${BUILD_DIR}/%.elf:

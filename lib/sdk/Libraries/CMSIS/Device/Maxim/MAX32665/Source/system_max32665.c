@@ -118,6 +118,7 @@ __weak int Board_Init(void)
  */
 __weak void SystemInit(void)
 {
+
     /* Configure the interrupt controller to use the application vector 
      * table in flash. Initially, VTOR points to the ROM's table.
      */

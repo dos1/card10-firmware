@@ -34,8 +34,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-11-08 21:08:58 +0000 (Thu, 08 Nov 2018) $
- * $Revision: 39056 $
+ * $Date: 2019-10-24 16:10:14 -0500 (Thu, 24 Oct 2019) $
+ * $Revision: 48075 $
  *
  *************************************************************************** */
 
@@ -120,7 +120,7 @@ typedef enum {
     GPIO_FUNC_ALT1,     /**< Alternate Function Selection */
     GPIO_FUNC_ALT2,     /**< Alternate Function Selection */
     GPIO_FUNC_ALT3,     /**< Alternate Function Selection */
-    GPIO_FUNC_ALT4,     /**< Alternate Function Selection */
+    GPIO_FUNC_ALT4      /**< Alternate Function Selection */
 } gpio_func_t;
 
 /**
@@ -129,7 +129,7 @@ typedef enum {
 typedef enum {
     GPIO_PAD_NONE,          /**< No pull-up or pull-down */
     GPIO_PAD_PULL_UP,       /**< Set pad to weak pull-up */
-    GPIO_PAD_PULL_DOWN,     /**< Set pad to weak pull-down */
+    GPIO_PAD_PULL_DOWN      /**< Set pad to weak pull-down */
 } gpio_pad_t;
 
 /**

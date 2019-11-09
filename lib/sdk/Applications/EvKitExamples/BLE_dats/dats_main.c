@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "mxc_device.h"
 #include "wsf_types.h"
 #include "util/bstream.h"
 #include "wsf_msg.h"
@@ -40,6 +41,7 @@
 #include "svc_wp.h"
 #include "util/calc128.h"
 #include "dats/dats_api.h"
+#include "gcr_regs.h"
 
 /**************************************************************************************************
   Macros
@@ -505,7 +507,13 @@ static void datsSetup(dmEvt_t *pMsg)
   AppExtAdvSetData(DM_ADV_HANDLE_DEFAULT, APP_SCAN_DATA_CONNECTABLE, sizeof(datsExtScanDataDisc), (uint8_t *) datsExtScanDataDisc, HCI_EXT_ADV_DATA_LEN);
 #endif /* BTLE_APP_USE_LEGACY_API */
 
-  DmSetDefaultPhy(0, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT);
+  /* Enable coded PHY */
+  if(MXC_GCR->revision != 0xA1) {
+    DmSetDefaultPhy(0, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT | HCI_PHY_LE_CODED_BIT, 
+      HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT | HCI_PHY_LE_CODED_BIT);
+  } else {
+    DmSetDefaultPhy(0, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT, HCI_PHY_LE_1M_BIT | HCI_PHY_LE_2M_BIT);
+  }
 
   /* start advertising; automatically set connectable/discoverable mode and bondable mode */
 #ifndef BTLE_APP_USE_LEGACY_API

@@ -42,7 +42,7 @@
 enum
 {
   MEDC_DISC_WSP_UDS_SVC,       /*! User data service */
-  MEDC_DISC_WSP_WSS_SVC,       /*! Weight scale service */
+  MEDC_DISC_WSP_WSS_SVC        /*! Weight scale service */
 };
 
 /* Start of cached weight scale service handles; begins after DIS */

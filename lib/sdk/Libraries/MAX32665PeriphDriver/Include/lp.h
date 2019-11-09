@@ -34,8 +34,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-09-10 21:20:17 +0000 (Mon, 10 Sep 2018) $
- * $Revision: 37771 $
+ * $Date: 2019-10-24 16:10:14 -0500 (Thu, 24 Oct 2019) $
+ * $Revision: 48075 $
  *
  *************************************************************************** */
 
@@ -61,8 +61,13 @@ typedef enum {
 	RETAIN_NONE= MXC_S_PWRSEQ_LPCN_RAMRET_DIS,
 	RETAIN_32k = MXC_S_PWRSEQ_LPCN_RAMRET_EN1,
 	RETAIN_64k = MXC_S_PWRSEQ_LPCN_RAMRET_EN2,
-	RETAIN_ALL = MXC_S_PWRSEQ_LPCN_RAMRET_EN3,
+	RETAIN_ALL = MXC_S_PWRSEQ_LPCN_RAMRET_EN3 
 } ram_retained_t;
+
+/**
+ * @brief      Clears the wakup status bits.  
+ */
+void LP_ClearWakeStatus(void);
 
 /**
  * @brief      Enables the selected GPIO port and its selected pins to wake up the device from any low power mode.  
@@ -366,6 +371,11 @@ void LP_EnterSleepMode(void);
  * @brief      Places the device into DEEPSLEEP mode.  This function returns once an RTC or external interrupt occur. 
  */
 void LP_EnterDeepSleepMode(void);
+
+/**
+ * @brief      Places the device into BACKGROUND mode.  This function returns once an RTC or external interrupt occur.
+ */
+void LP_EnterBackgroundMode(void);
 
 /**
  * @brief      Places the device into BACKUP mode.  CPU state is not maintained in this mode, so this function never returns.  

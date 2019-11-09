@@ -29,8 +29,8 @@
  # property whatsoever. Maxim Integrated Products, Inc. retains all
  # ownership rights.
  #
- # $Date: 2019-03-28 21:06:37 +0000 (Thu, 28 Mar 2019) $ 
- # $Revision: 41966 $
+ # $Date: 2019-10-25 17:17:43 -0500 (Fri, 25 Oct 2019) $ 
+ # $Revision: 48103 $
  #
  ###############################################################################
 
@@ -83,6 +83,12 @@ ifeq "$(TARGET_UC)" "MAX32655"
 TARGET_USB=MUSBHSFC
 endif
 ifeq "$(TARGET_UC)" "MAX32656"
+TARGET_USB=MUSBHSFC
+endif
+ifeq "$(TARGET_UC)" "MAX32570"
+TARGET_USB=MUSBHSFC
+endif
+ifeq "$(TARGET_UC)" "MAX32572"
 TARGET_USB=MUSBHSFC
 endif
 

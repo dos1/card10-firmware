@@ -98,6 +98,10 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gac614c906ed940ef7fb22567b1c5cc72d"><td class="memItemLeft" align="right" valign="top"><a id="gac614c906ed940ef7fb22567b1c5cc72d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__pwrseq.html#gac614c906ed940ef7fb22567b1c5cc72d">LP_ClearWakeStatus</a> (void)</td></tr>
+<tr class="memdesc:gac614c906ed940ef7fb22567b1c5cc72d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears the wakup status bits. <br /></td></tr>
+<tr class="separator:gac614c906ed940ef7fb22567b1c5cc72d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab6778dd59ee5f749856a4ff679abb951"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__pwrseq.html#gab6778dd59ee5f749856a4ff679abb951">LP_EnableGPIOWakeup</a> (<a class="el" href="structgpio__cfg__t.html">gpio_cfg_t</a> *wu_pins)</td></tr>
 <tr class="memdesc:gab6778dd59ee5f749856a4ff679abb951"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the selected GPIO port and its selected pins to wake up the device from any low power mode.  <a href="#gab6778dd59ee5f749856a4ff679abb951">More...</a><br /></td></tr>
 <tr class="separator:gab6778dd59ee5f749856a4ff679abb951"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -330,6 +334,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 <tr class="memitem:gac3086f62dd9602db500a3166c43edc57"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__pwrseq.html#gac3086f62dd9602db500a3166c43edc57">LP_EnterDeepSleepMode</a> (void)</td></tr>
 <tr class="memdesc:gac3086f62dd9602db500a3166c43edc57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Places the device into DEEPSLEEP mode.  <a href="#gac3086f62dd9602db500a3166c43edc57">More...</a><br /></td></tr>
 <tr class="separator:gac3086f62dd9602db500a3166c43edc57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad6c1fc2e74ed537e1bbdc7515acb1d79"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__pwrseq.html#gad6c1fc2e74ed537e1bbdc7515acb1d79">LP_EnterBackgroundMode</a> (void)</td></tr>
+<tr class="memdesc:gad6c1fc2e74ed537e1bbdc7515acb1d79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Places the device into BACKGROUND mode.  <a href="#gad6c1fc2e74ed537e1bbdc7515acb1d79">More...</a><br /></td></tr>
+<tr class="separator:gad6c1fc2e74ed537e1bbdc7515acb1d79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga906e1ee68934b58e0d34293dc1d87a44"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__pwrseq.html#ga906e1ee68934b58e0d34293dc1d87a44">LP_EnterBackupMode</a> (void *func(void))</td></tr>
 <tr class="memdesc:ga906e1ee68934b58e0d34293dc1d87a44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Places the device into BACKUP mode.  <a href="#ga906e1ee68934b58e0d34293dc1d87a44">More...</a><br /></td></tr>
 <tr class="separator:ga906e1ee68934b58e0d34293dc1d87a44"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -414,6 +421,25 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
       <table class="memname">
         <tr>
           <td class="memname">void LP_EnterDeepSleepMode </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>This function returns once an RTC or external interrupt occur. </p>
+
+</div>
+</div>
+<a id="gad6c1fc2e74ed537e1bbdc7515acb1d79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad6c1fc2e74ed537e1bbdc7515acb1d79">&#9670;&nbsp;</a></span>LP_EnterBackgroundMode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void LP_EnterBackgroundMode </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>

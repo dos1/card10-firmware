@@ -58,7 +58,7 @@ extern "C" {
 /*! WSF message event enumeration */
 enum
 {
-  MEDC_TIMER_IND = MEDC_MSG_START,    /*! Timer expired */
+  MEDC_TIMER_IND = MEDC_MSG_START     /*! Timer expired */
 };
 
 /**************************************************************************************************

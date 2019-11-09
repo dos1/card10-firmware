@@ -116,7 +116,7 @@ static void bbTestTxCompCback(uint8_t status)
  *  Completion handler for the BLE receive test operation.
  */
 /*************************************************************************************************/
-static void bbTestRxCompCback(uint8_t status, int8_t rssi, uint32_t crc, uint32_t timestamp, uint8_t rxPhyOptions)
+void bbTestRxCompCback(uint8_t status, int8_t rssi, uint32_t crc, uint32_t timestamp, uint8_t rxPhyOptions)
 {
   BbOpDesc_t * const pCur = BbGetCurrentBod();
   BbBleData_t * const pBle = pCur->prot.pBle;

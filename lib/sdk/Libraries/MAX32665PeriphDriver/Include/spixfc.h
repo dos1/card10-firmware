@@ -33,8 +33,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-10-31 15:32:51 +0000 (Wed, 31 Oct 2018) $
- * $Revision: 38826 $
+ * $Date: 2019-10-24 16:10:14 -0500 (Thu, 24 Oct 2019) $
+ * $Revision: 48075 $
  *
  **************************************************************************** */
 
@@ -80,7 +80,7 @@ spixfc_ssel_t;
 typedef enum {
     SPIXFC_WIDTH_1 = 0,  /**< 1 Data Line.                        */
     SPIXFC_WIDTH_2 = 1,  /**< 2 Data Lines (x2).                  */
-    SPIXFC_WIDTH_4 = 2,  /**< 4 Data Lines (x4).                  */
+    SPIXFC_WIDTH_4 = 2   /**< 4 Data Lines (x4).                  */
 } spixfc_width_t;
 
 /**
@@ -145,20 +145,20 @@ typedef enum {
 	SPIXFC_HEADER_DIR_NONE,
 	SPIXFC_HEADER_DIR_TX,
 	SPIXFC_HEADER_DIR_RX,
-	SPIXFC_HEADER_DIR_BOTH,
+	SPIXFC_HEADER_DIR_BOTH 
 } spixfc_hdr_direction_t;
 
 typedef enum {
 	SPIXFC_HEADER_UNITS_BITS,
 	SPIXFC_HEADER_UNITS_BYTES,
-	SPIXFC_HEADER_UNITS_PAGES,
+	SPIXFC_HEADER_UNITS_PAGES 
 } spixfc_hdr_units_t;
 
 typedef enum {
     SPIXFC_HEADER_WIDTH_SINGLE,
 	SPIXFC_HEADER_WIDTH_DUAL,
 	SPIXFC_HEADER_WIDTH_QUAD,
-	SPIXFC_HEADER_WIDTH_INVALID,
+	SPIXFC_HEADER_WIDTH_INVALID
 } spixfc_hdr_width_t;
 
 #define SPIXFC_HEADER_DEASS_SS  1

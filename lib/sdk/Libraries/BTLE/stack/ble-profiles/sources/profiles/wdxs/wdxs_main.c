@@ -353,6 +353,7 @@ void WdxsHandler(wsfEventMask_t event, wsfMsgHdr_t *pMsg)
 /*************************************************************************************************/
 void WdxsProcDmMsg(dmEvt_t *pEvt)
 {
+#if WDXS_INCLUDED == TRUE
   switch (pEvt->hdr.event)
   {
     case DM_CONN_CLOSE_IND:
@@ -401,6 +402,7 @@ void WdxsProcDmMsg(dmEvt_t *pEvt)
     default:
       break;
   }
+#endif /* WDXS_INCLUDED == TRUE */
 }
 
 /*************************************************************************************************/

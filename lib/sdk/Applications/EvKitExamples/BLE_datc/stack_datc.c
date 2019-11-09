@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "mxc_device.h"
 #include "wsf_types.h"
 #include "wsf_os.h"
 #include "util/bstream.h"
@@ -36,7 +37,7 @@
 #include "svc_core.h"
 #include "sec_api.h"
 #include "ll_init_api.h"
-
+#include "gcr_regs.h"
 
 #define LL_IMPL_REV             0x2303
 
@@ -44,7 +45,7 @@
 
 uint8_t LlMem[LL_MEMORY_FOOTPRINT];
 
-const LlRtCfg_t _ll_cfg = {
+LlRtCfg_t _ll_cfg = {
     /* Device */
     /*compId*/                  LL_COMP_ID_ARM,
     /*implRev*/                 LL_IMPL_REV,
@@ -101,6 +102,11 @@ void StackInitDatc(void)
 
 #ifndef ENABLE_SDMA
   uint32_t memUsed;
+  
+  /* Enable coded PHY */
+  if(MXC_GCR->revision != 0xA1) {
+    _ll_cfg.phyCodedSup = TRUE;
+  }
 
   /* Initialize link layer. */
   LlInitRtCfg_t ll_init_cfg =

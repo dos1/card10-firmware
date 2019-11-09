@@ -1,11 +1,5 @@
-/**
- * @file       wut.c
- * @brief      This file contains the function implementations for the
- *             WUT peripheral module.
- */
-
 /* *****************************************************************************
- * Copyright (C) 2017 Maxim Integrated Products, Inc., All Rights Reserved.
+ * Copyright (C) 2016 Maxim Integrated Products, Inc., All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -35,73 +29,244 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-08-28 22:03:02 +0000 (Tue, 28 Aug 2018) $
- * $Revision: 37424 $
+ * $Date: 2019-10-25 14:21:06 -0500 (Fri, 25 Oct 2019) $
+ * $Revision: 48094 $
  *
  **************************************************************************** */
 
 /* **** Includes **** */
-#include <string.h>
 #include "mxc_config.h"
 #include "mxc_assert.h"
 #include "mxc_sys.h"
 #include "wut.h"
+#include "gcr_regs.h"
 
-/**
- * @ingroup wut
- * @{
- */
+/* **** Definitions **** */
 
-int WUT_init(wut_config_t *config) {
-	//Do the configuration
+/* **** Globals **** */
 
-	return E_NO_ERROR;
+/* **** Local Variables **** */
+static uint32_t wut_count;
+static uint32_t wut_snapshot;
+
+/* **** Functions **** */
+
+/* ************************************************************************** */
+void WUT_Init(wut_pres_t pres)
+{   
+    // Disable timer and clear settings
+    MXC_WUT->cn = 0;
+    
+    // Clear interrupt flag
+    MXC_WUT->intr = MXC_F_WUT_INTR_IRQ_CLR;
+
+    // Set the prescaler
+    MXC_WUT->cn = pres;
+
+    // Initialize the compare register
+    MXC_WUT->cmp = 0xFFFFFFFF;
+
+    // Initialize the local variables
+    wut_count = 0;
+    wut_snapshot = 0;
 }
 
-int WUT_enable(void) {
-	//Set the enable bit?
-
-	return E_NO_ERROR;
+void WUT_Shutdown(void)
+{   
+    // Disable timer and clear settings
+    MXC_WUT->cn = 0;
 }
 
-int WUT_disable(void) {
-	//Unset the enable bit?
-
-	return E_NO_ERROR;
+/* ************************************************************************** */
+void WUT_Enable(void)
+{
+    MXC_WUT->cn |= MXC_F_WUT_CN_TEN;
 }
 
-int WUT_get_time(void) {
-	//return WUT time register?
-	return -1;
+/* ************************************************************************** */
+void WUT_Disable(void)
+{
+    MXC_WUT->cn &= ~(MXC_F_WUT_CN_TEN);
 }
 
-int WUT_register_callback(wut_handler_t handler) {
+/* ************************************************************************** */
+void WUT_Config(const wut_cfg_t *cfg)
+{
+    // Configure the timer
+    MXC_WUT->cn = (MXC_WUT->cn & ~(MXC_F_WUT_CN_TMODE | MXC_F_WUT_CN_TPOL)) |
+              ((cfg->mode << MXC_F_WUT_CN_TMODE_POS) & MXC_F_WUT_CN_TMODE);
+              
+    MXC_WUT->cnt = 0x1;
 
-	return E_NO_ERROR;
+    MXC_WUT->cmp = cfg->cmp_cnt;
 }
 
-int WUT_unregister_callback(void) {
-
-	return E_NO_ERROR;
+/* ************************************************************************** */
+uint32_t WUT_GetCompare(void)
+{
+    return MXC_WUT->cmp;
 }
 
-void WUT_clear_flags(void) {
-	return;
+/* ************************************************************************** */
+uint32_t WUT_GetCapture(void)
+{
+    return MXC_WUT->pwm;
 }
 
-int WUT_get_flags(void) {
-	return 0;
+/* ************************************************************************* */
+uint32_t WUT_GetCount(void)
+{
+    return MXC_WUT->cnt;
 }
 
-int WUT_set_timeout_ms(unsigned int timeout) {
-	return E_NO_ERROR;
+/* ************************************************************************* */
+void WUT_IntClear(void)
+{
+    MXC_WUT->intr = MXC_F_WUT_INTR_IRQ_CLR;
 }
 
-int WUT_mode_ctrl(wut_mode_t mode) {
-	return E_NO_ERROR;
+/* ************************************************************************* */
+uint32_t WUT_IntStatus(void)
+{
+    return MXC_WUT->intr;
 }
 
-void WUT_Handler(void) {
-	return;
+/* ************************************************************************* */
+void WUT_SetCompare(uint32_t cmp_cnt)
+{
+    MXC_WUT->cmp = cmp_cnt;
 }
-/**@} end of group wut */
+
+/* ************************************************************************* */
+void WUT_SetCount(uint32_t cnt)
+{
+    MXC_WUT->cnt = cnt;
+}
+
+/* ************************************************************************* */
+int WUT_GetTicks(uint32_t time, wut_unit_t units, uint32_t *ticks)
+{
+    uint32_t unit_div0, unit_div1;
+    uint32_t timerClock;
+    uint32_t prescale;
+    uint64_t temp_ticks;
+    
+    timerClock = SYS_WUT_GetFreq();
+    prescale = ((MXC_WUT->cn & MXC_F_WUT_CN_PRES) >> MXC_F_WUT_CN_PRES_POS) 
+        | (((MXC_WUT->cn & MXC_F_WUT_CN_PRES3) >> (MXC_F_WUT_CN_PRES3_POS))<<3);
+    
+    switch (units) {
+        case WUT_UNIT_NANOSEC:
+            unit_div0 = 1000000;
+            unit_div1 = 1000;
+            break;
+        case WUT_UNIT_MICROSEC:
+            unit_div0 = 1000;
+            unit_div1 = 1000;
+            break;
+        case WUT_UNIT_MILLISEC:
+            unit_div0 = 1;
+            unit_div1 = 1000;
+            break;
+        case WUT_UNIT_SEC:
+            unit_div0 = 1;
+            unit_div1 = 1;
+            break;
+        default:
+            return E_BAD_PARAM;
+    }
+    
+    temp_ticks = (uint64_t)time * (timerClock / unit_div0) / (unit_div1 * (1 << (prescale & 0xF)));
+    
+    //make sure ticks is within a 32 bit value
+    if (!(temp_ticks & 0xffffffff00000000)  && (temp_ticks & 0xffffffff)) {
+        *ticks = temp_ticks;
+        return E_NO_ERROR;
+    }
+    
+    return E_INVALID;
+}
+
+/* ************************************************************************* */
+int WUT_GetTime(uint32_t ticks, uint32_t *time, wut_unit_t *units)
+{
+    uint64_t temp_time = 0;
+    uint32_t timerClock = SYS_WUT_GetFreq();
+    uint32_t prescale = ((MXC_WUT->cn & MXC_F_WUT_CN_PRES) >> MXC_F_WUT_CN_PRES_POS) 
+        | (((MXC_WUT->cn & MXC_F_WUT_CN_PRES3) >> (MXC_F_WUT_CN_PRES3_POS))<<3);
+    
+    temp_time = (uint64_t)ticks * 1000 * (1 << (prescale & 0xF)) / (timerClock / 1000000);
+    if (!(temp_time & 0xffffffff00000000)) {
+        *time = temp_time;
+        *units = WUT_UNIT_NANOSEC;
+        return E_NO_ERROR;
+    }
+    
+    temp_time = (uint64_t)ticks * 1000 * (1 << (prescale & 0xF)) / (timerClock / 1000);
+    if (!(temp_time & 0xffffffff00000000)) {
+        *time = temp_time;
+        *units = WUT_UNIT_MICROSEC;
+        return E_NO_ERROR;
+    }
+    
+    temp_time = (uint64_t)ticks * 1000 * (1 << (prescale & 0xF)) / timerClock;
+    if (!(temp_time & 0xffffffff00000000)) {
+        *time = temp_time;
+        *units = WUT_UNIT_MILLISEC;
+        return E_NO_ERROR;
+    }
+    
+    temp_time = (uint64_t)ticks * (1 << (prescale & 0xF)) / timerClock;
+    if (!(temp_time & 0xffffffff00000000)) {
+        *time = temp_time;
+        *units = WUT_UNIT_SEC;
+        return E_NO_ERROR;
+    }
+    
+    return E_INVALID;
+}
+
+/* ************************************************************************** */
+void WUT_Edge(void)
+{
+    // Wait for a WUT edge
+    uint32_t tmp = MXC_WUT->cnt;
+    while (tmp == MXC_WUT->cnt) {}
+}
+
+/* ************************************************************************** */
+void WUT_Store(void)
+{
+    wut_count = MXC_WUT->cnt;
+    wut_snapshot = MXC_WUT->snapshot;
+}
+
+/* ************************************************************************** */
+void WUT_RestoreBBClock(uint32_t dbbFreq)
+{
+    /* restore DBB clock from WUT */
+    WUT_Edge();
+    MXC_WUT->preset = wut_snapshot + (uint64_t)(MXC_WUT->cnt - wut_count + 1)
+                      * dbbFreq / SYS_WUT_GetFreq();
+    MXC_WUT->reload = 1;  // arm DBB_CNT update on the next rising WUT clock
+    WUT_Edge();
+}
+
+/* ************************************************************************** */
+uint32_t WUT_GetSleepTicks(void)
+{
+    return (MXC_WUT->cnt - wut_count);
+}
+
+/* ************************************************************************** */
+void WUT_Delay_MS(uint32_t waitMs)
+{
+    /* assume WUT is already running */
+    uint32_t  tmp = MXC_WUT->cnt;
+
+    tmp += (waitMs * (SYS_WUT_GetFreq() / 
+        (0x1 << ((MXC_WUT->cn & MXC_F_WUT_CN_PRES) >> MXC_F_WUT_CN_PRES_POS)))
+        + 500) / 1000 ;
+
+    while(MXC_WUT->cnt < tmp){}
+}

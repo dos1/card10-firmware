@@ -34,8 +34,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-10-31 15:32:51 +0000 (Wed, 31 Oct 2018) $
- * $Revision: 38826 $
+ * $Date: 2019-10-24 16:10:14 -0500 (Thu, 24 Oct 2019) $
+ * $Revision: 48075 $
  *
  *************************************************************************** */
 
@@ -98,7 +98,7 @@ typedef enum {
     TMR_UNIT_NANOSEC = 0,       /**< Nanosecond Unit Indicator. */
     TMR_UNIT_MICROSEC,          /**< Microsecond Unit Indicator. */
     TMR_UNIT_MILLISEC,          /**< Millisecond Unit Indicator. */
-    TMR_UNIT_SEC,               /**< Second Unit Indicator. */
+    TMR_UNIT_SEC                /**< Second Unit Indicator. */
 } tmr_unit_t;
 
 /**
@@ -128,18 +128,21 @@ typedef struct {
  * @param      tmr        Pointer to timer module to initialize.
  * @param      pres       Prescaler value.
  * @param      sys_cfg    System configuration object
+ * @return     #E_NO_ERROR if successful. 
  */
-void TMR_Init(mxc_tmr_regs_t *tmr, tmr_pres_t pres, const sys_cfg_tmr_t* sys_cfg);
+int TMR_Init(mxc_tmr_regs_t *tmr, tmr_pres_t pres, const sys_cfg_tmr_t* sys_cfg);
 
 /**
  * @brief      Shutdown timer module clock.
  * @param      tmr  Pointer to timer module to initialize.
+ * @return     #E_NO_ERROR if successful. 
  */
-void TMR_Shutdown(mxc_tmr_regs_t *tmr);
+int TMR_Shutdown(mxc_tmr_regs_t *tmr);
 
 /**
  * @brief      Enable the timer.
  * @param      tmr  Pointer to timer module to initialize.
+ * @return     #E_NO_ERROR if successful. 
  */
 void TMR_Enable(mxc_tmr_regs_t* tmr);
 
@@ -153,8 +156,9 @@ void TMR_Disable(mxc_tmr_regs_t* tmr);
  * @brief      Configure the timer.
  * @param      tmr  Pointer to timer module to initialize.
  * @param      cfg  Pointer to timer configuration struct.
+ * @return     #E_NO_ERROR if successful. 
  */
-void TMR_Config(mxc_tmr_regs_t *tmr, const tmr_cfg_t *cfg);
+int TMR_Config(mxc_tmr_regs_t *tmr, const tmr_cfg_t *cfg);
 
 /**
  * @brief   Configure the timer for PWM operation.

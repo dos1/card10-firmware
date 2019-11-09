@@ -47,6 +47,8 @@
 #include "mxc_sys.h"
 #include "mxc_delay.h"
 #include "gpio.h"
+#include "flc.h"
+#include "cipher.h"
 #include "mxc_pins.h"
 #include "gcr_regs.h"
 #include "tmr_regs.h"
@@ -75,6 +77,66 @@ static sys_cfg_spixr_t* spixr_cfg;
 
 /* **** Functions **** */
 static int SYS_Clock_Timeout(uint32_t ready);
+
+/* ************************************************************************** */
+int SYS_GetUSN(uint8_t *usn, uint8_t *checksum)
+{
+    uint32_t *infoblock = (uint32_t*)MXC_INFO0_MEM_BASE;
+
+    // Read the USN from the info block
+    FLC_UnlockInfoBlock(MXC_INFO0_MEM_BASE);
+
+    usn[0]  = (infoblock[0] & 0x007F8000) >> 15;
+    usn[1]  = (infoblock[0] & 0x7F800000) >> 23;
+    usn[2]  = (infoblock[1] & 0x0000007F) << 1;
+    usn[2] |= (infoblock[0] & 0x80000000) >> 31;
+    usn[3]  = (infoblock[1] & 0x00007F80) >> 7;
+    usn[4]  = (infoblock[1] & 0x007F8000) >> 15;
+    usn[5]  = (infoblock[1] & 0x7F800000) >> 23;
+    usn[6]  = (infoblock[2] & 0x007F8000) >> 15;
+    usn[7]  = (infoblock[2] & 0x7F800000) >> 23;
+    usn[8]  = (infoblock[3] & 0x0000007F) << 1;
+    usn[8] |= (infoblock[2] & 0x80000000) >> 31;
+    usn[9]  = (infoblock[3] & 0x00007F80) >> 7;
+    usn[10] = (infoblock[3] & 0x007F8000) >> 15;
+
+    // Compute the checksum
+    if(checksum != NULL) {
+        uint8_t info_checksum[2];
+        char key[MXC_AES_KEY_128_LEN];
+
+        // Initialize the remainder of the USN and key
+        memset(&usn[11], 0, (AES_DATA_LEN - 11));  
+        memset(key, 0, MXC_AES_KEY_128_LEN);
+
+        // Read the checksum from the info block
+        info_checksum[0] = ((infoblock[3] & 0x7F800000) >> 23);
+        info_checksum[1] = ((infoblock[4] & 0x007F8000) >> 15);
+
+        TPU_Cipher_Reset();
+        TPU_Cipher_Config(TPU_MODE_ECB, TPU_CIPHER_AES128);
+        TPU_AES_Encrypt((const char *)usn, NULL, (const char *)key, 
+            TPU_CIPHER_AES128, MXC_V_TPU_CIPHER_CTRL_MODE_ECB, AES_DATA_LEN, 
+            (char*)checksum);
+        TPU_Shutdown();
+
+        // Verify the checksum
+        if((checksum[1] != info_checksum[0]) || 
+            (checksum[0] != info_checksum[1])) {
+
+            FLC_LockInfoBlock(MXC_INFO0_MEM_BASE);
+            return E_UNKNOWN;
+        }   
+    }
+
+    // Add the info block checksum to the USN
+    usn[11] = ((infoblock[3] & 0x7F800000) >> 23);
+    usn[12] = ((infoblock[4] & 0x007F8000) >> 15);
+
+    FLC_LockInfoBlock(MXC_INFO0_MEM_BASE);
+
+    return E_NO_ERROR;
+}
 
 /* ************************************************************************** */
 int SYS_IsClockEnabled(sys_periph_clock_t clock)
@@ -1001,6 +1063,12 @@ int SYS_WDT_Shutdown(mxc_wdt_regs_t* wdt)
         return E_BAD_PARAM;
     }
     return E_NO_ERROR;
+}
+
+/* ************************************************************************** */
+uint32_t SYS_WUT_GetFreq(void)
+{
+    return XTAL32K_FREQ;
 }
 
 /**@} end of mxc_sys */

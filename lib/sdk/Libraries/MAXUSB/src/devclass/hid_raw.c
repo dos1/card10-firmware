@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-03-28 21:06:37 +0000 (Thu, 28 Mar 2019) $ 
- * $Revision: 41966 $
+ * $Date: 2019-08-02 10:39:06 -0500 (Fri, 02 Aug 2019) $ 
+ * $Revision: 45189 $
  *
  ******************************************************************************/
  
@@ -81,9 +81,9 @@ static const uint8_t *report_desc;
 
 static int (*callback)(void);
 
-static int (*chained_func)(usb_setup_pkt *, void *);
-static void *chained_cbdata;
-static void (*chained_getdesc_func)(usb_setup_pkt *, const uint8_t **, uint16_t *);
+int (*chained_func)(usb_setup_pkt *, void *);
+void *chained_cbdata;
+void (*chained_getdesc_func)(usb_setup_pkt *, const uint8_t **, uint16_t *);
 
 /***** Function Prototypes *****/
 static void getdescriptor(usb_setup_pkt *sud, const uint8_t **desc, uint16_t *desclen);

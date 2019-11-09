@@ -346,6 +346,18 @@ void LP_EnterDeepSleepMode(void)
     __WFI();
 }
 
+void LP_EnterBackgroundMode(void)
+{
+    LP_ClearWakeStatus();
+
+    /* Set BACKGROUND bit and SLEEPDEEP bit */
+    MXC_PWRSEQ->lpcn |= MXC_F_PWRSEQ_LPCN_BCKGRND;
+    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+
+    /* Go into Background mode and wait for an interrupt to wake the processor */
+    __WFI();
+}
+
 void LP_EnterBackupMode(void* func(void))
 {
     LP_ClearWakeStatus();

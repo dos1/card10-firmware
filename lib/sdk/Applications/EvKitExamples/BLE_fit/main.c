@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-07-11 16:47:07 -0500 (Thu, 11 Jul 2019) $
- * $Revision: 44577 $
+ * $Date: 2019-10-09 11:56:30 -0500 (Wed, 09 Oct 2019) $
+ * $Revision: 47576 $
  *
  ******************************************************************************/
 
@@ -49,6 +49,7 @@
 #include "hci_core.h"
 #include "pb.h"
 #include "tmr.h"
+
 
 /**************************************************************************************************
   Macros
@@ -232,6 +233,7 @@ void Button1Pressed(void* arg)
 /*************************************************************************************************/
 int main(void)
 {
+
 
 #ifndef __IAR_SYSTEMS_ICC__
     setvbuf(stdout, printf_buffer, _IOLBF, PRINTF_BUF_SIZE);

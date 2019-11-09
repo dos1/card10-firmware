@@ -34,8 +34,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-10-22 13:47:59 +0000 (Mon, 22 Oct 2018) $
- * $Revision: 38626 $
+ * $Date: 2019-10-24 16:10:14 -0500 (Thu, 24 Oct 2019) $
+ * $Revision: 48075 $
  *
  **************************************************************************** */
 
@@ -82,7 +82,7 @@ extern const gpio_cfg_t gpio_cfg_spi17y1_ss2;
 extern const gpio_cfg_t gpio_cfg_spi17y2;
 extern const gpio_cfg_t gpio_cfg_spi17y2_ss0;
 extern const gpio_cfg_t gpio_cfg_spi17y2_ss1;
-extern const gpio_cfg_t gpio_cfg_spi17y2_ss2;;
+extern const gpio_cfg_t gpio_cfg_spi17y2_ss2;
 extern const gpio_cfg_t gpio_cfg_pt0;
 extern const gpio_cfg_t gpio_cfg_pt1;
 extern const gpio_cfg_t gpio_cfg_pt2;

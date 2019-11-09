@@ -34,7 +34,7 @@ extern "C" {
 /*! WSF message event enumeration */
 enum
 {
-  MEDS_TIMER_IND = MEDS_MSG_START,    /*! Timer expired */
+  MEDS_TIMER_IND = MEDS_MSG_START     /*! Timer expired */
 };
 
 /**************************************************************************************************

@@ -326,6 +326,7 @@ int RTC_CheckBusy(void)
             return E_BUSY;
         }
     }
+    mxc_delay_stop();
     return E_SUCCESS;
 }
 

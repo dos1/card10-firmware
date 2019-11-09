@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-08-29 19:57:14 +0000 (Wed, 29 Aug 2018) $
- * $Revision: 37501 $
+ * $Date: 2019-10-29 09:21:01 -0500 (Tue, 29 Oct 2019) $
+ * $Revision: 48140 $
  *
  ******************************************************************************/
 
@@ -125,7 +125,7 @@ int MX25_Board_Write(const uint8_t* write, unsigned len, unsigned deassert, spix
  * @param   deassert    Deassert slave select at the end of the transaction.
  * \returns #E_NO_ERROR if successful, !=0 otherwise
  */
-int MX25_Clock(unsigned len, unsigned deassert);;
+int MX25_Clock(unsigned len, unsigned deassert);
 
 #ifdef __cplusplus
 }

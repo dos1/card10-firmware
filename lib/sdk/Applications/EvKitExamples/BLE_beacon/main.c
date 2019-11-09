@@ -29,14 +29,15 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2019-07-12 10:56:57 -0500 (Fri, 12 Jul 2019) $
- * $Revision: 44598 $
+ * $Date: 2019-08-22 20:18:08 -0500 (Thu, 22 Aug 2019) $
+ * $Revision: 45615 $
  *
  ******************************************************************************/
 
 #include <stdio.h>
 #include <string.h>
 #include "mxc_config.h"
+#include "mxc_sys.h"
 #include "wsf_types.h"
 #include "wsf_os.h"
 #include "wsf_buf.h"
@@ -47,6 +48,7 @@
 #include "app_ui.h"
 #include "hci_vs.h"
 #include "hci_core.h"
+#include "dm_api.h"
 
 /**************************************************************************************************
   Macros
@@ -150,12 +152,40 @@ static void WsfInit(void)
  */
 void SetAddress(uint8_t event)
 {
-    uint8_t bdAddr[6] = {0x02, 0x00, 0x44, 0x8B, 0x05, 0x00};
-    
+    uint8_t usn[SYS_USN_CHECKSUM_LEN];
+    uint8_t checksum[SYS_USN_CHECKSUM_LEN];
+    uint8_t bdAddr[6];
+    uint8_t bdAddrRand[6];
+
+    if(SYS_GetUSN(usn, checksum) != E_NO_ERROR) {
+        printf("Error getting Checksum\n");
+    }
+
+    // MA-L assigend by IEEE to Maxim Integrated Products
+    bdAddr[5] = 0x00;
+    bdAddr[4] = 0x18;
+    bdAddr[3] = 0x80;
+
+    // USN checksum
+    bdAddr[2] = checksum[2];
+    bdAddr[1] = checksum[1];
+    bdAddr[0] = checksum[0];
+
+    bdAddrRand[0] = checksum[3];
+    bdAddrRand[1] = checksum[4];
+    bdAddrRand[2] = checksum[5];
+    bdAddrRand[3] = checksum[6];
+    bdAddrRand[4] = checksum[7];
+    bdAddrRand[5] = checksum[8];
+
     switch (event) {
     case APP_UI_RESET_CMPL:
-        printf("Setting address -- MAC %02X:%02X:%02X:%02X:%02X:%02X\n", bdAddr[5], bdAddr[4], bdAddr[3], bdAddr[2], bdAddr[1], bdAddr[0]);
         HciVsSetBdAddr(bdAddr);
+        DM_RAND_ADDR_SET(bdAddrRand, DM_RAND_ADDR_STATIC);
+        DmDevSetRandAddr(bdAddrRand);
+        DmAdvSetAddrType(DM_ADDR_RANDOM);
+        printf("Setting random address -- MAC %02X:%02X:%02X:%02X:%02X:%02X\n", 
+            bdAddrRand[5], bdAddrRand[4], bdAddrRand[3], bdAddrRand[2], bdAddrRand[1], bdAddrRand[0]);
         break;
     default:
         break;

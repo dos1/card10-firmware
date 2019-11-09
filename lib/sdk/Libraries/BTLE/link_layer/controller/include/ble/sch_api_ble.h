@@ -50,6 +50,7 @@ uint32_t SchBleCalcAdvPktDurationUsec(uint8_t phy, uint8_t phyOptions, uint16_t 
 uint32_t SchBleCalcAuxPktDurationUsec(uint8_t phy, uint8_t phyOptions, uint16_t len);
 void SchBleCalcAdvOpDuration(BbOpDesc_t *pBod);
 bool_t SchBleGetNextMstConnDueTime(uint32_t *pDueTime);
+bool_t SchBleGetNextDueTime(uint32_t *pDueTime);
 
 #ifdef __cplusplus
 };

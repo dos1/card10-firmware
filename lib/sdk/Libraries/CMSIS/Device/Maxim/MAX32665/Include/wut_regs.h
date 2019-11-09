@@ -78,7 +78,7 @@ extern "C" {
  * @ingroup     wut
  * @defgroup    wut_registers WUT_Registers
  * @brief       Registers, Bit Masks and Bit Positions for the WUT Peripheral Module.
- * @details Wakeup Timer.
+ * @details 32-bit reloadable timer that can be used for timing and wakeup.
  */
 
 /**
@@ -90,8 +90,8 @@ typedef struct {
     __IO uint32_t cmp;                  /**< <tt>\b 0x04:</tt> WUT CMP Register */
     __IO uint32_t pwm;                  /**< <tt>\b 0x08:</tt> WUT PWM Register */
     __IO uint32_t intr;                 /**< <tt>\b 0x0C:</tt> WUT INTR Register */
-    __IO uint32_t ctrl;                 /**< <tt>\b 0x10:</tt> WUT CTRL Register */
-    __IO uint32_t nolap;                /**< <tt>\b 0x14:</tt> WUT NOLAP Register */
+    __IO uint32_t cn;                   /**< <tt>\b 0x10:</tt> WUT CN Register */
+    __IO uint32_t nolcmp;               /**< <tt>\b 0x14:</tt> WUT NOLCMP Register */
     __IO uint32_t preset;               /**< <tt>\b 0x18:</tt> WUT PRESET Register */
     __IO uint32_t reload;               /**< <tt>\b 0x1C:</tt> WUT RELOAD Register */
     __IO uint32_t snapshot;             /**< <tt>\b 0x20:</tt> WUT SNAPSHOT Register */
@@ -108,8 +108,8 @@ typedef struct {
  #define MXC_R_WUT_CMP                      ((uint32_t)0x00000004UL) /**< Offset from WUT Base Address: <tt> 0x0004</tt> */ 
  #define MXC_R_WUT_PWM                      ((uint32_t)0x00000008UL) /**< Offset from WUT Base Address: <tt> 0x0008</tt> */ 
  #define MXC_R_WUT_INTR                     ((uint32_t)0x0000000CUL) /**< Offset from WUT Base Address: <tt> 0x000C</tt> */ 
- #define MXC_R_WUT_CTRL                     ((uint32_t)0x00000010UL) /**< Offset from WUT Base Address: <tt> 0x0010</tt> */ 
- #define MXC_R_WUT_NOLAP                    ((uint32_t)0x00000014UL) /**< Offset from WUT Base Address: <tt> 0x0014</tt> */ 
+ #define MXC_R_WUT_CN                       ((uint32_t)0x00000010UL) /**< Offset from WUT Base Address: <tt> 0x0010</tt> */ 
+ #define MXC_R_WUT_NOLCMP                   ((uint32_t)0x00000014UL) /**< Offset from WUT Base Address: <tt> 0x0014</tt> */ 
  #define MXC_R_WUT_PRESET                   ((uint32_t)0x00000018UL) /**< Offset from WUT Base Address: <tt> 0x0018</tt> */ 
  #define MXC_R_WUT_RELOAD                   ((uint32_t)0x0000001CUL) /**< Offset from WUT Base Address: <tt> 0x001C</tt> */ 
  #define MXC_R_WUT_SNAPSHOT                 ((uint32_t)0x00000020UL) /**< Offset from WUT Base Address: <tt> 0x0020</tt> */ 
@@ -117,75 +117,96 @@ typedef struct {
 
 /**
  * @ingroup  wut_registers
- * @defgroup WUT_CNT WUT_CNT
- * @brief    Wakeup Timer Count Register.
- * @{
- */
-/**@} end of group WUT_CNT_Register */
-
-/**
- * @ingroup  wut_registers
- * @defgroup WUT_CMP WUT_CMP
- * @brief    Wakeup Timer Compare Register.
- * @{
- */
-/**@} end of group WUT_CMP_Register */
-
-/**
- * @ingroup  wut_registers
- * @defgroup WUT_PWM WUT_PWM
- * @brief    Wakeup Timer PWM Register.
- * @{
- */
-/**@} end of group WUT_PWM_Register */
-
-/**
- * @ingroup  wut_registers
  * @defgroup WUT_INTR WUT_INTR
- * @brief    Wakeup Timer Interrupt Register.
+ * @brief    Clear Interrupt. Writing a value (0 or 1) to a bit in this register clears the
+ *           associated interrupt.
  * @{
  */
+ #define MXC_F_WUT_INTR_IRQ_CLR_POS                     0 /**< INTR_IRQ_CLR Position */
+ #define MXC_F_WUT_INTR_IRQ_CLR                         ((uint32_t)(0x1UL << MXC_F_WUT_INTR_IRQ_CLR_POS)) /**< INTR_IRQ_CLR Mask */
+
 /**@} end of group WUT_INTR_Register */
 
 /**
  * @ingroup  wut_registers
- * @defgroup WUT_CTRL WUT_CTRL
- * @brief    Wakeup Timer Control Register.
+ * @defgroup WUT_CN WUT_CN
+ * @brief    Timer Control Register.
  * @{
  */
-/**@} end of group WUT_CTRL_Register */
+ #define MXC_F_WUT_CN_TMODE_POS                         0 /**< CN_TMODE Position */
+ #define MXC_F_WUT_CN_TMODE                             ((uint32_t)(0x7UL << MXC_F_WUT_CN_TMODE_POS)) /**< CN_TMODE Mask */
+ #define MXC_V_WUT_CN_TMODE_ONESHOT                     ((uint32_t)0x0UL) /**< CN_TMODE_ONESHOT Value */
+ #define MXC_S_WUT_CN_TMODE_ONESHOT                     (MXC_V_WUT_CN_TMODE_ONESHOT << MXC_F_WUT_CN_TMODE_POS) /**< CN_TMODE_ONESHOT Setting */
+ #define MXC_V_WUT_CN_TMODE_CONTINUOUS                  ((uint32_t)0x1UL) /**< CN_TMODE_CONTINUOUS Value */
+ #define MXC_S_WUT_CN_TMODE_CONTINUOUS                  (MXC_V_WUT_CN_TMODE_CONTINUOUS << MXC_F_WUT_CN_TMODE_POS) /**< CN_TMODE_CONTINUOUS Setting */
+ #define MXC_V_WUT_CN_TMODE_COUNTER                     ((uint32_t)0x2UL) /**< CN_TMODE_COUNTER Value */
+ #define MXC_S_WUT_CN_TMODE_COUNTER                     (MXC_V_WUT_CN_TMODE_COUNTER << MXC_F_WUT_CN_TMODE_POS) /**< CN_TMODE_COUNTER Setting */
+ #define MXC_V_WUT_CN_TMODE_PWM                         ((uint32_t)0x3UL) /**< CN_TMODE_PWM Value */
+ #define MXC_S_WUT_CN_TMODE_PWM                         (MXC_V_WUT_CN_TMODE_PWM << MXC_F_WUT_CN_TMODE_POS) /**< CN_TMODE_PWM Setting */
+ #define MXC_V_WUT_CN_TMODE_CAPTURE                     ((uint32_t)0x4UL) /**< CN_TMODE_CAPTURE Value */
+ #define MXC_S_WUT_CN_TMODE_CAPTURE                     (MXC_V_WUT_CN_TMODE_CAPTURE << MXC_F_WUT_CN_TMODE_POS) /**< CN_TMODE_CAPTURE Setting */
+ #define MXC_V_WUT_CN_TMODE_COMPARE                     ((uint32_t)0x5UL) /**< CN_TMODE_COMPARE Value */
+ #define MXC_S_WUT_CN_TMODE_COMPARE                     (MXC_V_WUT_CN_TMODE_COMPARE << MXC_F_WUT_CN_TMODE_POS) /**< CN_TMODE_COMPARE Setting */
+ #define MXC_V_WUT_CN_TMODE_GATED                       ((uint32_t)0x6UL) /**< CN_TMODE_GATED Value */
+ #define MXC_S_WUT_CN_TMODE_GATED                       (MXC_V_WUT_CN_TMODE_GATED << MXC_F_WUT_CN_TMODE_POS) /**< CN_TMODE_GATED Setting */
+ #define MXC_V_WUT_CN_TMODE_CAPTURECOMPARE              ((uint32_t)0x7UL) /**< CN_TMODE_CAPTURECOMPARE Value */
+ #define MXC_S_WUT_CN_TMODE_CAPTURECOMPARE              (MXC_V_WUT_CN_TMODE_CAPTURECOMPARE << MXC_F_WUT_CN_TMODE_POS) /**< CN_TMODE_CAPTURECOMPARE Setting */
+
+ #define MXC_F_WUT_CN_PRES_POS                          3 /**< CN_PRES Position */
+ #define MXC_F_WUT_CN_PRES                              ((uint32_t)(0x7UL << MXC_F_WUT_CN_PRES_POS)) /**< CN_PRES Mask */
+ #define MXC_V_WUT_CN_PRES_DIV1                         ((uint32_t)0x0UL) /**< CN_PRES_DIV1 Value */
+ #define MXC_S_WUT_CN_PRES_DIV1                         (MXC_V_WUT_CN_PRES_DIV1 << MXC_F_WUT_CN_PRES_POS) /**< CN_PRES_DIV1 Setting */
+ #define MXC_V_WUT_CN_PRES_DIV2                         ((uint32_t)0x1UL) /**< CN_PRES_DIV2 Value */
+ #define MXC_S_WUT_CN_PRES_DIV2                         (MXC_V_WUT_CN_PRES_DIV2 << MXC_F_WUT_CN_PRES_POS) /**< CN_PRES_DIV2 Setting */
+ #define MXC_V_WUT_CN_PRES_DIV4                         ((uint32_t)0x2UL) /**< CN_PRES_DIV4 Value */
+ #define MXC_S_WUT_CN_PRES_DIV4                         (MXC_V_WUT_CN_PRES_DIV4 << MXC_F_WUT_CN_PRES_POS) /**< CN_PRES_DIV4 Setting */
+ #define MXC_V_WUT_CN_PRES_DIV8                         ((uint32_t)0x3UL) /**< CN_PRES_DIV8 Value */
+ #define MXC_S_WUT_CN_PRES_DIV8                         (MXC_V_WUT_CN_PRES_DIV8 << MXC_F_WUT_CN_PRES_POS) /**< CN_PRES_DIV8 Setting */
+ #define MXC_V_WUT_CN_PRES_DIV16                        ((uint32_t)0x4UL) /**< CN_PRES_DIV16 Value */
+ #define MXC_S_WUT_CN_PRES_DIV16                        (MXC_V_WUT_CN_PRES_DIV16 << MXC_F_WUT_CN_PRES_POS) /**< CN_PRES_DIV16 Setting */
+ #define MXC_V_WUT_CN_PRES_DIV32                        ((uint32_t)0x5UL) /**< CN_PRES_DIV32 Value */
+ #define MXC_S_WUT_CN_PRES_DIV32                        (MXC_V_WUT_CN_PRES_DIV32 << MXC_F_WUT_CN_PRES_POS) /**< CN_PRES_DIV32 Setting */
+ #define MXC_V_WUT_CN_PRES_DIV64                        ((uint32_t)0x6UL) /**< CN_PRES_DIV64 Value */
+ #define MXC_S_WUT_CN_PRES_DIV64                        (MXC_V_WUT_CN_PRES_DIV64 << MXC_F_WUT_CN_PRES_POS) /**< CN_PRES_DIV64 Setting */
+ #define MXC_V_WUT_CN_PRES_DIV128                       ((uint32_t)0x7UL) /**< CN_PRES_DIV128 Value */
+ #define MXC_S_WUT_CN_PRES_DIV128                       (MXC_V_WUT_CN_PRES_DIV128 << MXC_F_WUT_CN_PRES_POS) /**< CN_PRES_DIV128 Setting */
+
+ #define MXC_F_WUT_CN_TPOL_POS                          6 /**< CN_TPOL Position */
+ #define MXC_F_WUT_CN_TPOL                              ((uint32_t)(0x1UL << MXC_F_WUT_CN_TPOL_POS)) /**< CN_TPOL Mask */
+
+ #define MXC_F_WUT_CN_TEN_POS                           7 /**< CN_TEN Position */
+ #define MXC_F_WUT_CN_TEN                               ((uint32_t)(0x1UL << MXC_F_WUT_CN_TEN_POS)) /**< CN_TEN Mask */
+
+ #define MXC_F_WUT_CN_PRES3_POS                         8 /**< CN_PRES3 Position */
+ #define MXC_F_WUT_CN_PRES3                             ((uint32_t)(0x1UL << MXC_F_WUT_CN_PRES3_POS)) /**< CN_PRES3 Mask */
+
+ #define MXC_F_WUT_CN_PWMSYNC_POS                       9 /**< CN_PWMSYNC Position */
+ #define MXC_F_WUT_CN_PWMSYNC                           ((uint32_t)(0x1UL << MXC_F_WUT_CN_PWMSYNC_POS)) /**< CN_PWMSYNC Mask */
+
+ #define MXC_F_WUT_CN_NOLHPOL_POS                       10 /**< CN_NOLHPOL Position */
+ #define MXC_F_WUT_CN_NOLHPOL                           ((uint32_t)(0x1UL << MXC_F_WUT_CN_NOLHPOL_POS)) /**< CN_NOLHPOL Mask */
+
+ #define MXC_F_WUT_CN_NOLLPOL_POS                       11 /**< CN_NOLLPOL Position */
+ #define MXC_F_WUT_CN_NOLLPOL                           ((uint32_t)(0x1UL << MXC_F_WUT_CN_NOLLPOL_POS)) /**< CN_NOLLPOL Mask */
+
+ #define MXC_F_WUT_CN_PWMCKBD_POS                       12 /**< CN_PWMCKBD Position */
+ #define MXC_F_WUT_CN_PWMCKBD                           ((uint32_t)(0x1UL << MXC_F_WUT_CN_PWMCKBD_POS)) /**< CN_PWMCKBD Mask */
+
+/**@} end of group WUT_CN_Register */
 
 /**
  * @ingroup  wut_registers
- * @defgroup WUT_NOLAP WUT_NOLAP
- * @brief    Wakeup Timer Non-overlap Register.
+ * @defgroup WUT_NOLCMP WUT_NOLCMP
+ * @brief    Timer Non-Overlapping Compare Register.
  * @{
  */
-/**@} end of group WUT_NOLAP_Register */
+ #define MXC_F_WUT_NOLCMP_NOLLCMP_POS                   0 /**< NOLCMP_NOLLCMP Position */
+ #define MXC_F_WUT_NOLCMP_NOLLCMP                       ((uint32_t)(0xFFUL << MXC_F_WUT_NOLCMP_NOLLCMP_POS)) /**< NOLCMP_NOLLCMP Mask */
 
-/**
- * @ingroup  wut_registers
- * @defgroup WUT_PRESET WUT_PRESET
- * @brief    Wakeup Timer Base Band Event Timer Preset Register.
- * @{
- */
-/**@} end of group WUT_PRESET_Register */
+ #define MXC_F_WUT_NOLCMP_NOLHCMP_POS                   8 /**< NOLCMP_NOLHCMP Position */
+ #define MXC_F_WUT_NOLCMP_NOLHCMP                       ((uint32_t)(0xFFUL << MXC_F_WUT_NOLCMP_NOLHCMP_POS)) /**< NOLCMP_NOLHCMP Mask */
 
-/**
- * @ingroup  wut_registers
- * @defgroup WUT_RELOAD WUT_RELOAD
- * @brief    Wakeup Timer Base Band Event Timer Preset Load Register.
- * @{
- */
-/**@} end of group WUT_RELOAD_Register */
-
-/**
- * @ingroup  wut_registers
- * @defgroup WUT_SNAPSHOT WUT_SNAPSHOT
- * @brief    Wakeup Timer Base Band Event Timer Snapshot Register.
- * @{
- */
-/**@} end of group WUT_SNAPSHOT_Register */
+/**@} end of group WUT_NOLCMP_Register */
 
 #ifdef __cplusplus
 }

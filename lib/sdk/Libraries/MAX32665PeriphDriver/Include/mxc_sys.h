@@ -29,8 +29,8 @@
  * property whatsoever. Maxim Integrated Products, Inc. retains all
  * ownership rights.
  *
- * $Date: 2018-10-15 21:49:29 +0000 (Mon, 15 Oct 2018) $
- * $Revision: 38520 $
+ * $Date: 2019-10-25 14:21:06 -0500 (Fri, 25 Oct 2019) $
+ * $Revision: 48094 $
  *
  ******************************************************************************/
 
@@ -100,7 +100,7 @@ typedef enum {
     SYS_RESET_WDT1      = (MXC_F_GCR_RSTR1_WDT1_POS + 32),        /**< Reset WDT1 */
     SYS_RESET_SPI0      = (MXC_F_GCR_RSTR1_QSPI0_AHB_POS + 32),   /**< Reset QSPI0_AHB */
     SYS_RESET_SPIXMEM   = (MXC_F_GCR_RSTR1_SPIXMEM_POS + 32),     /**< Reset SPIXMEM */
-    SYS_RESET_SMPHR     = (MXC_F_GCR_RSTR1_SMPHR_POS + 32),       /**< Reset SMPHR */
+    SYS_RESET_SMPHR     = (MXC_F_GCR_RSTR1_SMPHR_POS + 32)        /**< Reset SMPHR */
 } sys_reset_t;
 
 /** @brief System clock disable enumeration. Used in SYS_ClockDisable and SYS_ClockEnable functions */
@@ -146,7 +146,7 @@ typedef enum {
     SYS_PERIPH_CLOCK_WDT0        =(MXC_F_GCR_PERCKCN1_WDT0_POS + 32),
     SYS_PERIPH_CLOCK_WDT1        =(MXC_F_GCR_PERCKCN1_WDT1_POS + 32),
     SYS_PERIPH_CLOCK_WDT2        =(MXC_F_GCR_PERCKCN1_WDT2_POS + 32),
-    SYS_PERIPH_CLOCK_CPU1        =(MXC_F_GCR_PERCKCN1_CPU1_POS + 32),
+    SYS_PERIPH_CLOCK_CPU1        =(MXC_F_GCR_PERCKCN1_CPU1_POS + 32) 
 } sys_periph_clock_t;
 
 typedef enum {
@@ -155,11 +155,13 @@ typedef enum {
     SYS_CLOCK_HIRC      = MXC_V_GCR_CLKCN_CLKSEL_HIRC,
     SYS_CLOCK_XTAL32M   = MXC_V_GCR_CLKCN_CLKSEL_XTAL32M,
     SYS_CLOCK_LIRC8K    = MXC_V_GCR_CLKCN_CLKSEL_LIRC8,
-    SYS_CLOCK_XTAL32K   = MXC_V_GCR_CLKCN_CLKSEL_XTAL32K,
+    SYS_CLOCK_XTAL32K   = MXC_V_GCR_CLKCN_CLKSEL_XTAL32K 
 } sys_system_clock_t;
 
 #define SYS_SCACHE_CLK 1  // Enable SCACHE CLK
 #define SYS_CRYPTO_CLK 1  // Enable CRYPTO CLK
+
+#define SYS_USN_CHECKSUM_LEN    16
 
 /** @brief Map control */
 typedef enum {
@@ -252,6 +254,15 @@ typedef sys_cfg_t sys_cfg_wdt_t;
 typedef unsigned int sys_pt_clk_scale;
   
 /***** Function Prototypes *****/
+
+/**
+ * @brief Returns the Unique Serial Number.
+ * @param usn       Pointer to store the USN, 16 bytes.
+ * @param checksum  Pointer to store the computed checksum, 16 bytes. NULL if 
+ *                  no checksum verification required. TPU requried for verficiation.
+ * @returns         E_NO_ERROR if the checksum matches, otherwise error. 
+ */
+int SYS_GetUSN(uint8_t *usn, uint8_t *checksum);
 
 /**
  * @brief Determines if the selected peripheral clock is enabled.
@@ -606,6 +617,12 @@ int SYS_HTMR_Shutdown(mxc_htmr_regs_t *htmr);
  * @param      sys_cfg System configuration object
  */
 int SYS_WDT_Init(mxc_wdt_regs_t *wdt, const sys_cfg_wdt_t* sys_cfg);
+
+/**
+ * @brief      Get the frequency of the WUT module source clock
+ * @return     frequency in Hz
+ */
+uint32_t SYS_WUT_GetFreq(void);
 
 #ifdef __cplusplus
 }

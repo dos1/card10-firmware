@@ -1,6 +1,6 @@
 # cordio-phy.a
 cc = meson.get_compiler('c')
-libcordiophy = cc.find_library('cordio-phy', dirs: meson.current_source_dir())
+libcordiophy = cc.find_library('libphy', dirs: meson.current_source_dir() + 'phy/build/GCC/library/')
 
 
 includes = include_directories(

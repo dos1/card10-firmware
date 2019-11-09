@@ -404,3 +404,33 @@ bool_t SchBleGetNextMstConnDueTime(uint32_t *pDueTime)
 
   return FALSE;
 }
+
+/*************************************************************************************************/
+/*!
+ *  \brief      Get the next BLE due time.
+ *
+ *  \param      pDueTime    Due time return buffer.
+ *
+ *  \return     TRUE if dueTime is valid, FALSE otherwise.
+ *
+ *  Find the next master connection operation and return the due time.
+ */
+/*************************************************************************************************/
+bool_t SchBleGetNextDueTime(uint32_t *pDueTime)
+{
+  BbOpDesc_t *pCur = schCb.pHead;
+
+  while (pCur != NULL)
+  {
+    if (pCur->protId == BB_PROT_BLE)
+    {
+      *pDueTime = pCur->due;
+      return TRUE;
+    }
+
+    pCur = pCur->pNext;
+  }
+
+  return FALSE;
+}
+
