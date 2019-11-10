@@ -31,6 +31,11 @@ void pycardium_hal_init(void)
 	 * a character becomes available.
 	 */
 	epic_interrupt_enable(EPIC_INT_UART_RX);
+
+	/*
+	 * Configure SysTick timer for 1ms period.
+	 */
+	SysTick_Config(SystemCoreClock / 1000);
 }
 
 /******************************************************************************
@@ -121,17 +126,147 @@ void mp_hal_set_interrupt_char(char c)
 }
 
 /******************************************************************************
+ * SysTick timer at 1000 Hz
+ */
+
+static volatile uint64_t systick_count = 0;
+
+void SysTick_Handler(void)
+{
+	systick_count += 1;
+}
+
+/*
+ * Get an absolute "timestamp" in microseconds.
+ */
+static uint64_t systick_get_us()
+{
+	uint32_t irqsaved = __get_PRIMASK();
+	__set_PRIMASK(0);
+
+	uint64_t counts_per_us = SystemCoreClock / 1000000;
+	uint64_t us            = systick_count * 1000 +
+		      (SysTick->LOAD - SysTick->VAL) / counts_per_us;
+
+	__set_PRIMASK(irqsaved);
+
+	return us;
+}
+
+static void systick_delay_precise(uint32_t us)
+{
+	/*
+	 * Calculate how long the busy-spin needs to be.  As the very first
+	 * instruction, read the current timer value to ensure as little skew as
+	 * possible.
+	 *
+	 * Subtract 0.3us (constant_offset) to account for the duration of the
+	 * calculations.
+	 */
+	uint32_t count_to_overflow = SysTick->VAL;
+	uint32_t count_reload      = SysTick->LOAD;
+	uint32_t clocks_per_us     = SystemCoreClock / 1000000;
+	uint32_t constant_offset   = clocks_per_us * 3 / 10;
+	uint32_t delay_count       = us * clocks_per_us - constant_offset;
+
+	/*
+	 * Calculate the final count for both paths.  Marked as volatile so the
+	 * compiler can't move this into the branches and screw up the timing.
+	 */
+	volatile uint32_t count_final_direct = count_to_overflow - delay_count;
+	volatile uint32_t count_final_underflow =
+		count_reload - (delay_count - count_to_overflow);
+
+	if (delay_count > count_to_overflow) {
+		/*
+		 * Wait for the SysTick to underflow and then count down
+		 * to the final value.
+		 */
+		while (SysTick->VAL <= count_to_overflow ||
+		       SysTick->VAL > count_final_underflow) {
+			__NOP();
+		}
+	} else {
+		/*
+		 * Wait for the SysTick to count down to the final value.
+		 */
+		while (SysTick->VAL > count_final_direct) {
+			__NOP();
+		}
+	}
+}
+
+static void systick_delay_sleep(uint32_t us)
+{
+	uint64_t final_time = systick_get_us() + (uint64_t)us - 2;
+
+	while (1) {
+		uint64_t now = systick_get_us();
+
+		if (now >= final_time) {
+			break;
+		}
+
+		/*
+		 * Sleep with WFI if more than 1ms of delay is remaining.  The
+		 * SysTick interrupt is guaranteed to happen within any timespan
+		 * of 1ms.
+		 *
+		 * Use a critical section encompassing both the check and the
+		 * WFI to prevent a race-condition where the interrupt happens
+		 * just in between the check and WFI.
+		 */
+		uint32_t irqsaved = __get_PRIMASK();
+		__set_PRIMASK(0);
+		if ((now + 1000) < final_time) {
+			__WFI();
+		}
+		__set_PRIMASK(irqsaved);
+
+		/*
+		 * Handle pending MicroPython 'interrupts'.  This call could
+		 * potentially not return here when a handler raises an
+		 * exception.  Those will propagate outwards and thus make the
+		 * delay return early.
+		 *
+		 * One example of this happeing is the KeyboardInterrupt
+		 * (CTRL+C) which will abort the running code and exit to REPL.
+		 */
+		mp_handle_pending();
+	}
+}
+
+static void systick_delay(uint32_t us)
+{
+	if (us == 0)
+		return;
+
+	/*
+	 * For very short delays, use the systick_delay_precise() function which
+	 * delays with a microsecond accuracy.  For anything >1ms, use
+	 * systick_delay_sleep() which puts the CPU to sleep when nothing is
+	 * happening and also checks for MicroPython interrupts every now and
+	 * then.
+	 */
+	if (us < 1000) {
+		systick_delay_precise(us);
+	} else {
+		systick_delay_sleep(us);
+	}
+}
+
+/******************************************************************************
  * Time & Delay
  */
 
 void mp_hal_delay_ms(mp_uint_t ms)
 {
-	mxc_delay(ms * 1000);
+	systick_delay(ms * 1000);
 }
 
 void mp_hal_delay_us(mp_uint_t us)
 {
-	mxc_delay(us);
+	systick_delay(us);
 }
 
 mp_uint_t mp_hal_ticks_ms(void)
