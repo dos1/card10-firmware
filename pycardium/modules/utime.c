@@ -16,7 +16,9 @@
 
 /* MicroPython has its epoch at 2000-01-01. Our RTC is in UTC */
 #define EPOCH_OFFSET 946684800UL
-#define TZONE_OFFSET 7200UL
+
+/* Fixed time zone: CET */
+#define TZONE_OFFSET 3600UL
 
 static mp_obj_t time_set_time(mp_obj_t secs)
 {
