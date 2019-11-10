@@ -120,6 +120,12 @@ class Menu:
     .. versionadded:: 1.9
     """
 
+    right_buttons_scroll = False
+    """
+    Use top right and bottom right buttons to move in the list
+    instead of bottom left and bottom right buttons.
+    """
+
     def on_scroll(self, item, index):
         """
         Hook when the selector scrolls to a new item.
@@ -173,6 +179,12 @@ class Menu:
         self.idx = 0
         self.select_time = utime.time_ms()
         self.disp = display.open()
+        self.button_scroll_up = (
+            buttons.TOP_RIGHT if self.right_buttons_scroll else buttons.BOTTOM_LEFT
+        )
+        self.button_select = (
+            buttons.BOTTOM_LEFT if self.right_buttons_scroll else buttons.TOP_RIGHT
+        )
 
     def entry2name(self, value):
         """
@@ -290,7 +302,7 @@ class Menu:
                     except Exception as e:
                         print("Exception during menu.on_scroll():")
                         sys.print_exception(e)
-                elif ev == buttons.BOTTOM_LEFT:
+                elif ev == self.button_scroll_up:
                     self.select_time = utime.time_ms()
                     self.draw_menu(8)
                     self.idx = (self.idx + len(self.entries) - 1) % len(self.entries)
@@ -301,7 +313,7 @@ class Menu:
                     except Exception as e:
                         print("Exception during menu.on_scroll():")
                         sys.print_exception(e)
-                elif ev == buttons.TOP_RIGHT:
+                elif ev == self.button_select:
                     try:
                         self.on_select(self.entries[self.idx], self.idx)
                         self.select_time = utime.time_ms()
