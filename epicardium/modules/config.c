@@ -295,7 +295,8 @@ static size_t read_config_offset(size_t seek_offset, char *buf, size_t buf_len)
 		return 0;
 	}
 
-	int nread = epic_file_read(fd, buf, buf_len);
+	// one byte less to accommodate the 0 termination
+	int nread = epic_file_read(fd, buf, buf_len - 1);
 
 	buf[nread] = '\0';
 
