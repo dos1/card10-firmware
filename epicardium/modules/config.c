@@ -186,6 +186,18 @@ parse_line(char *line, char *eol, int line_number, size_t line_offset)
 	add_config_pair(key, value, line_number, value_offset);
 }
 
+// convert windows line endings to unix line endings.
+// we don't care about the extra empty lines
+static void convert_crlf_to_lflf(char *buf, int n)
+{
+	while (n--) {
+		if (*buf == '\r') {
+			*buf = '\n';
+		}
+		buf++;
+	}
+}
+
 // parses the entire config file
 void load_config(void)
 {
@@ -206,6 +218,7 @@ void load_config(void)
 	int nread;
 	do {
 		nread = epic_file_read(fd, buf, MAX_LINE_LENGTH);
+		convert_crlf_to_lflf(buf, nread);
 		if (nread < MAX_LINE_LENGTH) {
 			//add fake EOL to ensure termination
 			buf[nread++] = '\n';
@@ -257,7 +270,7 @@ void load_config(void)
 			}
 			char newline;
 			rc = epic_file_read(fd, &newline, 1);
-			if (rc < 0 || newline != '\n') {
+			if (rc < 0 || (newline != '\n' && newline != '\r')) {
 				LOG_ERR("card10.cfg", "seek failed, aborting");
 				LOG_DEBUG(
 					"card10.cfg",
