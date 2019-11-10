@@ -48,7 +48,16 @@ int epic_gpio_set_pin_mode(uint8_t pin, uint8_t mode)
 
 	gpio_cfg_t *cfg = &gpio_configs[pin];
 
-	if (mode & EPIC_GPIO_MODE_IN) {
+	if (mode & EPIC_GPIO_MODE_ADC) {
+		if (s_adc_channels[pin] == -1) {
+			LOG_WARN("gpio", "ADC not available on pin %d", pin);
+			return -EINVAL;
+		}
+		cfg->func = GPIO_FUNC_ALT1;
+		if (mode & EPIC_GPIO_MODE_OUT) {
+			return -EINVAL;
+		}
+	} else if (mode & EPIC_GPIO_MODE_IN) {
 		cfg->func = GPIO_FUNC_IN;
 		if (mode & EPIC_GPIO_MODE_OUT) {
 			return -EINVAL;
@@ -56,15 +65,6 @@ int epic_gpio_set_pin_mode(uint8_t pin, uint8_t mode)
 	} else if (mode & EPIC_GPIO_MODE_OUT) {
 		cfg->func = GPIO_FUNC_OUT;
 		if (mode & EPIC_GPIO_MODE_IN) {
-			return -EINVAL;
-		}
-	} else if (mode & EPIC_GPIO_MODE_ADC) {
-		if (s_adc_channels[pin] == -1) {
-			LOG_WARN("gpio", "ADC not available on pin %d", pin);
-			return -EINVAL;
-		}
-		cfg->func = GPIO_FUNC_ALT1;
-		if (mode & EPIC_GPIO_MODE_OUT) {
 			return -EINVAL;
 		}
 	} else {
