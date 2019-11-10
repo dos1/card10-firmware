@@ -362,7 +362,7 @@ void vLifecycleTask(void *pvParameters)
 
 	hardware_init();
 
-	execute_elfs = config_get_boolean("execute_elf", false);
+	execute_elfs = config_get_boolean_with_default("execute_elf", false);
 
 	/* When triggered, reset core 1 to menu */
 	while (1) {

@@ -1,6 +1,7 @@
 #include "modules/log.h"
 #include "modules/config.h"
 #include "modules/filesystem.h"
+#include "epicardium.h"
 
 #include <assert.h>
 #include <stdbool.h>
@@ -319,7 +320,7 @@ static size_t read_config_offset(size_t seek_offset, char *buf, size_t buf_len)
 }
 
 // returns error if not found or invalid
-int config_get_integer(const char *key, int *value)
+int epic_config_get_integer(const char *key, int *value)
 {
 	config_slot *slot = find_config_slot(key);
 	if (slot && slot->value != NOT_INT_MAGIC) {
@@ -333,7 +334,7 @@ int config_get_integer(const char *key, int *value)
 int config_get_integer_with_default(const char *key, int default_value)
 {
 	int value;
-	int ret = config_get_integer(key, &value);
+	int ret = epic_config_get_integer(key, &value);
 	if (ret) {
 		return default_value;
 	} else {
@@ -342,7 +343,7 @@ int config_get_integer_with_default(const char *key, int default_value)
 }
 
 // returns error if not found
-int config_get_string(const char *key, char *buf, size_t buf_len)
+int epic_config_get_string(const char *key, char *buf, size_t buf_len)
 {
 	config_slot *slot = find_config_slot(key);
 	if (!(slot && slot->value_offset)) {
@@ -366,7 +367,7 @@ int config_get_string(const char *key, char *buf, size_t buf_len)
 char *config_get_string_with_default(
 	const char *key, char *buf, size_t buf_len, char *dflt
 ) {
-	int ret = config_get_string(key, buf, buf_len);
+	int ret = epic_config_get_string(key, buf, buf_len);
 	if (ret) {
 		return dflt;
 	} else {
@@ -375,10 +376,10 @@ char *config_get_string_with_default(
 }
 
 // returns error if not found or invalid
-int config_get_boolean(const char *key, bool *value)
+int epic_config_get_boolean(const char *key, bool *value)
 {
 	int int_value;
-	int ret = config_get_integer(key, &int_value);
+	int ret = epic_config_get_integer(key, &int_value);
 
 	if (ret == 0) {
 		*value = !!int_value;
@@ -386,7 +387,7 @@ int config_get_boolean(const char *key, bool *value)
 	}
 
 	char buf[MAX_LINE_LENGTH + 1];
-	config_get_string(key, buf, MAX_LINE_LENGTH);
+	epic_config_get_string(key, buf, MAX_LINE_LENGTH);
 
 	if (buf == NULL) {
 		return -ENOENT;
@@ -407,7 +408,7 @@ int config_get_boolean(const char *key, bool *value)
 bool config_get_boolean_with_default(const char *key, bool default_value)
 {
 	bool value;
-	int ret = config_get_boolean(key, &value);
+	int ret = epic_config_get_boolean(key, &value);
 	if (ret) {
 		return default_value;
 	} else {
