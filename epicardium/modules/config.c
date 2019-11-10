@@ -304,27 +304,40 @@ static size_t read_config_offset(size_t seek_offset, char *buf, size_t buf_len)
 	return nread;
 }
 
-// returns default_value if not found or invalid
-int config_get_integer(const char *key, int default_value)
+// returns error if not found or invalid
+int config_get_integer(const char *key, int *value)
 {
 	config_slot *slot = find_config_slot(key);
 	if (slot && slot->value != NOT_INT_MAGIC) {
-		return slot->value;
+		*value = slot->value;
+		return 0;
 	}
-	return default_value;
+	return -ENOENT;
 }
 
-// returns NULL if not found, otherwise same pointer as buf
-char *config_get_string(const char *key, char *buf, size_t buf_len)
+// returns default_value if not found or invalid
+int config_get_integer_with_default(const char *key, int default_value)
+{
+	int value;
+	int ret = config_get_integer(key, &value);
+	if (ret) {
+		return default_value;
+	} else {
+		return value;
+	}
+}
+
+// returns error if not found
+int config_get_string(const char *key, char *buf, size_t buf_len)
 {
 	config_slot *slot = find_config_slot(key);
 	if (!(slot && slot->value_offset)) {
-		return NULL;
+		return -ENOENT;
 	}
 
 	size_t nread = read_config_offset(slot->value_offset, buf, buf_len);
 	if (nread == 0) {
-		return NULL;
+		return -ENOENT;
 	}
 
 	char *eol = strchr(buf, '\n');
@@ -332,30 +345,58 @@ char *config_get_string(const char *key, char *buf, size_t buf_len)
 		*eol = '\0';
 	}
 
-	return buf;
+	return 0;
 }
 
-// returns default_value if not found or invalid
-bool config_get_boolean(const char *key, bool default_value)
-{
-	int int_value = config_get_integer(key, -1);
+// returns dflt if not found, otherwise same pointer as buf
+char *config_get_string_with_default(
+	const char *key, char *buf, size_t buf_len, char *dflt
+) {
+	int ret = config_get_string(key, buf, buf_len);
+	if (ret) {
+		return dflt;
+	} else {
+		return buf;
+	}
+}
 
-	if (int_value != -1) {
-		return !!int_value;
+// returns error if not found or invalid
+int config_get_boolean(const char *key, bool *value)
+{
+	int int_value;
+	int ret = config_get_integer(key, &int_value);
+
+	if (ret == 0) {
+		*value = !!int_value;
+		return 0;
 	}
 
 	char buf[MAX_LINE_LENGTH + 1];
 	config_get_string(key, buf, MAX_LINE_LENGTH);
 
 	if (buf == NULL) {
-		return default_value;
+		return -ENOENT;
 	}
 
 	if (!strcmp(buf, "true")) {
-		return true;
+		*value = true;
+		return 0;
 	} else if (!strcmp(buf, "false")) {
-		return false;
+		*value = false;
+		return 0;
 	}
 
-	return default_value;
+	return -ERANGE;
+}
+
+// returns default_value if not found or invalid
+bool config_get_boolean_with_default(const char *key, bool default_value)
+{
+	bool value;
+	int ret = config_get_boolean(key, &value);
+	if (ret) {
+		return default_value;
+	} else {
+		return value;
+	}
 }
