@@ -216,7 +216,7 @@ void load_config(void)
 		char *eol    = NULL;
 		int last_eol = 0;
 		while (line) {
-			//line points one character past the las (if any) '\n' hence '- 1'
+			//line points one character past the last (if any) '\n' hence '- 1'
 			last_eol = line - buf - 1;
 			eol      = strchr(line, '\n');
 			++line_number;
@@ -250,14 +250,12 @@ void load_config(void)
 				break;
 			}
 
-			file_offset += seek_back;
 			int rc = epic_file_seek(fd, seek_back, SEEK_CUR);
 			if (rc < 0) {
 				LOG_ERR("card10.cfg", "seek failed, aborting");
 				return;
 			}
 			char newline;
-			file_offset += 1;
 			rc = epic_file_read(fd, &newline, 1);
 			if (rc < 0 || newline != '\n') {
 				LOG_ERR("card10.cfg", "seek failed, aborting");
