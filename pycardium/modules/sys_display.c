@@ -84,15 +84,6 @@ static mp_obj_t mp_display_pixel(size_t n_args, const mp_obj_t *args)
 	int16_t y    = mp_obj_get_int(args[1]);
 	uint16_t col = get_color(args[2]);
 
-	//TODO: Move sanity checks to epicardium
-	if (x > 160 || x < 0) {
-		mp_raise_ValueError("X-Coords have to be 0 < x < 160");
-	}
-
-	if (y > 80 || y < 0) {
-		mp_raise_ValueError("Y-Coords have to be 0 < y < 80");
-	}
-
 	int res = epic_disp_pixel(x, y, col);
 	if (res < 0) {
 		mp_raise_OSError(-res);
@@ -129,15 +120,6 @@ static mp_obj_t mp_display_line(size_t n_args, const mp_obj_t *args)
 	uint16_t ls  = mp_obj_get_int(args[5]);
 	uint16_t ps  = mp_obj_get_int(args[6]);
 
-	//TODO: Move sanity checks to epicardium
-	if (xs > 160 || xs < 0 || xe > 160 || xe < 0) {
-		mp_raise_ValueError("X-Coords have to be 0 < x < 160");
-	}
-
-	if (ys > 80 || ys < 0 || ye > 80 || ye < 0) {
-		mp_raise_ValueError("Y-Coords have to be 0 < x < 80");
-	}
-
 	if (ls > 1 || ls < 0) {
 		mp_raise_ValueError("Line style has to be 0 or 1");
 	}
@@ -162,15 +144,6 @@ static mp_obj_t mp_display_rect(size_t n_args, const mp_obj_t *args)
 	uint16_t col = get_color(args[4]);
 	uint16_t fs  = mp_obj_get_int(args[5]);
 	uint16_t ps  = mp_obj_get_int(args[6]);
-
-	//TODO: Move sanity checks to epicardium
-	if (xs > 160 || xs < 0 || xe > 160 || xe < 0) {
-		mp_raise_ValueError("X-Coords have to be 0 < x < 160");
-	}
-
-	if (ys > 80 || ys < 0 || ye > 80 || ye < 0) {
-		mp_raise_ValueError("Y-Coords have to be 0 < x < 80");
-	}
 
 	if (fs > 1 || fs < 0) {
 		mp_raise_ValueError("Fill style has to be 0 or 1");
