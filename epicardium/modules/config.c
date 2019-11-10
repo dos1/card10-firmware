@@ -269,7 +269,7 @@ void load_config(void)
 			}
 			break;
 		}
-	} while (nread == sizeof(buf));
+	} while (nread == MAX_LINE_LENGTH);
 	epic_file_close(fd);
 }
 
