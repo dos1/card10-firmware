@@ -67,12 +67,13 @@ static config_slot *allocate_config_slot()
 
 	if (config_data == NULL) {
 		config_data = malloc(sizeof(config_block));
+		assert(config_data != NULL);
 		memset(config_data, 0, sizeof(config_block));
 	}
 
 	current = config_data;
 
-	while (current) {
+	while (true) {
 		for (int i = 0; i < KEYS_PER_BLOCK; i++) {
 			config_slot *k = &current->slots[i];
 			if (*k->key == '\0') {
@@ -83,12 +84,11 @@ static config_slot *allocate_config_slot()
 		// this block is full and there's no next allocated block
 		if (current->next == NULL) {
 			current->next = malloc(sizeof(config_block));
-			current       = current->next;
-			memset(current, 0, sizeof(config_block));
+			assert(current->next != NULL);
+			memset(current->next, 0, sizeof(config_block));
 		}
+		current = current->next;
 	}
-
-	return NULL;
 }
 
 // parses an int out of 'value' or returns NOT_INT_MAGIC
