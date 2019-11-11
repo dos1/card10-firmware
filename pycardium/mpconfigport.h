@@ -31,6 +31,7 @@ int mp_hal_trng_read_int(void);
 #define MICROPY_PY_ALL_SPECIAL_METHODS      (1)
 #define MICROPY_PY_BUILTINS_HELP            (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES    (1)
+#define MICROPY_PY_BUILTINS_INPUT           (1)
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UHEAPQ                   (1)
 #define MICROPY_PY_UJSON                    (1)
