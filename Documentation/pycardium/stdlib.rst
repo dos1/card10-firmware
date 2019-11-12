@@ -219,7 +219,7 @@ Struct module.
 
       UUID version accordiung to RFC 4122
 
-.. py:function:: uuid4():
+.. py:function:: uuid4()
 
    Generate a new UUID version 4 (random UUID).
 
