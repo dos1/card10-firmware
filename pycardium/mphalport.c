@@ -271,7 +271,12 @@ void mp_hal_delay_us(mp_uint_t us)
 
 mp_uint_t mp_hal_ticks_ms(void)
 {
-	return 0;
+	return (mp_uint_t)(systick_get_us() / 1000);
+}
+
+mp_uint_t mp_hal_ticks_us(void)
+{
+	return (mp_uint_t)systick_get_us();
 }
 
 /******************************************************************************

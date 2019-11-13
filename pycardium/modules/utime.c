@@ -202,6 +202,8 @@ static const mp_rom_map_elem_t time_module_globals_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mp_utime_ticks_ms_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_alarm), MP_ROM_PTR(&time_alarm_obj) },
 #if 0
 	/* TODO: Implement those */
