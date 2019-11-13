@@ -58,7 +58,7 @@ void __attribute__((noreturn)) panic(const char *format, ...)
 
 	printf("\x1b[33m\n"
 	       " Please report this error to the card10 firmware team!\n"
-	       "\x1b[0m -> https://git.card10.badge.events.ccc.de/card10/firmware/issues/new?issue <-\n"
+	       "\x1b[0m -> https://git.card10.badge.events.ccc.de/card10/firmware/issues/new <-\n"
 	       "\x1b[31m           --- ====== ===== ---\x1b[0m\n");
 
 	char faultsplash_buffer[14 * 4];
