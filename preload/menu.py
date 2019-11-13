@@ -67,15 +67,20 @@ def usb_mode(disp):
     disp.print("open", posx=52, posy=40, fg=color.CAMPGREEN_DARK)
     disp.update()
 
+    utime.sleep_ms(200)
+
     # Wait for select button to be released
-    while buttons.read(0xFF) == buttons.TOP_RIGHT:
+    while buttons.read() == buttons.TOP_RIGHT:
         pass
 
     # Wait for any button to be pressed and disable USB storage again
-    while buttons.read(0xFF) == 0:
+    while buttons.read() == 0:
         pass
 
     os.usbconfig(os.USB_SERIAL)
+
+    # Exit after USB-Mode to reload menu
+    os.exit(0)
 
 
 class MainMenu(simple_menu.Menu):
