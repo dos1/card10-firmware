@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+### Added
+- ECG plotter tool (for desktop machines) which can plot ECG logs taken with card10.
+- The `input()` Python function.
+- Enabled the MicroPython `framebuf` module for a Pycardium-only framebuffer
+  implementation.
+- Added the `utime.ticks_us()` and `utime.ticks_ms()` functions for very
+  accurate timing of MicroPython code.
+- Added an option to use the right buttons for scrolling and the left one for
+  selecting.  This will be made configurable in a future release.
+
+### Changed
+- Changed timezone to CET.  A future release will make the timezone entirely
+  configurable.
+- Made a few library functions callable without any parameters so they are
+  easier to use.
+
+### Fixed
+- Fixed the Pycardium delay implementation in preparation for features like
+  button-interrupts.  Should also be more accurate now.
+- Fixed the filter which is used by the ECG app.
+- Fixed the display staying off while printing the sleep-messages.
+- Improved the USB-Storage mode in the menu app.
+- Fixed GPIO module not properly configuring a pin if both IN and ADC are given.
+- Added missing documentation for `os.mkdir()` and `os.rename()`.
+
+### Removed
+- Removed unnecessary out-of-bounds checks in display module.  Drawing outside
+  the display is now perfectly fine and the pixels will silently be ignored.
 
 
 ## [v1.12] - 2019-10-19 - [Leek]
