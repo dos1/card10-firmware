@@ -162,6 +162,9 @@ __attribute__((noreturn)) static void pmic_die(float u_batt)
 	/* Grab the screen */
 	disp_forcelock();
 
+	/* Turn it on in case it was off */
+	epic_disp_backlight(100);
+
 	/* Draw an error screen */
 	epic_disp_clear(0x0000);
 
@@ -336,6 +339,10 @@ void vPmicTask(void *pvParameters)
 
 				if (duration > 1000) {
 					disp_forcelock();
+
+					/* Turn it on in case it was off */
+					epic_disp_backlight(100);
+
 					epic_disp_clear(0x0000);
 
 					char buf[20];
