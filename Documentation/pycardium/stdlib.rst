@@ -3,6 +3,14 @@ MicroPython Standard Library
 Pycardium contains some modules from the MicroPython standard library.  These
 are:
 
+.. py:module:: framebuf
+
+``framebuf``
+------------
+Refer to the official `MicroPython docs for framebuf`_.
+
+.. _MicroPython docs for framebuf: https://docs.micropython.org/en/latest/library/framebuf.html
+
 .. py:module:: ubinascii
 
 ``ubinascii``

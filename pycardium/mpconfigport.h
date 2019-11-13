@@ -45,6 +45,7 @@ int mp_hal_trng_read_int(void);
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_UERRNO                   (1)
+#define MICROPY_PY_FRAMEBUF                 (1)
 
 /* Modules */
 #define MODULE_BHI160_ENABLED               (1)
