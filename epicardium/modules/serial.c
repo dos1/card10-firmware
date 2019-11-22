@@ -54,7 +54,7 @@ void serial_return_to_synchronous()
 /*
  * API-call to write a string.  Output goes to both CDCACM and UART
  */
-void epic_uart_write_str(const char *str, intptr_t length)
+void epic_uart_write_str(const char *str, size_t length)
 {
 	if (length == 0) {
 		return;
