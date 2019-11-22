@@ -2,8 +2,8 @@
 
 void fb_clear_to_color(struct framebuffer *fb, Color c)
 {
-	for (int y = 0; y < fb->height; y++) {
-		for (int x = 0; x < fb->width; x++)
+	for (size_t y = 0; y < fb->height; y++) {
+		for (size_t x = 0; x < fb->width; x++)
 			fb_setpixel(fb, x, y, c);
 	}
 }
@@ -77,7 +77,7 @@ void *fb_pixel(struct framebuffer *fb, int x, int y)
 
 	if (xo < 0 || yo < 0)
 		return NULL;
-	if (xo >= fb->width || yo >= fb->height)
+	if (xo >= (int)fb->width || yo >= (int)fb->height)
 		return NULL;
 
 	const size_t bpp = fb_bytes_per_pixel(fb);

@@ -17,7 +17,7 @@ void gfx_setpixel(struct gfx_region *r, int x, int y, Color c)
 {
 	if (x < 0 || y < 0)
 		return;
-	if (x >= r->width || y >= r->height)
+	if ((size_t)x >= r->width || (size_t)y >= r->height)
 		return;
 
 	fb_setpixel(r->fb, r->x + x, r->y + y, c);
@@ -90,7 +90,7 @@ void gfx_puts(
 	while (*str) {
 		// if the current position plus the width of the next character
 		// would bring us outside of the display ...
-		if ((x + font->Width) > r->width) {
+		if ((x + font->Width) > (int)r->width) {
 			// ... we move down a line before printing the character
 			x = 0;
 			y += font->Height;
@@ -350,7 +350,7 @@ static void gfx_copy_region_rle_mono(
 	Color white      = gfx_color(reg, WHITE);
 	Color black      = gfx_color(reg, BLACK);
 
-	for (int i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		Color color    = (data[i] & 0x80) ? white : black;
 		uint8_t length = data[i] & 0x7f;
 
