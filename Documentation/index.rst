@@ -69,6 +69,7 @@ Last but not least, if you want to start hacking the lower-level firmware, the
 
    bluetooth/file-transfer
    bluetooth/card10
+   bluetooth/nimble
 
 Indices and tables
 ==================
