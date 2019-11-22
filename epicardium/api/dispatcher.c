@@ -86,7 +86,7 @@ void api_prepare_args(char *args)
 	 * collide with any integer return value of API calls like epic_exec().
 	 */
 	API_CALL_MEM->id = 0;
-	for (int i = 0; i <= strlen(args); i++) {
+	for (size_t i = 0; i <= strlen(args); i++) {
 		API_CALL_MEM->buffer[i + 0x20] = args[i];
 	}
 }

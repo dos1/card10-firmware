@@ -11,7 +11,7 @@ int api_interrupt_trigger(api_int_id_t id)
 	}
 
 	if (int_enabled[id]) {
-		while (API_CALL_MEM->int_id != (-1))
+		while (API_CALL_MEM->int_id != (api_int_id_t)(-1))
 			;
 
 		API_CALL_MEM->int_id = id;

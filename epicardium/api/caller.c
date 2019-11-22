@@ -109,7 +109,7 @@ int api_fetch_args(char *buf, size_t cnt)
 		return 0;
 	}
 
-	int i;
+	size_t i;
 	for (i = 0; i < cnt && API_CALL_MEM->buffer[i + 0x20] != '\0'; i++) {
 		buf[i] = API_CALL_MEM->buffer[i + 0x20];
 	}
