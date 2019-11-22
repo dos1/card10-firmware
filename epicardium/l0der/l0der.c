@@ -149,7 +149,7 @@ static int _read_section_header(int fd, uint32_t shdr_addr, Elf32_Shdr *shdr)
  * This function ensures basic memory sanity of a program header / segment.
  * It ensures that it points to a file region that is contained within the file fully.
  */
-static int _check_program_header(int fd, int size, Elf32_Phdr *phdr)
+static int _check_program_header(int fd, size_t size, Elf32_Phdr *phdr)
 {
 	// Check file size/offset.
 	uint32_t file_start = phdr->p_offset;
@@ -191,7 +191,7 @@ static int _check_program_header(int fd, int size, Elf32_Phdr *phdr)
  * This function ensures basic memory sanity of a section header.
  * It ensures that it points to a file region that is contained within the file fully.
  */
-static int _check_section_header(int fd, int size, Elf32_Shdr *shdr)
+static int _check_section_header(int fd, size_t size, Elf32_Shdr *shdr)
 {
 	// Check file size/offset.
 	uint32_t file_start = shdr->sh_offset;
@@ -329,7 +329,7 @@ static int _load_segment(int fd, struct _pie_load_info *li, Elf32_Phdr *phdr)
  * Parse dynamic symbol sections.
  */
 static int _parse_dynamic_symbols(
-	int fd, int size, struct _pie_load_info *li, Elf32_Ehdr *hdr
+	int fd, size_t size, struct _pie_load_info *li, Elf32_Ehdr *hdr
 ) {
 	int res;
 	Elf32_Shdr shdr;
@@ -402,9 +402,9 @@ static int _parse_dynamic_symbols(
  * the only one used when making 'standard' PIE binaries on RAM. However, other
  * kinds might have to be implemented in the future.
  */
-static int
-_run_relocations(int fd, int size, struct _pie_load_info *li, Elf32_Ehdr *hdr)
-{
+static int _run_relocations(
+	int fd, size_t size, struct _pie_load_info *li, Elf32_Ehdr *hdr
+) {
 	int res;
 	Elf32_Shdr shdr;
 	Elf32_Rel rel;
@@ -513,7 +513,7 @@ _run_relocations(int fd, int size, struct _pie_load_info *li, Elf32_Ehdr *hdr)
  * Load a l0dable PIE binary.
  */
 static int
-_load_pie(int fd, int size, Elf32_Ehdr *hdr, struct l0dable_info *info)
+_load_pie(int fd, size_t size, Elf32_Ehdr *hdr, struct l0dable_info *info)
 {
 	int res;
 	struct _pie_load_info li = { 0 };
@@ -647,7 +647,10 @@ int l0der_load_path(const char *path, struct l0dable_info *info)
 		return res;
 	}
 
-	int size = epic_file_tell(fd);
+	if ((res = epic_file_tell(fd)) < 0) {
+		return res;
+	}
+	size_t size = res;
 
 	if ((res = epic_file_seek(fd, 0, SEEK_SET)) != 0) {
 		return res;
