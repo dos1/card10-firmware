@@ -29,7 +29,7 @@ bool pycrd_filename_restricted(const char *path)
 	}
 	fname = path;
 
-	for (int i = 0;
+	for (size_t i = 0;
 	     i < sizeof(forbidden_files) / sizeof(forbidden_files[0]);
 	     i++) {
 		if (strcasecmp(fname, forbidden_files[i]) == 0) {

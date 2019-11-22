@@ -120,7 +120,7 @@ static mp_obj_t mp_display_line(size_t n_args, const mp_obj_t *args)
 	uint16_t ls  = mp_obj_get_int(args[5]);
 	uint16_t ps  = mp_obj_get_int(args[6]);
 
-	if (ls > 1 || ls < 0) {
+	if (ls > 1) {
 		mp_raise_ValueError("Line style has to be 0 or 1");
 	}
 
@@ -145,7 +145,7 @@ static mp_obj_t mp_display_rect(size_t n_args, const mp_obj_t *args)
 	uint16_t fs  = mp_obj_get_int(args[5]);
 	uint16_t ps  = mp_obj_get_int(args[6]);
 
-	if (fs > 1 || fs < 0) {
+	if (fs > 1) {
 		mp_raise_ValueError("Fill style has to be 0 or 1");
 	}
 
@@ -169,7 +169,7 @@ static mp_obj_t mp_display_circ(size_t n_args, const mp_obj_t *args)
 	uint16_t fs  = mp_obj_get_int(args[4]);
 	uint16_t ps  = mp_obj_get_int(args[5]);
 
-	if (fs > 1 || fs < 0) {
+	if (fs > 1) {
 		mp_raise_ValueError("Fill style has to be 0 or 1");
 	}
 
