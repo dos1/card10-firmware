@@ -31,7 +31,7 @@ mpy_cross_wrapper = executable(
   'mpy-cross-wrapper.c',
   link_depends: mpy_cross_bin,
   native: true,
-  c_args: ['-DMPY_CROSS_PATH="' + meson.current_build_dir() + '"'],
+  c_args: ['-DMPY_CROSS_PATH="' + meson.current_build_dir() + '"', '-Wno-unused-parameter'],
 )
 
 mpy_cross = generator(
