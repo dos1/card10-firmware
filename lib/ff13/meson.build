@@ -16,6 +16,7 @@ lib = static_library(
   sources,
   include_directories: includes,
   dependencies: [periphdriver, mx25lba],
+  c_args: '-w',
 )
 
 libff13 = declare_dependency(
