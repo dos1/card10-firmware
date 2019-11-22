@@ -112,7 +112,7 @@ void epic_isr_ctrl_c(void)
 
 void mp_hal_set_interrupt_char(char c)
 {
-	if (c != -1) {
+	if (c != '\xFF') {
 		mp_obj_exception_clear_traceback(
 			MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))
 		);

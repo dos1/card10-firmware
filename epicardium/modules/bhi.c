@@ -131,7 +131,7 @@ int epic_bhi160_enable_sensor(
 	int result = 0;
 
 	bhy_virtual_sensor_t vs_id = bhi160_lookup_vs_id(sensor_type);
-	if (vs_id < 0) {
+	if (vs_id == (bhy_virtual_sensor_t)-1) {
 		return -ENODEV;
 	}
 
@@ -188,7 +188,7 @@ int epic_bhi160_disable_sensor(enum bhi160_sensor_type sensor_type)
 	int result = 0;
 
 	bhy_virtual_sensor_t vs_id = bhi160_lookup_vs_id(sensor_type);
-	if (vs_id < 0) {
+	if (vs_id == (bhy_virtual_sensor_t)-1) {
 		return -ENODEV;
 	}
 

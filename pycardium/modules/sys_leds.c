@@ -202,8 +202,8 @@ static MP_DEFINE_CONST_FUN_OBJ_2(leds_set_rocket_obj, mp_leds_set_rocket);
 
 static mp_obj_t mp_leds_get_rocket(mp_obj_t led_in)
 {
-	int led     = mp_obj_get_int(led_in);
-	uint8_t ret = epic_leds_get_rocket(led);
+	int led = mp_obj_get_int(led_in);
+	int ret = epic_leds_get_rocket(led);
 	if (ret == -EINVAL) {
 		mp_raise_ValueError(
 			"invalid value: maybe the led does not exists"
