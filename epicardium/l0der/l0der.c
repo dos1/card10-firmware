@@ -119,7 +119,7 @@ static int _seek_and_read(int fd, uint32_t address, void *data, size_t count)
 		return res;
 	}
 
-	if ((res = epic_file_read(fd, data, count)) != count) {
+	if ((size_t)(res = epic_file_read(fd, data, count)) != count) {
 		LOG_ERR("l0der", "_seek_and_read: could not read: %d", res);
 		return res;
 	}
@@ -366,7 +366,7 @@ static int _parse_dynamic_symbols(
 			return res;
 		}
 
-		for (int j = 0; j < sym_count; j++) {
+		for (uint32_t j = 0; j < sym_count; j++) {
 			if ((res = epic_file_read(
 				     fd, &sym, sizeof(Elf32_Sym))) !=
 			    sizeof(Elf32_Sym)) {
@@ -447,7 +447,7 @@ static int _run_relocations(
 			return res;
 		}
 
-		for (int j = 0; j < reloc_count; j++) {
+		for (uint32_t j = 0; j < reloc_count; j++) {
 			if ((res = epic_file_read(
 				     fd, &rel, sizeof(Elf32_Rel))) !=
 			    sizeof(Elf32_Rel)) {
@@ -464,7 +464,7 @@ static int _run_relocations(
 			// (ie., do not resolve relocation - they default to a safe NULL)
 			uint8_t skip = 0;
 			if (sym != 0) {
-				for (int k = 0; k < li->weak_symbol_count;
+				for (uint32_t k = 0; k < li->weak_symbol_count;
 				     k++) {
 					if (li->weak_symbols[k] == sym) {
 						skip = 1;
