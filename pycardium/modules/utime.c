@@ -9,7 +9,9 @@
 #include "py/runtime.h"
 #include "extmod/utime_mphal.h"
 
+#include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 // Needs to be after the stdint include ...
 #include "lib/timeutils/timeutils.h"
@@ -17,13 +19,45 @@
 /* MicroPython has its epoch at 2000-01-01. Our RTC is in UTC */
 #define EPOCH_OFFSET 946684800UL
 
-/* Fixed time zone: CET */
+/* Default time zone: CET */
 #define TZONE_OFFSET 3600UL
+
+static uint32_t time_get_timezone_offset(void)
+{
+	static uint32_t offset = INT32_MAX;
+
+	/* Only read the timezone setting once after starting
+	 * the interpeter to not impact performance */
+	if (offset == INT32_MAX) {
+		offset = TZONE_OFFSET;
+
+		char buf[128];
+		int ret = epic_config_get_string("timezone", buf, sizeof(buf));
+
+		/* Understands formats like +0100, 0100, 100, -0800 */
+		if (ret == 0 && strlen(buf) > 0) {
+			errno             = 0;
+			long int timezone = strtol(buf, NULL, 10);
+			int sign          = 1;
+			if (timezone < 0) {
+				sign     = -1;
+				timezone = -timezone;
+			}
+			if (errno == 0) {
+				offset = (timezone / 100) * 3600;
+				offset += (timezone % 100) * 60;
+				offset *= sign;
+			}
+		}
+	}
+	return offset;
+}
 
 static mp_obj_t time_set_time(mp_obj_t secs)
 {
 	uint64_t timestamp = mp_obj_get_int(secs) * 1000ULL +
-			     EPOCH_OFFSET * 1000ULL - TZONE_OFFSET * 1000ULL;
+			     EPOCH_OFFSET * 1000ULL -
+			     time_get_timezone_offset() * 1000ULL;
 	epic_rtc_set_milliseconds(timestamp);
 	return mp_const_none;
 }
@@ -33,8 +67,8 @@ static mp_obj_t time_set_time_ms(mp_obj_t msecs_obj)
 {
 	uint64_t msecs = 0;
 	mp_obj_int_to_bytes_impl(msecs_obj, false, 8, (byte *)&msecs);
-	uint64_t timestamp =
-		msecs + EPOCH_OFFSET * 1000ULL - TZONE_OFFSET * 1000ULL;
+	uint64_t timestamp = msecs + EPOCH_OFFSET * 1000ULL -
+			     time_get_timezone_offset() * 1000ULL;
 	epic_rtc_set_milliseconds(timestamp);
 	return mp_const_none;
 }
@@ -62,7 +96,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(
 static mp_obj_t time_time(void)
 {
 	mp_int_t seconds;
-	seconds = epic_rtc_get_seconds() - EPOCH_OFFSET + TZONE_OFFSET;
+	seconds = epic_rtc_get_seconds() - EPOCH_OFFSET +
+		  time_get_timezone_offset();
 	return mp_obj_new_int(seconds);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
@@ -71,7 +106,7 @@ static mp_obj_t time_time_ms(void)
 {
 	uint64_t milliseconds;
 	milliseconds = epic_rtc_get_milliseconds() - EPOCH_OFFSET * 1000ULL +
-		       TZONE_OFFSET * 1000ULL;
+		       time_get_timezone_offset() * 1000ULL;
 	return mp_obj_new_int_from_ull(milliseconds);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_ms_obj, time_time_ms);
@@ -111,7 +146,8 @@ static mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args)
 	mp_int_t seconds;
 
 	if (n_args == 0 || args[0] == mp_const_none) {
-		seconds = epic_rtc_get_seconds() - EPOCH_OFFSET + TZONE_OFFSET;
+		seconds = epic_rtc_get_seconds() - EPOCH_OFFSET +
+			  time_get_timezone_offset();
 	} else {
 		seconds = mp_obj_get_int(args[0]);
 	}
@@ -163,8 +199,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 /* Schedule an alarm */
 static mp_obj_t time_alarm(size_t n_args, const mp_obj_t *args)
 {
-	mp_int_t timestamp =
-		mp_obj_get_int(args[0]) + EPOCH_OFFSET - TZONE_OFFSET;
+	mp_int_t timestamp = mp_obj_get_int(args[0]) + EPOCH_OFFSET -
+			     time_get_timezone_offset();
 	if (n_args == 2) {
 		/* If a callback was given, register it for the RTC Alarm */
 		mp_obj_t callback = args[1];
