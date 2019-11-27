@@ -161,7 +161,7 @@ static void serial_flush_from_isr(void)
 
 	taskEXIT_CRITICAL_FROM_ISR(basepri);
 
-	portYIELD_FROM_ISR(&resched);
+	portYIELD_FROM_ISR(resched);
 }
 
 static void serial_flush_from_thread(void)
