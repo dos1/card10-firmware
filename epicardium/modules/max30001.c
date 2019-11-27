@@ -310,11 +310,11 @@ static int max30001_fetch_fifo(void)
 
 	uint32_t ecgFIFO, readECGSamples, ETAG[32], status;
 	int16_t ecgSample[32];
-	const int EINT_STATUS_MASK       = 1 << 23;
-	const int FIFO_OVF_MASK          = 0x7;
-	const int FIFO_VALID_SAMPLE_MASK = 0x0;
-	const int FIFO_FAST_SAMPLE_MASK  = 0x1;
-	const int ETAG_BITS_MASK         = 0x7;
+	const uint32_t EINT_STATUS_MASK       = 1 << 23;
+	const uint32_t FIFO_OVF_MASK          = 0x7;
+	const uint32_t FIFO_VALID_SAMPLE_MASK = 0x0;
+	const uint32_t FIFO_FAST_SAMPLE_MASK  = 0x1;
+	const uint32_t ETAG_BITS_MASK         = 0x7;
 
 	status = ecg_read_reg(STATUS); // Read the STATUS register
 
