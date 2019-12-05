@@ -386,12 +386,8 @@ int epic_config_get_boolean(const char *key, bool *value)
 		return 0;
 	}
 
-	char buf[MAX_LINE_LENGTH + 1];
+	char buf[MAX_LINE_LENGTH];
 	epic_config_get_string(key, buf, MAX_LINE_LENGTH);
-
-	if (buf == NULL) {
-		return -ENOENT;
-	}
 
 	if (!strcmp(buf, "true")) {
 		*value = true;
