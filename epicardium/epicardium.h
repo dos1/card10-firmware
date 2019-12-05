@@ -1958,7 +1958,11 @@ API(API_CONFIG_GET_INTEGER, int epic_config_get_integer(const char *key, int *va
 API(API_CONFIG_GET_BOOLEAN, int epic_config_get_boolean(const char *key, bool *value));
 
 /**
- * Read a string from the configuration file
+ * Read a string from the configuration file.
+ *
+ * If the buffer supplied is too small for the config option,
+ * no error is reported and the first `buf_len - 1` characters
+ * are returned (0 terminated).
  *
  * :param char* key: Name of the option to read
  * :param char* buf: Place to read the string into
