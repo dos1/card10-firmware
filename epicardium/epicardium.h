@@ -1930,7 +1930,7 @@ API(API_WS2812_WRITE, void epic_ws2812_write(uint8_t pin, uint8_t *pixels, uint3
 
 /**
  * Configuration
- * ======
+ * =============
  */
 
 /**
