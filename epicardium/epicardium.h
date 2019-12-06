@@ -143,6 +143,9 @@ typedef _Bool bool;
 
 #define API_WS2812_WRITE           0x0120
 
+#define API_CONFIG_GET_STRING      0x130
+#define API_CONFIG_GET_INTEGER     0x131
+#define API_CONFIG_GET_BOOLEAN     0x132
 /* clang-format on */
 
 typedef uint32_t api_int_id_t;
@@ -1923,6 +1926,54 @@ API(API_USB_CDCACM, int epic_usb_cdcacm(void));
  * .. versionadded:: 1.10
  */
 API(API_WS2812_WRITE, void epic_ws2812_write(uint8_t pin, uint8_t *pixels, uint32_t n_bytes));
+
+
+/**
+ * Configuration
+ * ======
+ */
+
+/**
+ * Read an integer from the configuration file
+ *
+ * :param char* key: Name of the option to read
+ * :param int* value: Place to read the value into
+ * :return: `0` on success or a negative value if an error occured. Possible
+ *    errors:
+ *
+ *    - ``-ENOENT``: Value can not be read
+ */
+API(API_CONFIG_GET_INTEGER, int epic_config_get_integer(const char *key, int *value));
+
+/**
+ * Read a boolean from the configuration file
+ *
+ * :param char* key: Name of the option to read
+ * :param bool* value: Place to read the value into
+ * :return: `0` on success or a negative value if an error occured. Possible
+ *    errors:
+ *
+ *    - ``-ENOENT``: Value can not be read
+ */
+API(API_CONFIG_GET_BOOLEAN, int epic_config_get_boolean(const char *key, bool *value));
+
+/**
+ * Read a string from the configuration file.
+ *
+ * If the buffer supplied is too small for the config option,
+ * no error is reported and the first `buf_len - 1` characters
+ * are returned (0 terminated).
+ *
+ * :param char* key: Name of the option to read
+ * :param char* buf: Place to read the string into
+ * :param size_t buf_len: Size of the provided buffer
+ * :return: `0` on success or a negative value if an error occured. Possible
+ *    errors:
+ *
+ *    - ``-ENOENT``: Value can not be read
+ */
+API(API_CONFIG_GET_STRING, int epic_config_get_string(const char *key, char *buf, size_t buf_len));
+
 
 #endif /* _EPICARDIUM_H */
 
