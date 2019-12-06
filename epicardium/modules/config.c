@@ -14,7 +14,7 @@
 #define MAX_LINE_LENGTH 80
 #define KEYS_PER_BLOCK 16
 #define KEY_LENGTH 16
-#define NOT_INT_MAGIC 0x80000000
+#define NOT_INT_MAGIC ((int)0x80000000)
 
 // one key-value pair representing a line in the config
 typedef struct {
