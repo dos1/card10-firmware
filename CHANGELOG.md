@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+
+## [v1.13] - 2019-12-09 - [Mushroom]
+[Mushroom]: https://card10.badge.events.ccc.de/release/card10-v1.13-Mushroom.zip
+
 ### Added
 - ECG plotter tool (for desktop machines) which can plot ECG logs taken with card10.
 - The `input()` Python function.
@@ -344,7 +349,8 @@ fbf7c8c0 fix(menu.py) Refactored menu.py based on !138
 ## [v1.0] - 2019-08-21 00:50
 Initial release.
 
-[Unreleased]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.12...master
+[Unreleased]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.13...master
+[v1.13]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.12...v1.13
 [v1.12]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.11...v1.12
 [v1.11]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.10...v1.11
 [v1.10]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.9...v1.10
