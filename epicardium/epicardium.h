@@ -1942,6 +1942,8 @@ API(API_WS2812_WRITE, void epic_ws2812_write(uint8_t pin, uint8_t *pixels, uint3
  *    errors:
  *
  *    - ``-ENOENT``: Value can not be read
+ *
+ * .. versionadded:: 1.13
  */
 API(API_CONFIG_GET_INTEGER, int epic_config_get_integer(const char *key, int *value));
 
@@ -1954,6 +1956,8 @@ API(API_CONFIG_GET_INTEGER, int epic_config_get_integer(const char *key, int *va
  *    errors:
  *
  *    - ``-ENOENT``: Value can not be read
+ *
+ * .. versionadded:: 1.13
  */
 API(API_CONFIG_GET_BOOLEAN, int epic_config_get_boolean(const char *key, bool *value));
 
@@ -1971,6 +1975,8 @@ API(API_CONFIG_GET_BOOLEAN, int epic_config_get_boolean(const char *key, bool *v
  *    errors:
  *
  *    - ``-ENOENT``: Value can not be read
+ *
+ * .. versionadded:: 1.13
  */
 API(API_CONFIG_GET_STRING, int epic_config_get_string(const char *key, char *buf, size_t buf_len));
 

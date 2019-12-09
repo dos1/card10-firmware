@@ -124,6 +124,8 @@ class Menu:
     """
     Use top right and bottom right buttons to move in the list
     instead of bottom left and bottom right buttons.
+
+    .. versionadded:: 1.13
     """
 
     def on_scroll(self, item, index):

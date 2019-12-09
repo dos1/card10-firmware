@@ -52,12 +52,16 @@ alarm.
    This function should be the preferred method for timing and profiling
    because it does not need an API call and thus is very fast.
 
+   .. versionadded:: 1.13
+
 .. py:function:: ticks_us()
 
    Return processor ticks (converted to microseconds) since Pycardium startup.
 
    This function should be the preferred method for timing and profiling
    because it does not need an API call and thus is very fast.
+
+   .. versionadded:: 1.13
 
 .. py:function:: unix_time()
 
