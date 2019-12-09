@@ -7,6 +7,7 @@ project(
     'c_std=c99',
     'b_staticpic=false',
     'b_asneeded=false',
+    'warning_level=2',
   ],
 )
 
@@ -17,6 +18,8 @@ assert(
 )
 
 add_global_arguments(
+  '-Wno-unused-parameter',
+  '-Wno-old-style-declaration',
   meson.get_cross_property('target_defs'),
   language: 'c',
 )

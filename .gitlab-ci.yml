@@ -4,7 +4,7 @@ image: "derq3k/card10-build-env:20190806-195837Z-f95b541-dirty"
 build:
     stage: build
     script:
-        - ./bootstrap.sh
+        - ./bootstrap.sh --werror
         - ninja -C build/
         - arm-none-eabi-size build/bootloader/bootloader.elf build/epicardium/epicardium.elf build/pycardium/pycardium.elf
     only:
@@ -14,7 +14,7 @@ build:
 release:
     stage: build
     script:
-        - ./bootstrap.sh
+        - ./bootstrap.sh --werror
         - ninja -C build/
         - arm-none-eabi-size build/bootloader/bootloader.elf build/epicardium/epicardium.elf build/pycardium/pycardium.elf
     only:

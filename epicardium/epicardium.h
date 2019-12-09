@@ -320,7 +320,7 @@ API(API_THERMISTOR_VOLTAGE, int epic_read_thermistor_voltage(float *result));
  * :param length:  Amount of bytes to print.
  */
 API(API_UART_WRITE_STR, void epic_uart_write_str(
-	const char *str, intptr_t length
+	const char *str, size_t length
 ));
 
 /**

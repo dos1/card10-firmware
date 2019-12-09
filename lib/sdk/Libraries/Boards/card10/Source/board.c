@@ -98,7 +98,7 @@ int Board_Init(void)
         {PORT_0, PIN_31, GPIO_FUNC_OUT, GPIO_PAD_NONE},     // ECG switch
     };
     const unsigned int num_pins = (sizeof(pins) / sizeof(gpio_cfg_t));
-    int i;
+    unsigned int i;
     for (i = 0; i < num_pins; i++) {
         GPIO_OutClr(&pins[i]);
         GPIO_Config(&pins[i]);

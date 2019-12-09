@@ -41,7 +41,7 @@ static void scrollup(struct txt_buffer *tm)
 
 	for (int row = 0; row < last_row; row++)
 		memcpy(&tm->text[row][0], &tm->text[row + 1][0], line_size);
-	for (int col = 0; col < width_(tm); col++) {
+	for (size_t col = 0; col < width_(tm); col++) {
 		struct txt_glyph *g = &tm->text[last_row][col];
 		g->ch               = ' ';
 		g->fg_color         = tm->fg_color;
@@ -63,7 +63,7 @@ static inline void advance_cursor(struct txt_buffer *tm)
 	const int last_row = height_(tm) - 1;
 
 	tm->cursor_column++;
-	if (tm->cursor_column >= width_(tm)) {
+	if (tm->cursor_column >= (int)width_(tm)) {
 		tm->cursor_column = 0;
 		tm->cursor_row++;
 		if (tm->cursor_row > last_row)
@@ -226,9 +226,9 @@ void txt_set_cursor(struct txt_buffer *tm, int x, int y, int draw_cursor)
 {
 	tm->draw_cursor = draw_cursor;
 
-	if (x < 0 || x >= width_(tm))
+	if (x < 0 || x >= (int)width_(tm))
 		return;
-	if (y < 0 || y >= height_(tm))
+	if (y < 0 || y >= (int)height_(tm))
 		return;
 
 	tm->cursor_column = x;

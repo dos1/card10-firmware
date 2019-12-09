@@ -18,7 +18,7 @@ int personal_state_enabled()
 
 int epic_personal_state_set(uint8_t state, bool persistent)
 {
-	if (state < STATE_NONE || state > STATE_CAMP)
+	if (state > STATE_CAMP)
 		return -EINVAL;
 
 	led_animation_state = 0;

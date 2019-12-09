@@ -122,6 +122,11 @@ static const smpCfg_t bleSmpCfg =
   16,                                     /*! Maximum encryption key length */
   3,                                      /*! Attempts to trigger 'repeated attempts' timeout */
   DM_AUTH_MITM_FLAG,                      /*! Device authentication requirements */
+
+  /* TODO: The following three parameters should probably get proper values */
+  0,                                      /*! Maximum 'Repeated attempts' timeout in msec */
+  0,                                      /*! Time msec before attemptExp decreases */
+  0,                                      /*! Exponent to raise attemptTimeout on maxAttempts */
 };
 
 /* Configuration structure */

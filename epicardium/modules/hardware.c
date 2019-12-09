@@ -95,7 +95,7 @@ int hardware_early_init(void)
 		;
 
 	/* If we don't have a valid time yet, set it to 2019-01-01 */
-	if (RTC_GetSecond() < 1546300800UL) {
+	if (RTC_GetSecond() < 1546300800L) {
 		epic_rtc_set_milliseconds(1546300800UL * 1000);
 	}
 

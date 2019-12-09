@@ -80,6 +80,7 @@ upy = static_library(
   micropython_extmod_sources,
   mp_headers,
   include_directories: micropython_includes,
+  c_args: '-w',
 )
 
 elf = executable(

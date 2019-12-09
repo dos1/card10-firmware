@@ -54,7 +54,7 @@ void serial_return_to_synchronous()
 /*
  * API-call to write a string.  Output goes to both CDCACM and UART
  */
-void epic_uart_write_str(const char *str, intptr_t length)
+void epic_uart_write_str(const char *str, size_t length)
 {
 	if (length == 0) {
 		return;
@@ -161,7 +161,7 @@ static void serial_flush_from_isr(void)
 
 	taskEXIT_CRITICAL_FROM_ISR(basepri);
 
-	portYIELD_FROM_ISR(&resched);
+	portYIELD_FROM_ISR(resched);
 }
 
 static void serial_flush_from_thread(void)

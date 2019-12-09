@@ -100,7 +100,7 @@ int portexpander_init(void)
 
 	// Enable pull-ups for buttons
 	// Enable outputs for the transistors, the LED and the LCD reset
-	for (int i = 0; i < sizeof(pe_pin_config) / sizeof(pe_pin_config[0]);
+	for (size_t i = 0; i < sizeof(pe_pin_config) / sizeof(pe_pin_config[0]);
 	     i++) {
 		ret = portexpander_config(&pe_pin_config[i]);
 		MXC_ASSERT(ret == E_NO_ERROR);

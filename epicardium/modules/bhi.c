@@ -227,7 +227,7 @@ out_free_i2c:
 
 void epic_bhi160_disable_all_sensors()
 {
-	for (int i = 0; i < sizeof(bhi160_sensor_active); i++) {
+	for (size_t i = 0; i < sizeof(bhi160_sensor_active); i++) {
 		if (bhi160_sensor_active[i]) {
 			epic_bhi160_disable_sensor(i);
 		}

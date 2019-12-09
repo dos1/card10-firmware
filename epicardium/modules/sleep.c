@@ -142,8 +142,7 @@ static void gpio_low_power(void)
 
 	const unsigned int num_pins =
 		(sizeof(pins_low_power) / sizeof(gpio_cfg_t));
-	int i;
-	for (i = 0; i < num_pins; i++) {
+	for (size_t i = 0; i < num_pins; i++) {
 		GPIO_OutClr(&pins_low_power[i]);
 		GPIO_Config(&pins_low_power[i]);
 	}
