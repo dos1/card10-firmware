@@ -13,12 +13,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   accurate timing of MicroPython code.
 - Added an option to use the right buttons for scrolling and the left one for
   selecting.  This will be made configurable in a future release.
+- Made timezone configurable with a new `timezone` option in `card10.cfg`.
+- Added a setting-menu to the ECG App.
 
 ### Changed
-- Changed timezone to CET.  A future release will make the timezone entirely
-  configurable.
+- Changed default timezone to CET.
 - Made a few library functions callable without any parameters so they are
   easier to use.
+- Refactored the `card10.cfg` config parser.
 
 ### Fixed
 - Fixed the Pycardium delay implementation in preparation for features like
@@ -28,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Improved the USB-Storage mode in the menu app.
 - Fixed GPIO module not properly configuring a pin if both IN and ADC are given.
 - Added missing documentation for `os.mkdir()` and `os.rename()`.
+- Fixed all `-Wextra` warnings, including a few bugs.  Warnings exist for a reason!
 
 ### Removed
 - Removed unnecessary out-of-bounds checks in display module.  Drawing outside
