@@ -38,4 +38,6 @@ Supported options
 Option name     Type       Description
 =============== ========== ===========
 ``execute_elf`` Boolean    Allow running of binary :ref:`l0dables`. These files can be nefarious, so this option is off by default.
+--------------- ---------- -----------
+``timezone``    String     Timezone for card10; must be of format ``[+-]HHMM``.  Examples: ``+0800``, ``-0200``
 =============== ========== ===========
