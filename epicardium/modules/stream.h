@@ -26,11 +26,15 @@ typedef void *QueueHandle_t;
  *    Please keep IDs in sequential order.
  */
 enum stream_descriptor {
-	/** BHI160 */
+	/** BHI160 Accelerometer */
 	SD_BHI160_ACCELEROMETER,
+	/** BHI160 Magnetometer */
 	SD_BHI160_MAGNETOMETER,
+	/** BHI160 Orientation Sensor */
 	SD_BHI160_ORIENTATION,
+	/** BHI160 Gyroscope */
 	SD_BHI160_GYROSCOPE,
+	/** MAX30001 ECG */
 	SD_MAX30001_ECG,
 	/** Highest descriptor must always be ``SD_MAX``. */
 	SD_MAX,
