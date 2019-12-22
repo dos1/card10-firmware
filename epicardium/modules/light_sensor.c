@@ -29,7 +29,7 @@ static int light_sensor_init()
 
 uint16_t epic_light_sensor_read()
 {
-	if (hwlock_acquire(HWLOCK_ADC, pdMS_TO_TICKS(1000)) != 0) {
+	if (hwlock_acquire_timeout(HWLOCK_ADC, portMAX_DELAY) != 0) {
 		return 0;
 	}
 
@@ -42,7 +42,7 @@ uint16_t epic_light_sensor_read()
 
 static void readAdcCallback()
 {
-	if (hwlock_acquire(HWLOCK_ADC, 0) != 0) {
+	if (hwlock_acquire_timeout(HWLOCK_ADC, 0) != 0) {
 		/* Can't do much about this here ... Retry next time */
 		return;
 	}
@@ -57,7 +57,7 @@ int epic_light_sensor_run()
 {
 	int ret = 0;
 
-	if (hwlock_acquire(HWLOCK_ADC, pdMS_TO_TICKS(500)) != 0) {
+	if (hwlock_acquire_timeout(HWLOCK_ADC, portMAX_DELAY) != 0) {
 		return -EBUSY;
 	}
 

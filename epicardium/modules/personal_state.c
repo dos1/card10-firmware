@@ -31,7 +31,7 @@ int epic_personal_state_set(uint8_t state, bool persistent)
 	personal_state_persistent = persistent;
 
 	if (was_enabled && !_personal_state_enabled) {
-		while (hwlock_acquire(HWLOCK_LED, pdMS_TO_TICKS(1)) < 0) {
+		while (hwlock_acquire_timeout(HWLOCK_LED, portMAX_DELAY) < 0) {
 			vTaskDelay(pdMS_TO_TICKS(1));
 		}
 
@@ -60,8 +60,8 @@ void vLedTask(void *pvParameters)
 	const int led_animation_rate = 1000 / 25; /* 25Hz -> 40ms*/
 	while (1) {
 		if (_personal_state_enabled) {
-			while (hwlock_acquire(HWLOCK_LED, pdMS_TO_TICKS(1)) <
-			       0) {
+			while (hwlock_acquire_timeout(
+				       HWLOCK_LED, portMAX_DELAY) < 0) {
 				vTaskDelay(pdMS_TO_TICKS(1));
 			}
 

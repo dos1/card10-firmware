@@ -17,7 +17,7 @@ uint8_t epic_buttons_read(uint8_t mask)
 {
 	uint8_t ret = 0;
 	if (portexpander_detected() && (mask & 0x7)) {
-		if (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(100)) < 0) {
+		if (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 			LOG_ERR("buttons", "Can't acquire I2C bus");
 			return 0;
 		}

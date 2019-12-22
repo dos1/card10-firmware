@@ -13,7 +13,7 @@
 
 static void do_update()
 {
-	while (hwlock_acquire(HWLOCK_LED, pdMS_TO_TICKS(1)) < 0) {
+	while (hwlock_acquire_timeout(HWLOCK_LED, portMAX_DELAY) < 0) {
 		vTaskDelay(pdMS_TO_TICKS(1));
 	}
 
@@ -96,7 +96,7 @@ void epic_leds_dim_top(uint8_t value)
 {
 	leds_set_dim_top(value);
 	if (personal_state_enabled() == 0) {
-		while (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(1)) < 0) {
+		while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 			vTaskDelay(pdMS_TO_TICKS(1));
 		}
 
@@ -110,7 +110,7 @@ void epic_leds_dim_bottom(uint8_t value)
 {
 	leds_set_dim_bottom(value);
 	if (personal_state_enabled() == 0) {
-		while (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(1)) < 0) {
+		while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 			vTaskDelay(pdMS_TO_TICKS(1));
 		}
 
@@ -122,7 +122,7 @@ void epic_leds_dim_bottom(uint8_t value)
 
 void epic_leds_set_rocket(int led, uint8_t value)
 {
-	while (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(1)) < 0) {
+	while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 		vTaskDelay(pdMS_TO_TICKS(1));
 	}
 
@@ -135,7 +135,7 @@ void epic_leds_set_rocket(int led, uint8_t value)
 int epic_leds_get_rocket(int led)
 {
 	int ret = 0;
-	while (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(1)) < 0) {
+	while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 		vTaskDelay(pdMS_TO_TICKS(1));
 	}
 
@@ -146,7 +146,7 @@ int epic_leds_get_rocket(int led)
 
 void epic_set_flashlight(bool power)
 {
-	while (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(1)) < 0) {
+	while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 		vTaskDelay(pdMS_TO_TICKS(1));
 	}
 
@@ -162,7 +162,7 @@ void epic_leds_update(void)
 
 void epic_leds_set_powersave(bool eco)
 {
-	while (hwlock_acquire(HWLOCK_I2C, pdMS_TO_TICKS(1)) < 0) {
+	while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
 		vTaskDelay(pdMS_TO_TICKS(1));
 	}
 

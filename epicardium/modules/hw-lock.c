@@ -1,79 +1,78 @@
 #include "modules/log.h"
 #include "modules/modules.h"
+#include "modules/mutex.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 
 #include <errno.h>
 
-static StaticSemaphore_t hwlock_mutex_data[_HWLOCK_MAX];
-static SemaphoreHandle_t hwlock_mutex[_HWLOCK_MAX];
-/* Which task is holding the lock */
-static TaskHandle_t hwlock_tasks[_HWLOCK_MAX];
+static struct mutex hwlock_mutex[_HWLOCK_MAX] = { { 0 } };
 
 void hwlock_init(void)
 {
 	for (int i = 0; i < _HWLOCK_MAX; i++) {
-		hwlock_mutex[i] =
-			xSemaphoreCreateMutexStatic(&hwlock_mutex_data[i]);
+		/*
+		 * TODO: mutex_create() names these all these mutexes
+		 *       "&hwlock_mutex[i]" which is not helpful at all.  We
+		 *       should somehow rename them to the actual hwlock names.
+		 */
+		mutex_create(&hwlock_mutex[i]);
 	}
 }
 
-int hwlock_acquire(enum hwlock_periph p, TickType_t wait)
+void hwlock_acquire(enum hwlock_periph p)
 {
-	if (p >= _HWLOCK_MAX) {
-		return -EINVAL;
-	}
-	TaskHandle_t task = xTaskGetCurrentTaskHandle();
+	assert(p < _HWLOCK_MAX);
+	mutex_lock(&hwlock_mutex[p]);
+}
 
-	if (xSemaphoreTake(hwlock_mutex[p], wait) != pdTRUE) {
-		/* Don't print warnings for 0 wait acquires */
-		if (wait == 0) {
-			return -EBUSY;
-		}
-
-		LOG_WARN(
-			"hwlock",
-			"Lock %u is busy! Held by \"%s\" and attempted to accquire by \"%s\"",
-			p,
-			pcTaskGetName(hwlock_tasks[p]),
-			pcTaskGetName(task)
-		);
-		LOG_DEBUG(
-			"hwlock",
-			"...attempted to lock from pc %p",
-			__builtin_return_address(0)
-		);
+int hwlock_acquire_nonblock(enum hwlock_periph p)
+{
+	assert(p < _HWLOCK_MAX);
+	if (mutex_trylock(&hwlock_mutex[p])) {
+		return 0;
+	} else {
 		return -EBUSY;
 	}
+}
 
-	hwlock_tasks[p] = task;
+int hwlock_acquire_timeout(enum hwlock_periph p, TickType_t wait)
+{
+	assert(p < _HWLOCK_MAX);
 
+	/*
+	 * Check for code still defining a timeout.  It will be ignored in the
+	 * new implementation but a warning is emitted so someone hopefully
+	 * eventually fixes the offending code ...
+	 *
+	 * At some point, the signature of this function should be changed.
+	 * Alternatively it could be split into two, similar to the mutex API.
+	 */
+	if (wait != 0 && wait != portMAX_DELAY) {
+		LOG_WARN(
+			"hwlock",
+			"Attempting to lock %d with a timeout (from %p).",
+			p,
+			__builtin_return_address(0)
+		);
+	}
+
+	/* Non-blocking lock attempt */
+	if (wait == 0) {
+		if (mutex_trylock(&hwlock_mutex[p]) == true) {
+			return 0;
+		} else {
+			return -EBUSY;
+		}
+	}
+
+	mutex_lock(&hwlock_mutex[p]);
 	return 0;
 }
 
-int hwlock_release(enum hwlock_periph p)
+void hwlock_release(enum hwlock_periph p)
 {
-	int ret = 0;
-
-	if (p >= _HWLOCK_MAX) {
-		return -EINVAL;
-	}
-
-	if (hwlock_tasks[p] != xTaskGetCurrentTaskHandle()) {
-		LOG_ERR("hwlock",
-			"Lock %u is released by task \"%s\" while it was acquired by \"%s\"",
-			p,
-			pcTaskGetName(NULL),
-			pcTaskGetName(hwlock_tasks[p]));
-		ret = -EACCES;
-	}
-
-	if (xSemaphoreGive(hwlock_mutex[p]) != pdTRUE) {
-		LOG_ERR("hwlock", "Lock %u not released correctly.", p);
-		ret = -EINVAL;
-	}
-
-	return ret;
+	assert(p < _HWLOCK_MAX);
+	mutex_unlock(&hwlock_mutex[p]);
 }

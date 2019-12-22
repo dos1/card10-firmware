@@ -97,8 +97,10 @@ enum hwlock_periph {
 	_HWLOCK_MAX,
 };
 
-int hwlock_acquire(enum hwlock_periph p, TickType_t wait);
-int hwlock_release(enum hwlock_periph p);
+int hwlock_acquire_timeout(enum hwlock_periph p, TickType_t wait);
+void hwlock_acquire(enum hwlock_periph p);
+int hwlock_acquire_nonblock(enum hwlock_periph p);
+void hwlock_release(enum hwlock_periph p);
 
 /* ---------- Display ------------------------------------------------------ */
 /* Forces an unlock of the display. Only to be used in Epicardium */
@@ -110,12 +112,10 @@ void disp_forcelock();
 void vBhi160Task(void *pvParameters);
 
 /* ---------- MAX30001 ----------------------------------------------------- */
-#define MAX30001_MUTEX_WAIT_MS          50
 void vMAX30001Task(void *pvParameters);
 void max30001_mutex_init(void);
 
 /* ---------- GPIO --------------------------------------------------------- */
-#define MAX30001_MUTEX_WAIT_MS          50
 extern gpio_cfg_t gpio_configs[];
 
 

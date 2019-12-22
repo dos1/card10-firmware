@@ -137,7 +137,7 @@ int epic_gpio_read_pin(uint8_t pin)
 	} else if (cfg->func == GPIO_FUNC_IN) {
 		return GPIO_InGet(cfg) != 0;
 	} else if (cfg->func == GPIO_FUNC_ALT1) {
-		int rc = hwlock_acquire(HWLOCK_ADC, pdMS_TO_TICKS(10));
+		int rc = hwlock_acquire_timeout(HWLOCK_ADC, portMAX_DELAY);
 		if (!rc) {
 			ADC_StartConvert(s_adc_channels[pin], 0, 0);
 			uint16_t value;
