@@ -55,8 +55,8 @@ def enumerate_apps(apps=None):
                 info["name"], "/apps/{}/{}".format(app, info.get("bin", "__init__.py"))
             )
         except Exception as e:
-            print("Could not load /apps/{}/metadata.json!".format(app))
-            sys.print_exception(e)
+            print("'{}': metadata.json is invalid ... hoping for the best".format(app))
+            yield App(app, "/apps/{}/__init__.py".format(app))
 
 
 def usb_mode(disp):
