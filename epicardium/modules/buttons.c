@@ -16,16 +16,14 @@ static const uint8_t pin_mask[] = {
 uint8_t epic_buttons_read(uint8_t mask)
 {
 	uint8_t ret = 0;
-	if (portexpander_detected() && (mask & 0x7)) {
-		hwlock_acquire(HWLOCK_I2C);
 
+	hwlock_acquire(HWLOCK_I2C);
+	if (portexpander_detected() && (mask & 0x7)) {
 		/*
 		 * Not using PB_Get() here as that performs one I2C transaction
 		 * per button.
 		 */
 		uint8_t pin_status = ~portexpander_in_get(0xFF);
-
-		hwlock_release(HWLOCK_I2C);
 
 		for (uint8_t m = 1; m < 0x8; m <<= 1) {
 			if (mask & m && pin_status & pin_mask[m]) {
@@ -38,5 +36,6 @@ uint8_t epic_buttons_read(uint8_t mask)
 		ret |= BUTTON_RESET;
 	}
 
+	hwlock_release(HWLOCK_I2C);
 	return ret;
 }
