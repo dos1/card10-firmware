@@ -405,12 +405,20 @@ void vBhi160Task(void *pvParameters)
 
 	memset(bhi160_streams, 0x00, sizeof(bhi160_streams));
 
-	/* Install interrupt callback */
+	/*
+	 * The BHI160, coming out of power-on-reset will hold its interrupt line
+	 * high until a firmware image is loaded.  Once that firmware is loaded
+	 * and running, the interrupt line is deasserted and from then on,
+	 * interrupts are signaled using a rising edge.
+	 *
+	 * So, initially we need to configure the IRQ for a falling edge, load
+	 * the firmware and then reconfigure for a rising edge.
+	 */
 	GPIO_Config(&bhi160_interrupt_pin);
 	GPIO_RegisterCallback(
 		&bhi160_interrupt_pin, bhi160_interrupt_callback, NULL
 	);
-	GPIO_IntConfig(&bhi160_interrupt_pin, GPIO_INT_EDGE, GPIO_INT_RISING);
+	GPIO_IntConfig(&bhi160_interrupt_pin, GPIO_INT_EDGE, GPIO_INT_FALLING);
 	GPIO_IntEnable(&bhi160_interrupt_pin);
 	NVIC_SetPriority(
 		(IRQn_Type)MXC_GPIO_GET_IRQ(bhi160_interrupt_pin.port), 2
@@ -424,17 +432,18 @@ void vBhi160Task(void *pvParameters)
 		vTaskDelay(portMAX_DELAY);
 	}
 
-	/* Wait for first interrupt */
+	/* Wait for first interrupt, a falling edge */
 	hwlock_release(HWLOCK_I2C);
 	ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
 	hwlock_acquire(HWLOCK_I2C);
 
+	/*
+	 * The firmware is now loaded; as stated above, we now need to
+	 * reconfigure the IRQ for a rising edge.
+	 */
+	GPIO_IntConfig(&bhi160_interrupt_pin, GPIO_INT_EDGE, GPIO_INT_RISING);
+
 	/* Remap axes to match card10 layout */
-	/* Due to a known issue (#133) the first call to
-	 * bhy_mapping_matrix_set might fail. */
-	bhy_mapping_matrix_set(
-		PHYSICAL_SENSOR_INDEX_ACC, bhi160_mapping_matrix
-	);
 	bhy_mapping_matrix_set(
 		PHYSICAL_SENSOR_INDEX_ACC, bhi160_mapping_matrix
 	);
