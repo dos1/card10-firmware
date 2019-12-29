@@ -9,7 +9,6 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 #include "queue.h"
 
 #include "api/interrupt-sender.h"
@@ -17,9 +16,6 @@
 #include "modules/log.h"
 #include "modules/modules.h"
 #include "modules/stream.h"
-
-/* Ticks to wait when trying to acquire lock */
-#define LOCK_WAIT pdMS_TO_TICKS(BHI160_MUTEX_WAIT_MS)
 
 /* BHI160 Firmware Blob.  Contents are defined in libcard10. */
 extern uint8_t bhy1_fw[];
@@ -57,14 +53,20 @@ static size_t start_index = 0;
 static TaskHandle_t bhi160_task_id = NULL;
 
 /* BHI160 Mutex */
-static StaticSemaphore_t bhi160_mutex_data;
-static SemaphoreHandle_t bhi160_mutex = NULL;
+static struct mutex bhi160_mutex = { 0 };
 
 /* Streams */
 static struct stream_info bhi160_streams[10];
 
 /* Active */
 static bool bhi160_sensor_active[10] = { 0 };
+
+/*
+ * Driver State:  A flag that is set when an unrecoverable error occurred.
+ * Effectively, this means the sensor will be disabled until next reboot and any
+ * API calls will fail immediately.
+ */
+static bool bhi160_driver_b0rked = false;
 
 /* -- Utilities -------------------------------------------------------- {{{ */
 /*
@@ -135,14 +137,12 @@ int epic_bhi160_enable_sensor(
 		return -ENODEV;
 	}
 
-	result = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
-	if (result < 0) {
-		return result;
-	}
+	mutex_lock(&bhi160_mutex);
+	hwlock_acquire(HWLOCK_I2C);
 
-	if (xSemaphoreTake(bhi160_mutex, LOCK_WAIT) != pdTRUE) {
-		result = -EBUSY;
-		goto out_free_i2c;
+	if (bhi160_driver_b0rked) {
+		result = -ENODEV;
+		goto out_free;
 	}
 
 	struct stream_info *stream = &bhi160_streams[sensor_type];
@@ -152,12 +152,12 @@ int epic_bhi160_enable_sensor(
 		xQueueCreate(config->sample_buffer_len, stream->item_size);
 	if (stream->queue == NULL) {
 		result = -ENOMEM;
-		goto out_free_both;
+		goto out_free;
 	}
 
 	result = stream_register(bhi160_lookup_sd(sensor_type), stream);
 	if (result < 0) {
-		goto out_free_both;
+		goto out_free;
 	}
 
 	result = bhy_enable_virtual_sensor(
@@ -170,16 +170,16 @@ int epic_bhi160_enable_sensor(
 		config->dynamic_range /* dynamic range is sensor dependent */
 	);
 	if (result != BHY_SUCCESS) {
-		goto out_free_both;
+		goto out_free;
 	}
 
 	bhi160_sensor_active[sensor_type] = true;
-	result                            = bhi160_lookup_sd(sensor_type);
+	/* Return the sensor stream descriptor */
+	result = bhi160_lookup_sd(sensor_type);
 
-out_free_both:
-	xSemaphoreGive(bhi160_mutex);
-out_free_i2c:
+out_free:
 	hwlock_release(HWLOCK_I2C);
+	mutex_unlock(&bhi160_mutex);
 	return result;
 }
 
@@ -192,36 +192,33 @@ int epic_bhi160_disable_sensor(enum bhi160_sensor_type sensor_type)
 		return -ENODEV;
 	}
 
-	result = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
-	if (result < 0) {
-		return result;
-	}
+	mutex_lock(&bhi160_mutex);
+	hwlock_acquire(HWLOCK_I2C);
 
-	if (xSemaphoreTake(bhi160_mutex, LOCK_WAIT) != pdTRUE) {
-		result = -EBUSY;
-		goto out_free_i2c;
+	if (bhi160_driver_b0rked) {
+		result = -ENODEV;
+		goto out_free;
 	}
 
 	struct stream_info *stream = &bhi160_streams[sensor_type];
 	result = stream_deregister(bhi160_lookup_sd(sensor_type), stream);
 	if (result < 0) {
-		goto out_free_both;
+		goto out_free;
 	}
 
 	vQueueDelete(stream->queue);
 	stream->queue = NULL;
 	result        = bhy_disable_virtual_sensor(vs_id, VS_WAKEUP);
 	if (result < 0) {
-		goto out_free_both;
+		goto out_free;
 	}
 
 	bhi160_sensor_active[sensor_type] = false;
 
 	result = 0;
-out_free_both:
-	xSemaphoreGive(bhi160_mutex);
-out_free_i2c:
+out_free:
 	hwlock_release(HWLOCK_I2C);
+	mutex_unlock(&bhi160_mutex);
 	return result;
 }
 
@@ -347,15 +344,8 @@ static int bhi160_fetch_fifo(void)
 	/* Number of bytes left in BHI160's FIFO buffer */
 	uint16_t bytes_left_in_fifo = 1;
 
-	result = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
-	if (result < 0) {
-		return result;
-	}
-
-	if (xSemaphoreTake(bhi160_mutex, LOCK_WAIT) != pdTRUE) {
-		result = -EBUSY;
-		goto out_free_i2c;
-	}
+	mutex_lock(&bhi160_mutex);
+	hwlock_acquire(HWLOCK_I2C);
 
 	while (bytes_left_in_fifo) {
 		/* Fill local FIFO buffer with as many bytes as possible */
@@ -398,9 +388,8 @@ static int bhi160_fetch_fifo(void)
 		start_index = bytes_left;
 	}
 
-	xSemaphoreGive(bhi160_mutex);
-out_free_i2c:
 	hwlock_release(HWLOCK_I2C);
+	mutex_unlock(&bhi160_mutex);
 	return result;
 }
 
@@ -412,7 +401,7 @@ static void bhi160_interrupt_callback(void *_)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-	if (bhi160_task_id != NULL) {
+	if (bhi160_task_id != NULL && !bhi160_driver_b0rked) {
 		vTaskNotifyGiveFromISR(
 			bhi160_task_id, &xHigherPriorityTaskWoken
 		);
@@ -426,33 +415,27 @@ void vBhi160Task(void *pvParameters)
 	int ret;
 
 	bhi160_task_id = xTaskGetCurrentTaskHandle();
-	bhi160_mutex   = xSemaphoreCreateMutexStatic(&bhi160_mutex_data);
 
-	/*
-	 * Wait a little before initializing BHI160.
-	 */
-	vTaskDelay(pdMS_TO_TICKS(3));
-
-	int lockret = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
-	if (lockret < 0) {
-		LOG_CRIT("bhi160", "Failed to acquire I2C lock!");
-		vTaskDelay(portMAX_DELAY);
-	}
-
-	/* Take Mutex during initialization, just in case */
-	if (xSemaphoreTake(bhi160_mutex, 0) != pdTRUE) {
-		LOG_CRIT("bhi160", "Failed to acquire BHI160 mutex!");
-		vTaskDelay(portMAX_DELAY);
-	}
+	mutex_create(&bhi160_mutex);
+	mutex_lock(&bhi160_mutex);
+	hwlock_acquire(HWLOCK_I2C);
 
 	memset(bhi160_streams, 0x00, sizeof(bhi160_streams));
 
-	/* Install interrupt callback */
+	/*
+	 * The BHI160, coming out of power-on-reset will hold its interrupt line
+	 * high until a firmware image is loaded.  Once that firmware is loaded
+	 * and running, the interrupt line is deasserted and from then on,
+	 * interrupts are signaled using a rising edge.
+	 *
+	 * So, initially we need to configure the IRQ for a falling edge, load
+	 * the firmware and then reconfigure for a rising edge.
+	 */
 	GPIO_Config(&bhi160_interrupt_pin);
 	GPIO_RegisterCallback(
 		&bhi160_interrupt_pin, bhi160_interrupt_callback, NULL
 	);
-	GPIO_IntConfig(&bhi160_interrupt_pin, GPIO_INT_EDGE, GPIO_INT_RISING);
+	GPIO_IntConfig(&bhi160_interrupt_pin, GPIO_INT_EDGE, GPIO_INT_FALLING);
 	GPIO_IntEnable(&bhi160_interrupt_pin);
 	NVIC_SetPriority(
 		(IRQn_Type)MXC_GPIO_GET_IRQ(bhi160_interrupt_pin.port), 2
@@ -462,25 +445,37 @@ void vBhi160Task(void *pvParameters)
 	/* Upload firmware */
 	ret = bhy_driver_init(bhy1_fw);
 	if (ret) {
-		LOG_CRIT("bhi160", "BHy1 init failed!");
-		vTaskDelay(portMAX_DELAY);
+		LOG_CRIT("bhi160", "BHy1 init failed!  Disabling.");
+
+		/* Disable BHI160 until next reboot */
+		bhi160_driver_b0rked = true;
+		hwlock_release(HWLOCK_I2C);
+		mutex_unlock(&bhi160_mutex);
+		vTaskDelete(NULL);
 	}
 
-	/* Wait for first interrupt */
+	/* Wait for first interrupt, a falling edge */
 	hwlock_release(HWLOCK_I2C);
-	ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
-	lockret = hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY);
-	if (lockret < 0) {
-		LOG_CRIT("bhi160", "Failed to acquire I2C lock!");
-		vTaskDelay(portMAX_DELAY);
+	if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(2000)) == 0) {
+		LOG_CRIT(
+			"bhi160",
+			"Sensor firmware was not loaded correctly.  Disabling."
+		);
+
+		/* Disable BHI160 until next reboot */
+		bhi160_driver_b0rked = true;
+		mutex_unlock(&bhi160_mutex);
+		vTaskDelete(NULL);
 	}
+	hwlock_acquire(HWLOCK_I2C);
+
+	/*
+	 * The firmware is now loaded; as stated above, we now need to
+	 * reconfigure the IRQ for a rising edge.
+	 */
+	GPIO_IntConfig(&bhi160_interrupt_pin, GPIO_INT_EDGE, GPIO_INT_RISING);
 
 	/* Remap axes to match card10 layout */
-	/* Due to a known issue (#133) the first call to
-	 * bhy_mapping_matrix_set might fail. */
-	bhy_mapping_matrix_set(
-		PHYSICAL_SENSOR_INDEX_ACC, bhi160_mapping_matrix
-	);
 	bhy_mapping_matrix_set(
 		PHYSICAL_SENSOR_INDEX_ACC, bhi160_mapping_matrix
 	);
@@ -494,8 +489,8 @@ void vBhi160Task(void *pvParameters)
 	/* Set "SIC" matrix.  TODO: Find out what this is about */
 	bhy_set_sic_matrix(bhi160_sic_array);
 
-	xSemaphoreGive(bhi160_mutex);
 	hwlock_release(HWLOCK_I2C);
+	mutex_unlock(&bhi160_mutex);
 
 	/* ----------------------------------------- */
 

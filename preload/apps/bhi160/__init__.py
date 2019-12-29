@@ -14,19 +14,23 @@ STATUS_COLORS = [
     color.GREEN,
 ]
 
-with contextlib.ExitStack() as cx:
-    disp = cx.enter_context(display.open())
 
+def sensors(**args):
+    while True:
+        with bhi160.BHI160Orientation(**args) as s:
+            yield s, "Orientation"
+        with bhi160.BHI160Accelerometer(**args) as s:
+            yield s, "Accel"
+        with bhi160.BHI160Gyroscope(**args) as s:
+            yield s, "Gyro"
+        with bhi160.BHI160Magnetometer(**args) as s:
+            yield s, "Magnetic"
+
+
+with display.open() as disp:
     args = {"sample_rate": 10, "sample_buffer_len": 20}
 
-    sensor_iter = itertools.cycle(
-        [
-            (cx.enter_context(bhi160.BHI160Orientation(**args)), "Orientation"),
-            (cx.enter_context(bhi160.BHI160Accelerometer(**args)), "Accel"),
-            (cx.enter_context(bhi160.BHI160Gyroscope(**args)), "Gyro"),
-            (cx.enter_context(bhi160.BHI160Magnetometer(**args)), "Magnetic"),
-        ]
-    )
+    sensor_iter = sensors(**args)
     sensor, sensor_name = next(sensor_iter)
 
     for ev in simple_menu.button_events(timeout=0.1):
