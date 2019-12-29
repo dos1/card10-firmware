@@ -47,7 +47,7 @@ int main(void)
 
 	epic_disp_clear(0x0000);
 
-	if (strcmp(CARD10_VERSION, "v1.13") == 0) {
+	if (strcmp(CARD10_VERSION, "v1.14") == 0) {
 		gfx_copy_region(
 			&display_screen,
 			0,
