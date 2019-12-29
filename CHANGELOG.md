@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+### Added
+- Scripts for profiling card10 (`tools/poor-profiler`)
+- `tools/ecg2wav.py` script for displaying ECG logs in audio programs like
+  Audacity.
+
+### Changed
+- Ported hardware-locks & bhi160 to new mutex API
+- The menu now tries to display apps without a `metadata.json` as well, if
+  possible.
+
+### Fixed
+- Fixed an unguarded i2c bus transaction which caused strange issues all
+  around.
+- Fixed copying large files freezing card10.
+- Fixed BHI160 initialization interrupt behavior.
+- Properly disable BHI160 if an error occurs during init.
+- Fixed bhi160 app overflowing sensor queues.
+- Fixed neopixel driver not properly writing the first pixel the first
+  time.
+- Fixed some l0dables crashing because the SysTick timer interrupt was not
+  disabled.
 
 
 ## [v1.13] - 2019-12-09 - [Mushroom]
