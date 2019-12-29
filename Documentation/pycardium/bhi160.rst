@@ -12,8 +12,16 @@ The coordinate system of the BHI160 sensor data looks like this:
 
 .. image:: ../static/bhi160-coordinates.png
 
-All angles and angular velocities (like gyroscope, orientation) rotate counter
-clockwise around their respective axis.
+* The **accelerometer** axes are just the ones shown in the picture.
+* The **gyroscope**'s angular velocities rotate counter clockwise around
+  their respective axis.
+* The **orientation** sensor uses the following mapping:
+
+  +---------------------+----------------------+-------------------+
+  | X                   | Y                    | Z                 |
+  +=====================+======================+===================+
+  | Azimuth (0° - 360°) | Pitch (-180° - 180°) | Roll (-90° - 90°) |
+  +---------------------+----------------------+-------------------+
 
 **Example**:
 
