@@ -63,14 +63,22 @@ void epic_ws2812_write(uint8_t pin, uint8_t *pixels, uint32_t n_bytes)
 
 	taskENTER_CRITICAL();
 
-	epic_gpio_set_pin_mode(pin, EPIC_GPIO_MODE_OUT);
+	/*
+	 * If the pin was not previously configured as an output, the
+	 * `epic_gpio_set_pin_mode()` call will pull it down which the first
+	 * neopixel interprets as the color `0x008000`.  To fix this, wait a bit
+	 * after mode-setting and then write the new values.
+	 */
+	if ((epic_gpio_get_pin_mode(pin) & EPIC_GPIO_MODE_OUT) == 0) {
+		epic_gpio_set_pin_mode(pin, EPIC_GPIO_MODE_OUT);
+	}
+
+	GPIO_OutClr(pin_cfg);
+	epic_ws2812_delay_ticks(EPIC_WS2812_RESET_TCKS);
 
 	do {
 		epic_ws2812_transmit_byte(pin_cfg, *pixels);
 	} while (++pixels != pixels_end);
-
-	GPIO_OutClr(pin_cfg);
-	epic_ws2812_delay_ticks(EPIC_WS2812_RESET_TCKS);
 
 	taskEXIT_CRITICAL();
 }
