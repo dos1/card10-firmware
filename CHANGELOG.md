@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+
+## [v1.14] - 2019-12-29 - [Nettle]
+[Nettle]: https://card10.badge.events.ccc.de/release/card10-v1.14-Nettle.zip
+
 ### Added
 - Scripts for profiling card10 (`tools/poor-profiler`)
 - `tools/ecg2wav.py` script for displaying ECG logs in audio programs like
@@ -370,7 +375,8 @@ fbf7c8c0 fix(menu.py) Refactored menu.py based on !138
 ## [v1.0] - 2019-08-21 00:50
 Initial release.
 
-[Unreleased]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.13...master
+[Unreleased]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.14...master
+[v1.14]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.13...v1.14
 [v1.13]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.12...v1.13
 [v1.12]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.11...v1.12
 [v1.11]: https://git.card10.badge.events.ccc.de/card10/firmware/compare/v1.10...v1.11
