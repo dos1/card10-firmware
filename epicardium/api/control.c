@@ -77,6 +77,11 @@ void __core1_init(void)
 	TMR_IntClear(MXC_TMR5);
 
 	/*
+	 * Disable the SysTick
+	 */
+	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk;
+
+	/*
 	 * Reset Interrupts
 	 *
 	 * To ensure proper operation of the new payload, disable all interrupts
