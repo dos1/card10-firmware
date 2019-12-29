@@ -61,6 +61,13 @@ static struct stream_info bhi160_streams[10];
 /* Active */
 static bool bhi160_sensor_active[10] = { 0 };
 
+/*
+ * Driver State:  A flag that is set when an unrecoverable error occurred.
+ * Effectively, this means the sensor will be disabled until next reboot and any
+ * API calls will fail immediately.
+ */
+static bool bhi160_driver_b0rked = false;
+
 /* -- Utilities -------------------------------------------------------- {{{ */
 /*
  * Retrieve the data size for a sensor.  This value is needed for the creation
@@ -133,6 +140,11 @@ int epic_bhi160_enable_sensor(
 	mutex_lock(&bhi160_mutex);
 	hwlock_acquire(HWLOCK_I2C);
 
+	if (bhi160_driver_b0rked) {
+		result = -ENODEV;
+		goto out_free;
+	}
+
 	struct stream_info *stream = &bhi160_streams[sensor_type];
 	stream->item_size          = bhi160_lookup_data_size(sensor_type);
 	/* TODO: Sanity check length */
@@ -182,6 +194,11 @@ int epic_bhi160_disable_sensor(enum bhi160_sensor_type sensor_type)
 
 	mutex_lock(&bhi160_mutex);
 	hwlock_acquire(HWLOCK_I2C);
+
+	if (bhi160_driver_b0rked) {
+		result = -ENODEV;
+		goto out_free;
+	}
 
 	struct stream_info *stream = &bhi160_streams[sensor_type];
 	result = stream_deregister(bhi160_lookup_sd(sensor_type), stream);
@@ -384,7 +401,7 @@ static void bhi160_interrupt_callback(void *_)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-	if (bhi160_task_id != NULL) {
+	if (bhi160_task_id != NULL && !bhi160_driver_b0rked) {
 		vTaskNotifyGiveFromISR(
 			bhi160_task_id, &xHigherPriorityTaskWoken
 		);
@@ -428,13 +445,28 @@ void vBhi160Task(void *pvParameters)
 	/* Upload firmware */
 	ret = bhy_driver_init(bhy1_fw);
 	if (ret) {
-		LOG_CRIT("bhi160", "BHy1 init failed!");
-		vTaskDelay(portMAX_DELAY);
+		LOG_CRIT("bhi160", "BHy1 init failed!  Disabling.");
+
+		/* Disable BHI160 until next reboot */
+		bhi160_driver_b0rked = true;
+		hwlock_release(HWLOCK_I2C);
+		mutex_unlock(&bhi160_mutex);
+		vTaskDelete(NULL);
 	}
 
 	/* Wait for first interrupt, a falling edge */
 	hwlock_release(HWLOCK_I2C);
-	ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
+	if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(2000)) == 0) {
+		LOG_CRIT(
+			"bhi160",
+			"Sensor firmware was not loaded correctly.  Disabling."
+		);
+
+		/* Disable BHI160 until next reboot */
+		bhi160_driver_b0rked = true;
+		mutex_unlock(&bhi160_mutex);
+		vTaskDelete(NULL);
+	}
 	hwlock_acquire(HWLOCK_I2C);
 
 	/*
