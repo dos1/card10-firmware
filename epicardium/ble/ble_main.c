@@ -413,9 +413,9 @@ static void bleProcMsg(bleMsg_t *pMsg)
     case DM_CONN_OPEN_IND:
       connOpen = &pMsg->dm.connOpen;
       LOG_INFO("ble", "connection from %02X:%02X:%02X:%02X:%02X:%02X opened",
-               connOpen->peerAddr[0], connOpen->peerAddr[1],
-               connOpen->peerAddr[2], connOpen->peerAddr[3],
-               connOpen->peerAddr[4], connOpen->peerAddr[5]);
+               connOpen->peerAddr[5], connOpen->peerAddr[4],
+               connOpen->peerAddr[3], connOpen->peerAddr[2],
+               connOpen->peerAddr[1], connOpen->peerAddr[0]);
       BasProcMsg(&pMsg->hdr);
       uiEvent = APP_UI_CONN_OPEN;
       break;
