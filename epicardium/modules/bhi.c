@@ -475,7 +475,16 @@ void vBhi160Task(void *pvParameters)
 	 */
 	GPIO_IntConfig(&bhi160_interrupt_pin, GPIO_INT_EDGE, GPIO_INT_RISING);
 
-	/* Remap axes to match card10 layout */
+	/*
+	 * Remap axes to match card10 layout.
+	 *
+	 * TODO: We set the matrix for the accelerometer twice because on some
+	 * badges, the axis mapping is not applied properly the first time.  We
+	 * should fix this properly at some point.
+	 */
+	bhy_mapping_matrix_set(
+		PHYSICAL_SENSOR_INDEX_ACC, bhi160_mapping_matrix
+	);
 	bhy_mapping_matrix_set(
 		PHYSICAL_SENSOR_INDEX_ACC, bhi160_mapping_matrix
 	);
