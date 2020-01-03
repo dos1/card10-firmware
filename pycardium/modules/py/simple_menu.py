@@ -222,22 +222,24 @@ class Menu:
         """
         string = self.entry2name(value)
 
-        if offset != 20 or len(string) < 10:
-            string = " " + string + " " * 9
-        else:
+        if offset == 20 and len(string) >= 10:
             # Slowly scroll entry to the side
             time_offset = (utime.time_ms() - self.select_time) // int(
                 self.scroll_speed * 1000
             )
             time_offset = time_offset % (len(string) - 7) - 1
             time_offset = min(len(string) - 10, max(0, time_offset))
-            string = " " + string[time_offset:]
+            string = string[time_offset:]
 
+        self.disp.rect(
+            0,
+            offset,
+            180,
+            offset + 20,
+            col=self.color_1 if index % 2 == 0 else self.color_2,
+        )
         self.disp.print(
-            string,
-            posy=offset,
-            fg=self.color_text,
-            bg=self.color_1 if index % 2 == 0 else self.color_2,
+            string, posx=14, posy=offset, fg=self.color_text, bg=None,
         )
 
     def draw_menu(self, offset=0):
