@@ -180,6 +180,9 @@ void sleep_deepsleep(void)
 	max86150_getINT2();
 	max86150_shutDown();
 #endif
+	epic_bhi160_disable_all_sensors();
+	epic_bme680_deinit();
+	epic_max30001_disable_sensor();
 	MAX77650_setEN_SBB2(0b100);
 	MAX77650_setSBIA_LPM(true);
 	core1_stop();
