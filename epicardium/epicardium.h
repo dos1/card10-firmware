@@ -146,6 +146,7 @@ typedef _Bool bool;
 #define API_CONFIG_GET_STRING      0x130
 #define API_CONFIG_GET_INTEGER     0x131
 #define API_CONFIG_GET_BOOLEAN     0x132
+#define API_CONFIG_SET_STRING      0x133
 /* clang-format on */
 
 typedef uint32_t api_int_id_t;
@@ -1981,5 +1982,6 @@ API(API_CONFIG_GET_BOOLEAN, int epic_config_get_boolean(const char *key, bool *v
 API(API_CONFIG_GET_STRING, int epic_config_get_string(const char *key, char *buf, size_t buf_len));
 
 
+API(API_CONFIG_SET_STRING, int epic_config_set_string(const char *key, const char *value));
 #endif /* _EPICARDIUM_H */
 

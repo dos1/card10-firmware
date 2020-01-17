@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #define MAX_LINE_LENGTH 80
 #define KEYS_PER_BLOCK 16
@@ -410,4 +411,216 @@ bool config_get_boolean_with_default(const char *key, bool default_value)
 	} else {
 		return value;
 	}
+}
+
+int epic_config_set_string(const char *key, const char *value)
+{
+	config_slot *slot = find_config_slot(key);
+	bool present = slot && slot->value_offset;
+
+    if(snprintf(NULL, 0, "\n%s = %s\n", key, value) > MAX_LINE_LENGTH) {
+        return -ENOENT;
+    }
+
+	if(!present) {
+		/* Easy case: We simply add the new option at the
+		 * end of the file. */
+
+		char buf[MAX_LINE_LENGTH];
+		/* Leading new line because I'm lazy */
+		int ret = snprintf(buf, sizeof(buf), "\n%s = %s\n", key, value);
+
+		if(ret < 0 || ret >= (int)sizeof(buf)) {
+			return -ENOENT;
+		}
+
+		int fd = epic_file_open("card10.cfg", "a");
+		if (fd < 0) {
+			LOG_DEBUG(
+				"card10.cfg",
+				"open for appending failed: %s (%d)",
+				strerror(-fd),
+				fd
+			);
+			return -ENOENT;
+		}
+
+
+		int write_ret = epic_file_write(fd, buf, strlen(buf));
+		if (write_ret < 0) {
+			LOG_DEBUG(
+				"card10.cfg",
+				"writing failed: %s (%d)",
+				strerror(-write_ret),
+				write_ret
+			);
+			return -ENOENT;
+		}
+
+		if (write_ret < (int)strlen(buf)) {
+			LOG_DEBUG(
+				"card10.cfg",
+				"writing failed to write all bytes (%d of %d)",
+				write_ret,
+			    strlen(buf)
+			);
+		}
+
+        ret = epic_file_close(fd);
+
+		if (ret < 0) {
+			LOG_DEBUG(
+				"card10.cfg",
+				"close failed: %s (%d)",
+				strerror(-ret),
+				ret
+			);
+		}
+        if(ret < 0 || write_ret <0) {
+            return -ENOENT;
+        }
+	} else {
+        /* Complex case: The value is already somewhere in the file.
+         * We do not want to loose existing formatting or comments.
+         * Solution: Copy parts of the file, insert new value, copy
+         * rest, rename.
+         * */
+		char buf[128];
+        int ret = epic_config_get_string(key, buf, sizeof(buf));
+
+        if(ret != 0) {
+			LOG_DEBUG(
+				"card10.cfg",
+				"could not read old value (%d)",
+				ret
+			);
+			return -ENOENT;
+        }
+
+        int old_len = strlen(buf);
+
+		int fd1 = epic_file_open("card10.cfg", "r");
+        printf("%d\n", fd1);
+		if (fd1 < 0) {
+			LOG_DEBUG(
+				"card10.cfg",
+				"open for read failed: %s (%d)",
+				strerror(-fd1),
+				fd1
+			);
+			return -ENOENT;
+		}
+
+		int fd2 = epic_file_open("card10.nfg", "w");
+        printf("%d\n", fd2);
+		if (fd2 < 0) {
+			LOG_DEBUG(
+				"card10.nfg",
+				"open for writing failed: %s (%d)",
+				strerror(-fd2),
+				fd2
+			);
+            epic_file_close(fd1);
+			return -ENOENT;
+		}
+
+        /* Copy over slot->value_offset bytes */
+        int i = slot->value_offset;
+        while(i>0) {
+            int n = i > (int) sizeof(buf) ? (int)sizeof(buf) : i;
+            int ret = epic_file_read(fd1, buf, n);
+			if (ret < 0 ) {
+				LOG_ERR("card10.cfg", "read 1 failed, aborting");
+				LOG_DEBUG(
+					"card10.cfg",
+					"read failed: rc: %d",
+					ret
+				);
+                epic_file_close(fd1);
+                epic_file_close(fd2);
+				return -ENOENT;
+			}
+
+            printf("%d %d\n", fd2, ret);
+
+            int ret2 = epic_file_write(fd2, buf, ret);
+
+			if (ret2 < 0 ) {
+				LOG_ERR("card10.nfg", "write 1 failed, aborting");
+				LOG_DEBUG(
+					"card10.nfg",
+					"write failed: rc: %d",
+					ret2
+				);
+                epic_file_close(fd1);
+                epic_file_close(fd2);
+				return -ENOENT;
+			}
+            i -= ret;
+        }
+
+        /* Insert new value into the new file */
+        ret = epic_file_write(fd2, value, strlen(value));
+        if (ret < 0 ) {
+            LOG_ERR("card10.nfg", "write 2 failed, aborting");
+            LOG_DEBUG(
+                "card10.nfg",
+                "write failed: rc: %d",
+                ret2
+            );
+            epic_file_close(fd1);
+            epic_file_close(fd2);
+            return -ENOENT;
+        }
+
+        /* Skip the old value inside the old file */
+        epic_file_seek(fd2, old_len, SEEK_CUR);
+
+        /* Copy the rest of the old file to the new file */
+        while(true) {
+            int ret = epic_file_read(fd1, buf, sizeof(buf));
+
+            if (ret == 0) {
+                break;
+            }
+
+			if (ret < 0 ) {
+				LOG_ERR("card10.cfg", "read 2 failed, aborting");
+				LOG_DEBUG(
+					"card10.cfg",
+					"read failed: rc: %d",
+					ret
+				);
+                epic_file_close(fd1);
+                epic_file_close(fd2);
+				return -ENOENT;
+			}
+
+            int ret2 = epic_file_write(fd2, buf, ret);
+
+			if (ret2 < 0 ) {
+				LOG_ERR("card10.nfg", "write 3 failed, aborting");
+				LOG_DEBUG(
+					"card10.nfg",
+					"write failed: rc: %d",
+					ret2
+				);
+                epic_file_close(fd1);
+                epic_file_close(fd2);
+				return -ENOENT;
+			}
+
+            if(ret < (int)sizeof(buf)) {
+                break;
+            }
+        }
+
+        epic_file_close(fd1);
+        epic_file_close(fd2);
+
+        epic_file_unlink("card10.cfg");
+        epic_file_rename("card10.nfg", "card10.cfg");
+    }
+
+    return 0;
 }

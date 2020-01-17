@@ -89,6 +89,8 @@ def usb_mode(disp):
     # Exit after USB-Mode to reload menu
     os.exit(0)
 
+class SubMenu(simple_menu.Menu):
+    timeout = 30.0
 
 class MainMenu(simple_menu.Menu):
     timeout = 30.0
@@ -111,6 +113,10 @@ class MainMenu(simple_menu.Menu):
             self.error("Loading", "failed")
             utime.sleep(1.0)
             os.exit(1)
+
+    def on_long_select(self, app, index):
+        print("Long press\n")
+        SubMenu(("Make Default", "Fav", "Unfav", "Delete", "Exit")).run()
 
     def on_timeout(self):
         try:

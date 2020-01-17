@@ -141,6 +141,18 @@ class Menu:
         """
         pass
 
+    def on_long_select(self, item, index):
+        """
+        Hook when an item as selected.
+
+        The given ``index`` was selected with a SELECT button press.  Overwrite
+        this function in your menu to perform an action on select.
+
+        :param item: The item which was selected.
+        :param int index: Index into the ``entries`` list of the ``item``.
+        """
+        self.on_select(item, index)
+
     def on_select(self, item, index):
         """
         Hook when an item as selected.
@@ -318,8 +330,18 @@ class Menu:
                         print("Exception during menu.on_scroll():")
                         sys.print_exception(e)
                 elif ev == self.button_select:
+                    t0 = utime.time()
+                    long_press = False
+                    while buttons.read(buttons.TOP_RIGHT) > 0:
+                        if utime.time() - t0 > 1:
+                            long_press = True
+                            break
+
                     try:
-                        self.on_select(self.entries[self.idx], self.idx)
+                        if long_press:
+                            self.on_long_select(self.entries[self.idx], self.idx)
+                        else:
+                            self.on_select(self.entries[self.idx], self.idx)
                         self.select_time = utime.time_ms()
                     except _ExitMenuException:
                         raise
