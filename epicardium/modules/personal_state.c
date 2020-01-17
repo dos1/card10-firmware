@@ -125,9 +125,13 @@ void vLedTask(void *pvParameters)
 						(float)(1000 /
 							led_animation_rate))));
 			}
+
+			hwlock_acquire(HWLOCK_I2C);
+
 			leds_update_power();
 			leds_update();
 
+			hwlock_release(HWLOCK_I2C);
 			hwlock_release(HWLOCK_LED);
 		}
 

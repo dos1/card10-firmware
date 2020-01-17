@@ -17,10 +17,12 @@
 static void do_update(void)
 {
 	hwlock_acquire(HWLOCK_LED);
+	hwlock_acquire(HWLOCK_I2C);
 
 	leds_update_power();
 	leds_update();
 
+	hwlock_release(HWLOCK_I2C);
 	hwlock_release(HWLOCK_LED);
 }
 
