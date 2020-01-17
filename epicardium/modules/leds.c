@@ -7,15 +7,16 @@
 
 #include <stdbool.h>
 
-//TODO: create smth like vTaskDelay(pdMS_TO_TICKS(//put ms here)) for us, remove blocking delay from /lib/leds.c to avoid process blocking
+/*
+ * TODO: create smth like vTaskDelay(pdMS_TO_TICKS(//put ms here)) for us,
+ *       remove blocking delay from /lib/leds.c to avoid process blocking
+ */
 
 #define NUM_LEDS 15 /* Take from lib/card10/leds.c */
 
-static void do_update()
+static void do_update(void)
 {
-	while (hwlock_acquire_timeout(HWLOCK_LED, portMAX_DELAY) < 0) {
-		vTaskDelay(pdMS_TO_TICKS(1));
-	}
+	hwlock_acquire(HWLOCK_LED);
 
 	leds_update_power();
 	leds_update();
@@ -96,12 +97,8 @@ void epic_leds_dim_top(uint8_t value)
 {
 	leds_set_dim_top(value);
 	if (personal_state_enabled() == 0) {
-		while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
-			vTaskDelay(pdMS_TO_TICKS(1));
-		}
-
+		hwlock_acquire(HWLOCK_I2C);
 		leds_update();
-
 		hwlock_release(HWLOCK_I2C);
 	}
 }
@@ -110,35 +107,24 @@ void epic_leds_dim_bottom(uint8_t value)
 {
 	leds_set_dim_bottom(value);
 	if (personal_state_enabled() == 0) {
-		while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
-			vTaskDelay(pdMS_TO_TICKS(1));
-		}
-
+		hwlock_acquire(HWLOCK_I2C);
 		leds_update();
-
 		hwlock_release(HWLOCK_I2C);
 	}
 }
 
 void epic_leds_set_rocket(int led, uint8_t value)
 {
-	while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
-		vTaskDelay(pdMS_TO_TICKS(1));
-	}
-
-	value = value > 31 ? 31 : value;
-	pmic_set_led(led, value);
-
+	hwlock_acquire(HWLOCK_I2C);
+	pmic_set_led(led, value > 31 ? 31 : value);
 	hwlock_release(HWLOCK_I2C);
 }
 
 int epic_leds_get_rocket(int led)
 {
 	int ret = 0;
-	while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
-		vTaskDelay(pdMS_TO_TICKS(1));
-	}
 
+	hwlock_acquire(HWLOCK_I2C);
 	ret = pmic_get_led(led);
 	hwlock_release(HWLOCK_I2C);
 	return ret;
@@ -146,12 +132,8 @@ int epic_leds_get_rocket(int led)
 
 void epic_set_flashlight(bool power)
 {
-	while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
-		vTaskDelay(pdMS_TO_TICKS(1));
-	}
-
+	hwlock_acquire(HWLOCK_I2C);
 	leds_flashlight(power);
-
 	hwlock_release(HWLOCK_I2C);
 }
 
@@ -162,12 +144,8 @@ void epic_leds_update(void)
 
 void epic_leds_set_powersave(bool eco)
 {
-	while (hwlock_acquire_timeout(HWLOCK_I2C, portMAX_DELAY) < 0) {
-		vTaskDelay(pdMS_TO_TICKS(1));
-	}
-
+	hwlock_acquire(HWLOCK_I2C);
 	leds_powersave(eco);
-
 	hwlock_release(HWLOCK_I2C);
 }
 
